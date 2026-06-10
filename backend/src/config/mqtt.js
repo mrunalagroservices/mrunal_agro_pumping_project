@@ -2,7 +2,14 @@ const mqtt = require('mqtt');
 
 let client = null;
 
+// Returns null (instead of connecting) when MQTT_BROKER is not configured,
+// so the API/dashboard can be developed and tested without a broker.
 function connectMqtt() {
+  if (!process.env.MQTT_BROKER) {
+    console.log('[MQTT] MQTT_BROKER not set — MQTT disabled');
+    return null;
+  }
+
   client = mqtt.connect(process.env.MQTT_BROKER, {
     username: process.env.MQTT_USERNAME,
     password: process.env.MQTT_PASSWORD,
@@ -19,14 +26,18 @@ function connectMqtt() {
 }
 
 function getClient() {
-  if (!client) throw new Error('MQTT client not initialized — call connectMqtt() first');
   return client;
 }
 
-// Publishes an actuator command to farm/{org_id}/{api_key}/command
+// Publishes an actuator command to farm/{org_id}/{api_key}/command.
+// No-op when MQTT is disabled (no broker configured).
 function publishCommand(orgId, apiKey, payload) {
+  if (!client) {
+    console.log(`[MQTT] Skipping publish (MQTT disabled): farm/${orgId}/${apiKey}/command`, payload);
+    return;
+  }
   const topic = `farm/${orgId}/${apiKey}/command`;
-  getClient().publish(topic, JSON.stringify(payload), { qos: 1 });
+  client.publish(topic, JSON.stringify(payload), { qos: 1 });
 }
 
 module.exports = { connectMqtt, getClient, publishCommand };

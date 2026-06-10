@@ -169,6 +169,7 @@ async function handleStatusMessage(device, orgId, payload) {
 
 function startMqttService() {
   const client = connectMqtt();
+  if (!client) return null;
 
   client.on('connect', () => {
     client.subscribe('farm/+/+/sensors');

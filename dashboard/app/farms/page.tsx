@@ -2,7 +2,7 @@
 
 import { useEffect, useState, FormEvent } from "react";
 import Link from "next/link";
-import { Plus, MapPin, Cpu, Trash2, Loader2 } from "lucide-react";
+import { Plus, MapPin, Cpu, Trash2, Loader2, LocateFixed } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import Modal from "@/components/Modal";
 import { httpClient } from "@/lib/api";
@@ -19,6 +19,8 @@ export default function FarmsPage() {
   const [location, setLocation] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   async function loadFarms() {
     setLoading(true);
@@ -39,7 +41,40 @@ export default function FarmsPage() {
     setLocation("");
     setLatitude("");
     setLongitude("");
+    setLocationError(null);
     setError(null);
+  }
+
+  function handleUseCurrentLocation() {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by this browser");
+      return;
+    }
+    setLocationError(null);
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        setLatitude(lat.toFixed(6));
+        setLongitude(lon.toFixed(6));
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+          );
+          const data = await res.json();
+          if (data?.display_name) setLocation(data.display_name);
+        } catch {
+          // reverse geocoding is best-effort; coordinates are already filled
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setLocationError(err.message || "Unable to retrieve your location");
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
 
   async function handleCreate(e: FormEvent) {
@@ -143,9 +178,24 @@ export default function FarmsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Location (optional)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-slate-700">
+                  Location (optional)
+                </label>
+                <button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  disabled={locating}
+                  className="flex items-center gap-1 text-xs font-medium text-primary-700 hover:underline disabled:opacity-60"
+                >
+                  {locating ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <LocateFixed className="w-3.5 h-3.5" />
+                  )}
+                  Use current location
+                </button>
+              </div>
               <input
                 type="text"
                 value={location}
@@ -153,6 +203,9 @@ export default function FarmsPage() {
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Village, Taluka, District"
               />
+              {locationError && (
+                <p className="text-xs text-red-600 mt-1">{locationError}</p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
