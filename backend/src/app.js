@@ -19,9 +19,20 @@ const app = express();
 app.use(helmet());
 
 // In development allow any localhost port so the dashboard/mobile dev server can connect freely.
-// In production lock it to the explicit FRONTEND_URL env var.
+// In production lock it to a comma-separated allowlist from FRONTEND_URL.
 const corsOrigin = process.env.NODE_ENV === 'production'
-  ? (process.env.FRONTEND_URL || 'http://localhost:3000')
+  ? (() => {
+      const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
+        .split(',')
+        .map((o) => o.trim());
+      return (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('CORS: origin not allowed'));
+        }
+      };
+    })()
   : (origin, callback) => {
       if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
         callback(null, true);
