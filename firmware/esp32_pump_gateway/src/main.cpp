@@ -8,12 +8,20 @@
 // Copy config.h.example -> config.h and fill in your WiFi/MQTT/device credentials.
 
 #include <WiFi.h>
+#include "config.h"
+#if MQTT_USE_TLS
 #include <WiFiClientSecure.h>
+#else
+#include <WiFiClient.h>
+#endif
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include "config.h"
 
+#if MQTT_USE_TLS
 WiFiClientSecure espClient;
+#else
+WiFiClient espClient;
+#endif
 PubSubClient mqtt(espClient);
 
 bool relayState[RELAY_COUNT];                 // true = ON
@@ -148,7 +156,9 @@ void setup() {
 
   connectWiFi();
 
+#if MQTT_USE_TLS
   espClient.setInsecure(); // TODO: pin HiveMQ's root CA for production
+#endif
   mqtt.setServer(MQTT_HOST, MQTT_PORT);
   mqtt.setCallback(onMqttMessage);
   mqtt.setBufferSize(512);

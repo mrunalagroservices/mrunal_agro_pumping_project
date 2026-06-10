@@ -107,9 +107,9 @@ router.post('/:id/toggle', async (req, res) => {
     // Optimistic state update — confirmed/corrected by the device's next status message
     const updated = await db.query(
       `UPDATE actuators SET
-         current_state      = $1,
-         last_turned_on_at  = CASE WHEN $1 = 'on'  THEN NOW() ELSE last_turned_on_at  END,
-         last_turned_off_at = CASE WHEN $1 = 'off' THEN NOW() ELSE last_turned_off_at END,
+         current_state      = $1::varchar,
+         last_turned_on_at  = CASE WHEN $1::varchar = 'on'  THEN NOW() ELSE last_turned_on_at  END,
+         last_turned_off_at = CASE WHEN $1::varchar = 'off' THEN NOW() ELSE last_turned_off_at END,
          updated_at         = NOW()
        WHERE id = $2 RETURNING *`,
       [state, act.id]

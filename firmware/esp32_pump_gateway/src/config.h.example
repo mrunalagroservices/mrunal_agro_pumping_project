@@ -5,6 +5,10 @@
 #define WIFI_PASSWORD "your-wifi-password"
 
 // ─── MQTT (HiveMQ Cloud, TLS port 8883) ─────────────────────────────────────
+// For local testing against backend/scripts/local-mqtt-broker.js, set
+// MQTT_USE_TLS to false, MQTT_HOST to your computer's LAN IP, MQTT_PORT to
+// 1883, and leave MQTT_USERNAME/MQTT_PASSWORD empty ("").
+#define MQTT_USE_TLS  true
 #define MQTT_HOST     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.s1.eu.hivemq.cloud"
 #define MQTT_PORT     8883
 #define MQTT_USERNAME "pumpinguser"
