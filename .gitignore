@@ -1,0 +1,22 @@
+node_modules/
+.env
+.env.local
+*.log
+.DS_Store
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Flutter
+mobile/.dart_tool/
+mobile/.flutter-plugin-dependencies
+mobile/build/
+mobile/**/*.iml
+
+# PlatformIO
+firmware/**/.pio/
+firmware/**/.vscode/
+firmware/**/src/config.h
