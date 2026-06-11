@@ -90,7 +90,7 @@ export default function HomePage() {
   ).length;
 
   return (
-    <DashboardShell title="Dashboard">
+    <DashboardShell breadcrumb={[]}>
       {loading ? (
         <p className="text-sm text-slate-500">Loading...</p>
       ) : (

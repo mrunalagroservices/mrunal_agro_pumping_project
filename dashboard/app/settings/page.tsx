@@ -111,7 +111,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <DashboardShell title="Settings">
+    <DashboardShell breadcrumb={[{ label: "Settings" }]}>
       <div className="space-y-4 max-w-3xl">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3 mb-3">

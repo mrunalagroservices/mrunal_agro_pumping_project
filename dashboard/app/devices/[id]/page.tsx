@@ -156,7 +156,7 @@ export default function DeviceDetailPage({
 
   if (loading) {
     return (
-      <DashboardShell title="Device">
+      <DashboardShell breadcrumb={[{ label: "Devices", href: "/devices" }, { label: "Device" }]}>
         <p className="text-sm text-slate-500">Loading...</p>
       </DashboardShell>
     );
@@ -164,14 +164,19 @@ export default function DeviceDetailPage({
 
   if (!device) {
     return (
-      <DashboardShell title="Device">
+      <DashboardShell breadcrumb={[{ label: "Devices", href: "/devices" }, { label: "Device" }]}>
         <p className="text-sm text-slate-500">Device not found.</p>
       </DashboardShell>
     );
   }
 
   return (
-    <DashboardShell title={device.name}>
+    <DashboardShell
+      breadcrumb={[
+        { label: device.farm_name || "Devices", href: device.farm_name ? "/farms" : "/devices" },
+        { label: device.name },
+      ]}
+    >
       <div className="space-y-6">
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-start justify-between flex-wrap gap-3">

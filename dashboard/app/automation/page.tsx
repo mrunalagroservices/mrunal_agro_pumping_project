@@ -111,7 +111,7 @@ export default function AutomationPage() {
   }
 
   return (
-    <DashboardShell title="Automation">
+    <DashboardShell breadcrumb={[{ label: "Automation" }]}>
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-slate-500">
           If a sensor reading crosses a threshold, automatically turn an

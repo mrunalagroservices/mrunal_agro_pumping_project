@@ -103,7 +103,7 @@ export default function AnalyticsPage() {
   const labelInterval = range === "24h" ? 2 : 0;
 
   return (
-    <DashboardShell title="Analytics">
+    <DashboardShell breadcrumb={[{ label: "Analytics" }]}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <p className="text-sm text-slate-500">
           Water usage, electricity consumption and runtime across your pumps

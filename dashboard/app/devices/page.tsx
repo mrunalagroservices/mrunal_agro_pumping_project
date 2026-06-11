@@ -117,7 +117,7 @@ function DevicesPageContent() {
   }
 
   return (
-    <DashboardShell title="Devices">
+    <DashboardShell breadcrumb={[{ label: "Devices" }]}>
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-slate-500">
           ESP32 gateways that report sensors and control motors

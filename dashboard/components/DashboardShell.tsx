@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Sidebar from "./Sidebar";
-import Topbar from "./Topbar";
+import Topbar, { BreadcrumbItem } from "./Topbar";
 
 export default function DashboardShell({
-  title,
+  breadcrumb,
   children,
 }: {
-  title: string;
+  breadcrumb: BreadcrumbItem[];
   children: ReactNode;
 }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -35,7 +35,7 @@ export default function DashboardShell({
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <Topbar title={title} />
+        <Topbar breadcrumb={breadcrumb} />
         <main className="flex-1 p-4 lg:p-6">{children}</main>
       </div>
     </div>

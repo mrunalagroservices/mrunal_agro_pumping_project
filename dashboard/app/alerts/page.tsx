@@ -68,7 +68,7 @@ export default function AlertsPage() {
   }
 
   return (
-    <DashboardShell title="Alerts">
+    <DashboardShell breadcrumb={[{ label: "Alerts" }]}>
       <div className="flex items-center gap-2 mb-4">
         {(["open", "resolved", "all"] as Filter[]).map((f) => (
           <button

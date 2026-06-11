@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import {
   Menu,
   X,
+  ChevronRight,
   LayoutDashboard,
   Warehouse,
   Cpu,
@@ -30,7 +31,12 @@ const mobileMenuItems = [
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
-export default function Topbar({ title }: { title: string }) {
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+export default function Topbar({ breadcrumb }: { breadcrumb: BreadcrumbItem[] }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { logout } = useAuth();
@@ -38,7 +44,7 @@ export default function Topbar({ title }: { title: string }) {
   return (
     <header className="sticky top-0 z-20 bg-white border-b border-slate-200">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             className="lg:hidden p-2 -ml-2 rounded-lg text-slate-600 hover:bg-slate-100"
             onClick={() => setMobileOpen((v) => !v)}
@@ -52,7 +58,41 @@ export default function Topbar({ title }: { title: string }) {
           <div className="lg:hidden flex items-center gap-2">
             <Image src="/icon.png" alt="Mrunal Agro" width={32} height={32} className="rounded-lg" />
           </div>
-          <h1 className="text-lg font-semibold text-slate-800">{title}</h1>
+          <nav className="flex items-center gap-1.5 text-sm min-w-0 overflow-hidden">
+            {breadcrumb.length === 0 ? (
+              <span className="font-semibold text-slate-800 truncate">Home</span>
+            ) : (
+              <Link href="/" className="text-slate-500 hover:text-slate-700 shrink-0">
+                Home
+              </Link>
+            )}
+            {breadcrumb.map((item, idx) => {
+              const isLast = idx === breadcrumb.length - 1;
+              return (
+                <span key={idx} className="flex items-center gap-1.5 min-w-0">
+                  <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                  {item.href && !isLast ? (
+                    <Link
+                      href={item.href}
+                      className="text-slate-500 hover:text-slate-700 truncate"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span
+                      className={`truncate ${
+                        isLast
+                          ? "font-semibold text-slate-800"
+                          : "text-slate-500"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  )}
+                </span>
+              );
+            })}
+          </nav>
         </div>
       </div>
 

@@ -103,7 +103,7 @@ export default function SchedulesPage() {
   }
 
   return (
-    <DashboardShell title="Schedules">
+    <DashboardShell breadcrumb={[{ label: "Schedules" }]}>
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-slate-500">
           Run motors and pumps automatically at fixed times
