@@ -10,6 +10,8 @@ import {
   Zap,
   CalendarClock,
   Bell,
+  BarChart3,
+  Settings,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -64,6 +66,20 @@ const menuItems: MenuItem[] = [
     href: "/alerts",
     textColor: "text-amber-700",
     bgLight: "bg-amber-50",
+  },
+  {
+    icon: BarChart3,
+    label: "Analytics",
+    href: "/analytics",
+    textColor: "text-violet-700",
+    bgLight: "bg-violet-50",
+  },
+  {
+    icon: Settings,
+    label: "Settings",
+    href: "/settings",
+    textColor: "text-slate-700",
+    bgLight: "bg-slate-100",
   },
 ];
 

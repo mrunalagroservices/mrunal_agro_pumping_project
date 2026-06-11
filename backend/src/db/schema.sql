@@ -4,10 +4,11 @@
 
 -- ─── Tenancy ──────────────────────────────────────────────────────────────
 CREATE TABLE organizations (
-  id          SERIAL PRIMARY KEY,
-  name        VARCHAR(150) NOT NULL,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                       SERIAL PRIMARY KEY,
+  name                     VARCHAR(150) NOT NULL,
+  electricity_rate_per_kwh NUMERIC NOT NULL DEFAULT 8, -- ₹ per kWh, used for analytics cost estimates
+  created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE users (
@@ -103,6 +104,10 @@ CREATE TABLE actuators (
   last_turned_on_at   TIMESTAMPTZ,
   last_turned_off_at  TIMESTAMPTZ,
   status              VARCHAR(20) NOT NULL DEFAULT 'active', -- active, disabled
+  pipe_diameter_mm    NUMERIC, -- pump specs, used for water-usage analytics
+  flow_velocity_ms    NUMERIC, -- water velocity through the pipe (m/s)
+  flow_rate_lpm       NUMERIC, -- optional rated flow rate from pump nameplate (L/min), overrides pipe-based estimate
+  power_rating_watts  NUMERIC, -- motor power rating, used for electricity-usage analytics
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(device_id, relay_channel)

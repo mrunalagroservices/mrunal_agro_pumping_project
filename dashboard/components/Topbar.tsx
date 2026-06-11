@@ -13,6 +13,8 @@ import {
   Zap,
   CalendarClock,
   Bell,
+  BarChart3,
+  Settings,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +26,8 @@ const mobileMenuItems = [
   { icon: Zap, label: "Automation", href: "/automation" },
   { icon: CalendarClock, label: "Schedules", href: "/schedules" },
   { icon: Bell, label: "Alerts", href: "/alerts" },
+  { icon: BarChart3, label: "Analytics", href: "/analytics" },
+  { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
 export default function Topbar({ title }: { title: string }) {

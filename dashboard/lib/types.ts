@@ -7,6 +7,7 @@ export interface ApiResponse<T> {
 export interface Organization {
   id: number;
   name: string;
+  electricity_rate_per_kwh?: number;
   created_at?: string;
 }
 
@@ -77,7 +78,9 @@ export interface Actuator {
   id: number;
   organization_id: number;
   device_id: number;
+  device_name?: string;
   farm_id: number;
+  farm_name?: string;
   name: string;
   actuator_type: string;
   relay_channel: number;
@@ -87,6 +90,10 @@ export interface Actuator {
   last_turned_on_at?: string | null;
   last_turned_off_at?: string | null;
   status: string;
+  pipe_diameter_mm?: number | null;
+  flow_velocity_ms?: number | null;
+  flow_rate_lpm?: number | null;
+  power_rating_watts?: number | null;
 }
 
 export interface ActuatorLog {
@@ -157,4 +164,48 @@ export interface DeviceDetail extends Device {
   sensors: Sensor[];
   actuators: Actuator[];
   logs: DeviceLog[];
+}
+
+export interface AnalyticsTotals {
+  runtime_minutes: number;
+  water_liters: number;
+  electricity_kwh: number;
+  cost: number;
+  currently_running: number;
+}
+
+export interface AnalyticsActuatorBreakdown {
+  id: number;
+  name: string;
+  farm_name?: string | null;
+  actuator_type: string;
+  current_state: "on" | "off" | string;
+  runtime_minutes: number;
+  water_liters: number;
+  electricity_kwh: number;
+  cost: number;
+  specs_configured: boolean;
+}
+
+export interface AnalyticsOverview {
+  range: "24h" | "10d";
+  electricity_rate_per_kwh: number;
+  totals: AnalyticsTotals;
+  actuators: AnalyticsActuatorBreakdown[];
+}
+
+export interface AnalyticsSeriesBucket {
+  label: string;
+  start: string;
+  end: string;
+  runtime_minutes: number;
+  water_liters: number;
+  electricity_kwh: number;
+  cost: number;
+}
+
+export interface AnalyticsSeries {
+  range: "24h" | "10d";
+  electricity_rate_per_kwh: number;
+  buckets: AnalyticsSeriesBucket[];
 }

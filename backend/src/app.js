@@ -12,6 +12,8 @@ const actuatorRoutes = require('./modules/actuators/actuator.routes');
 const automationRoutes = require('./modules/automation/automation.routes');
 const scheduleRoutes = require('./modules/schedules/schedule.routes');
 const alertRoutes = require('./modules/alerts/alert.routes');
+const organizationRoutes = require('./modules/organizations/organization.routes');
+const analyticsRoutes = require('./modules/analytics/analytics.routes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -55,6 +57,8 @@ app.use('/api/v1/actuators', actuatorRoutes);
 app.use('/api/v1/automation-rules', automationRoutes);
 app.use('/api/v1/schedules', scheduleRoutes);
 app.use('/api/v1/alerts', alertRoutes);
+app.use('/api/v1/organizations', organizationRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 app.get('/health', (_, res) => res.json({ status: 'ok', service: 'mrunal-agro-pumping-backend' }));
 

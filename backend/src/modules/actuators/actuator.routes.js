@@ -32,7 +32,10 @@ router.get('/', async (req, res) => {
 
 // POST /api/v1/actuators — register a relay channel as a motor/pump/valve
 router.post('/', async (req, res) => {
-  const { device_id, farm_id, name, actuator_type, relay_channel, max_runtime_minutes } = req.body;
+  const {
+    device_id, farm_id, name, actuator_type, relay_channel, max_runtime_minutes,
+    pipe_diameter_mm, flow_velocity_ms, flow_rate_lpm, power_rating_watts,
+  } = req.body;
   if (!device_id || !name || relay_channel === undefined) {
     return res.status(400).json({ success: false, message: 'device_id, name and relay_channel are required' });
   }
@@ -42,9 +45,15 @@ router.post('/', async (req, res) => {
     if (!device.rows.length) return res.status(404).json({ success: false, message: 'Device not found' });
 
     const result = await db.query(
-      `INSERT INTO actuators (organization_id, device_id, farm_id, name, actuator_type, relay_channel, max_runtime_minutes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [req.user.organization_id, device_id, farm_id || null, name, actuator_type || 'motor', relay_channel, max_runtime_minutes || null]
+      `INSERT INTO actuators (
+         organization_id, device_id, farm_id, name, actuator_type, relay_channel, max_runtime_minutes,
+         pipe_diameter_mm, flow_velocity_ms, flow_rate_lpm, power_rating_watts
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [
+        req.user.organization_id, device_id, farm_id || null, name, actuator_type || 'motor', relay_channel, max_runtime_minutes || null,
+        pipe_diameter_mm ?? null, flow_velocity_ms ?? null, flow_rate_lpm ?? null, power_rating_watts ?? null,
+      ]
     );
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
@@ -56,7 +65,10 @@ router.post('/', async (req, res) => {
 
 // PUT /api/v1/actuators/:id
 router.put('/:id', async (req, res) => {
-  const { name, actuator_type, auto_mode, max_runtime_minutes, status } = req.body;
+  const {
+    name, actuator_type, auto_mode, max_runtime_minutes, status,
+    pipe_diameter_mm, flow_velocity_ms, flow_rate_lpm, power_rating_watts,
+  } = req.body;
   try {
     const result = await db.query(
       `UPDATE actuators SET
@@ -65,9 +77,17 @@ router.put('/:id', async (req, res) => {
          auto_mode           = COALESCE($3, auto_mode),
          max_runtime_minutes = $4,
          status              = COALESCE($5, status),
+         pipe_diameter_mm    = COALESCE($6, pipe_diameter_mm),
+         flow_velocity_ms    = COALESCE($7, flow_velocity_ms),
+         flow_rate_lpm       = COALESCE($8, flow_rate_lpm),
+         power_rating_watts  = COALESCE($9, power_rating_watts),
          updated_at          = NOW()
-       WHERE id = $6 AND organization_id = $7 RETURNING *`,
-      [name, actuator_type, auto_mode, max_runtime_minutes, status, req.params.id, req.user.organization_id]
+       WHERE id = $10 AND organization_id = $11 RETURNING *`,
+      [
+        name, actuator_type, auto_mode, max_runtime_minutes, status,
+        pipe_diameter_mm, flow_velocity_ms, flow_rate_lpm, power_rating_watts,
+        req.params.id, req.user.organization_id,
+      ]
     );
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: result.rows[0] });
