@@ -209,3 +209,26 @@ export interface AnalyticsSeries {
   electricity_rate_per_kwh: number;
   buckets: AnalyticsSeriesBucket[];
 }
+
+export interface AnalyticsRuntimeSession {
+  start: string;
+  end: string;
+}
+
+export interface AnalyticsDailyActuatorRuntime {
+  id: number;
+  name: string;
+  hours: number;
+  sessions: AnalyticsRuntimeSession[];
+}
+
+export interface AnalyticsDailyRuntimeDay {
+  date: string;
+  label: string;
+  total_hours: number;
+  actuators: AnalyticsDailyActuatorRuntime[];
+}
+
+export interface AnalyticsDailyRuntime {
+  days: AnalyticsDailyRuntimeDay[];
+}

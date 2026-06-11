@@ -10,6 +10,38 @@ const RANGE_CONFIG = {
   '10d': { ms: 10 * 24 * 60 * 60 * 1000, buckets: 10, bucketMs: 24 * 60 * 60 * 1000 },
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000; // pump sites are in India
+
+// Returns the UTC instant corresponding to local midnight (IST) for the IST calendar day containing `date`.
+function istDayStart(date) {
+  const shifted = new Date(date.getTime() + IST_OFFSET_MS);
+  shifted.setUTCHours(0, 0, 0, 0);
+  return new Date(shifted.getTime() - IST_OFFSET_MS);
+}
+
+function formatISTDate(date) {
+  return new Date(date.getTime() + IST_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+function formatISTDateLabel(date) {
+  return new Date(date.getTime() + IST_OFFSET_MS).toLocaleDateString('en-IN', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  });
+}
+
+function formatISTTime(date) {
+  return new Date(date.getTime() + IST_OFFSET_MS).toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'UTC',
+  });
+}
+
 function round2(n) {
   return Math.round(n * 100) / 100;
 }
@@ -244,6 +276,63 @@ router.get('/series', async (req, res) => {
   } catch (err) {
     console.error('[Analytics/series]', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch analytics series' });
+  }
+});
+
+// GET /api/v1/analytics/daily-runtime?days=10&farm_id=
+// Day-by-day (IST calendar days) breakdown of how many hours each motor was ON,
+// including the on/off session times for that day.
+router.get('/daily-runtime', async (req, res) => {
+  try {
+    const days = Math.min(Math.max(parseInt(req.query.days, 10) || 10, 1), 31);
+    const rangeEnd = new Date();
+    const todayStart = istDayStart(rangeEnd);
+    const rangeStart = new Date(todayStart.getTime() - (days - 1) * DAY_MS);
+
+    const actuators = await fetchActuators(req);
+
+    const actuatorIntervals = [];
+    for (const act of actuators) {
+      const intervals = await fetchActuatorIntervals(act.id, rangeStart, rangeEnd);
+      actuatorIntervals.push({ act, intervals });
+    }
+
+    const daysOut = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const dayStart = new Date(todayStart.getTime() - i * DAY_MS);
+      const dayEnd = new Date(dayStart.getTime() + DAY_MS);
+
+      let totalMinutes = 0;
+      const actuatorsOut = [];
+      for (const { act, intervals } of actuatorIntervals) {
+        const sessions = [];
+        let minutes = 0;
+        for (const { start, end } of intervals) {
+          const s = start < dayStart ? dayStart : start;
+          const e = end > dayEnd ? dayEnd : end;
+          if (e > s) {
+            minutes += (e - s) / 60000;
+            sessions.push({ start: formatISTTime(s), end: formatISTTime(e) });
+          }
+        }
+        if (minutes > 0) {
+          totalMinutes += minutes;
+          actuatorsOut.push({ id: act.id, name: act.name, hours: round2(minutes / 60), sessions });
+        }
+      }
+
+      daysOut.push({
+        date: formatISTDate(dayStart),
+        label: formatISTDateLabel(dayStart),
+        total_hours: round2(totalMinutes / 60),
+        actuators: actuatorsOut,
+      });
+    }
+
+    res.json({ success: true, data: { days: daysOut } });
+  } catch (err) {
+    console.error('[Analytics/daily-runtime]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch daily runtime' });
   }
 });
 

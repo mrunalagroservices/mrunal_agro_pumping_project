@@ -27,6 +27,7 @@ import {
   Farm,
   AnalyticsOverview,
   AnalyticsSeries,
+  AnalyticsDailyRuntime,
 } from "@/lib/types";
 
 type Range = "24h" | "10d";
@@ -46,12 +47,17 @@ function formatNumber(n: number, decimals = 1): string {
   });
 }
 
+function formatHours(hours: number): string {
+  return formatRuntime(hours * 60);
+}
+
 export default function AnalyticsPage() {
   const [range, setRange] = useState<Range>("24h");
   const [farmId, setFarmId] = useState<string>("");
   const [farms, setFarms] = useState<Farm[]>([]);
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [series, setSeries] = useState<AnalyticsSeries | null>(null);
+  const [dailyRuntime, setDailyRuntime] = useState<AnalyticsDailyRuntime | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,14 +71,20 @@ export default function AnalyticsPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ range });
-      if (farmId) params.set("farm_id", farmId);
+      const dailyParams = new URLSearchParams({ days: "10" });
+      if (farmId) {
+        params.set("farm_id", farmId);
+        dailyParams.set("farm_id", farmId);
+      }
       const query = `?${params.toString()}`;
-      const [overviewRes, seriesRes] = await Promise.all([
+      const [overviewRes, seriesRes, dailyRes] = await Promise.all([
         httpClient.get<ApiResponse<AnalyticsOverview>>(`/analytics/overview${query}`),
         httpClient.get<ApiResponse<AnalyticsSeries>>(`/analytics/series${query}`),
+        httpClient.get<ApiResponse<AnalyticsDailyRuntime>>(`/analytics/daily-runtime?${dailyParams.toString()}`),
       ]);
       setOverview(overviewRes.data);
       setSeries(seriesRes.data);
+      setDailyRuntime(dailyRes.data);
     } finally {
       setLoading(false);
     }
@@ -283,6 +295,60 @@ export default function AnalyticsPage() {
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mt-4">
+            <div className="px-4 py-3 border-b border-slate-100">
+              <p className="text-sm font-medium text-slate-800">Daily Motor Hours (Last 10 Days)</p>
+              <p className="text-xs text-slate-500">How long each pump ran, and at what times</p>
+            </div>
+            {!dailyRuntime || dailyRuntime.days.every((d) => d.actuators.length === 0) ? (
+              <p className="text-sm text-slate-500 px-4 py-6 text-center">
+                No motor activity in the last 10 days.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100">
+                      <th className="px-4 py-2 font-medium">Date</th>
+                      <th className="px-4 py-2 font-medium">Pump</th>
+                      <th className="px-4 py-2 font-medium text-right">ON Hours</th>
+                      <th className="px-4 py-2 font-medium">ON/OFF Sessions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailyRuntime.days
+                      .slice()
+                      .reverse()
+                      .flatMap((day) => {
+                        if (day.actuators.length === 0) {
+                          return (
+                            <tr key={day.date} className="border-b border-slate-50 last:border-0">
+                              <td className="px-4 py-2.5 text-slate-700">{day.label}</td>
+                              <td className="px-4 py-2.5 text-slate-400" colSpan={3}>
+                                No runtime
+                              </td>
+                            </tr>
+                          );
+                        }
+                        return day.actuators.map((a, idx) => (
+                          <tr key={`${day.date}-${a.id}`} className="border-b border-slate-50 last:border-0">
+                            <td className="px-4 py-2.5 text-slate-700">
+                              {idx === 0 ? day.label : ""}
+                            </td>
+                            <td className="px-4 py-2.5 font-medium text-slate-800">{a.name}</td>
+                            <td className="px-4 py-2.5 text-right text-slate-700">{formatHours(a.hours)}</td>
+                            <td className="px-4 py-2.5 text-slate-500">
+                              {a.sessions.map((s) => `${s.start}–${s.end}`).join(", ")}
+                            </td>
+                          </tr>
+                        ));
+                      })}
                   </tbody>
                 </table>
               </div>
