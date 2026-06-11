@@ -78,7 +78,7 @@ class ActuatorTile extends StatelessWidget {
             Switch(
               value: actuator.isOn,
               activeTrackColor: AppColors.primary600,
-              onChanged: deviceOnline ? (_) => onToggle() : null,
+              onChanged: (_) => onToggle(),
             ),
         ],
       ),

@@ -4,11 +4,13 @@ import '../models/device.dart';
 import '../models/farm.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
+import '../services/socket_service.dart';
 
 enum AuthStatus { unknown, loggedOut, loggedIn }
 
 class AppState extends ChangeNotifier {
   final ApiClient _api = ApiClient();
+  final SocketService _socket = SocketService();
 
   AuthStatus authStatus = AuthStatus.unknown;
   AppUser? user;
@@ -31,6 +33,7 @@ class AppState extends ChangeNotifier {
       final me = await _api.get('/auth/me');
       user = AppUser.fromJson(me as Map<String, dynamic>);
       authStatus = AuthStatus.loggedIn;
+      _connectSocket();
     } catch (_) {
       await _api.clearToken();
       authStatus = AuthStatus.loggedOut;
@@ -47,6 +50,7 @@ class AppState extends ChangeNotifier {
       await _api.setToken(data['token'] as String);
       user = AppUser.fromJson(data['user'] as Map<String, dynamic>);
       authStatus = AuthStatus.loggedIn;
+      _connectSocket();
       notifyListeners();
       return null;
     } on ApiException catch (e) {
@@ -74,6 +78,7 @@ class AppState extends ChangeNotifier {
       await _api.setToken(data['token'] as String);
       user = AppUser.fromJson(data['user'] as Map<String, dynamic>);
       authStatus = AuthStatus.loggedIn;
+      _connectSocket();
       notifyListeners();
       return null;
     } on ApiException catch (e) {
@@ -84,6 +89,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    _socket.disconnect();
     await _api.clearToken();
     user = null;
     farms = [];
@@ -91,6 +97,42 @@ class AppState extends ChangeNotifier {
     actuators = [];
     authStatus = AuthStatus.loggedOut;
     notifyListeners();
+  }
+
+  void _connectSocket() {
+    final token = _api.token;
+    if (token == null) return;
+    _socket.connect(
+      token,
+      onActuatorStatus: (data) {
+        final updated = Actuator.fromJson(data);
+        final index = actuators.indexWhere((a) => a.id == updated.id);
+        if (index == -1) {
+          actuators.add(updated);
+        } else {
+          actuators[index] = updated;
+        }
+        notifyListeners();
+      },
+      onDeviceStatus: (data) {
+        final deviceId = data['device_id'] as int;
+        final index = devices.indexWhere((d) => d.id == deviceId);
+        if (index == -1) return;
+        devices[index] = devices[index].copyWith(
+          status: data['status'] as String?,
+          lastSeenAt: data['last_seen_at'] != null
+              ? DateTime.tryParse(data['last_seen_at'] as String)
+              : null,
+        );
+        notifyListeners();
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _socket.disconnect();
+    super.dispose();
   }
 
   Future<void> loadDashboard() async {
@@ -140,6 +182,54 @@ class AppState extends ChangeNotifier {
     final deviceIds =
         devices.where((d) => d.farmId == farmId).map((d) => d.id).toSet();
     return actuators.any((a) => deviceIds.contains(a.deviceId) && a.isOn);
+  }
+
+  Future<String?> updateFarm(
+    int farmId, {
+    required String name,
+    String? location,
+  }) async {
+    final index = farms.indexWhere((f) => f.id == farmId);
+    if (index == -1) return 'Farm not found';
+
+    try {
+      final data = await _api.put('/farms/$farmId', {
+        'name': name,
+        'location': location,
+      });
+      farms[index] = Farm.fromJson(data as Map<String, dynamic>);
+      notifyListeners();
+      return null;
+    } on UnauthorizedException {
+      await logout();
+      return 'Session expired, please log in again';
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (e) {
+      return 'Could not reach the server.';
+    }
+  }
+
+  Future<String?> deleteFarm(int farmId) async {
+    try {
+      await _api.delete('/farms/$farmId');
+      farms.removeWhere((f) => f.id == farmId);
+      final deviceIds = devices
+          .where((d) => d.farmId == farmId)
+          .map((d) => d.id)
+          .toSet();
+      devices.removeWhere((d) => d.farmId == farmId);
+      actuators.removeWhere((a) => deviceIds.contains(a.deviceId));
+      notifyListeners();
+      return null;
+    } on UnauthorizedException {
+      await logout();
+      return 'Session expired, please log in again';
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (e) {
+      return 'Could not reach the server.';
+    }
   }
 
   Future<String?> toggleActuator(Actuator actuator) async {

@@ -32,6 +32,102 @@ class _FarmCardState extends State<FarmCard> {
     }
   }
 
+  Future<void> _handleEdit() async {
+    final nameController = TextEditingController(text: widget.farm.name);
+    final locationController =
+        TextEditingController(text: widget.farm.location ?? '');
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Edit farm'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Farm name'),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: locationController,
+                decoration: const InputDecoration(labelText: 'Location'),
+                textCapitalization: TextCapitalization.words,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != true || !mounted) return;
+
+    final name = nameController.text.trim();
+    if (name.isEmpty) return;
+
+    final error = await context.read<AppState>().updateFarm(
+          widget.farm.id,
+          name: name,
+          location: locationController.text.trim(),
+        );
+    if (!mounted) return;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
+  }
+
+  Future<void> _handleDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete farm'),
+          content: Text(
+            'Are you sure you want to delete "${widget.farm.name}"? '
+            'This will also remove its devices and actuators.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.offlineRed,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final error = await context.read<AppState>().deleteFarm(widget.farm.id);
+    if (!mounted) return;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
@@ -68,6 +164,36 @@ class _FarmCardState extends State<FarmCard> {
                   ),
                 ),
                 _FarmStatusBadge(active: state.isFarmActive(widget.farm.id)),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: AppColors.offGray),
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      _handleEdit();
+                    } else if (value == 'delete') {
+                      _handleDelete();
+                    }
+                  },
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: ListTile(
+                        leading: Icon(Icons.edit_outlined),
+                        title: Text('Edit'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: ListTile(
+                        leading: Icon(Icons.delete_outline,
+                            color: AppColors.offlineRed),
+                        title: Text('Delete',
+                            style: TextStyle(color: AppColors.offlineRed)),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
             if (devices.isEmpty)

@@ -21,6 +21,19 @@ class Device {
 
   bool get isOnline => status == 'online';
 
+  Device copyWith({String? status, DateTime? lastSeenAt}) {
+    return Device(
+      id: id,
+      farmId: farmId,
+      farmName: farmName,
+      name: name,
+      deviceType: deviceType,
+      status: status ?? this.status,
+      relayCount: relayCount,
+      lastSeenAt: lastSeenAt ?? this.lastSeenAt,
+    );
+  }
+
   factory Device.fromJson(Map<String, dynamic> json) {
     return Device(
       id: json['id'] as int,

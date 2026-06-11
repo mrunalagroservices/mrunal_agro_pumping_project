@@ -41,6 +41,8 @@ class ApiClient {
 
   bool get hasToken => _token != null;
 
+  String? get token => _token;
+
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
         if (_token != null) 'Authorization': 'Bearer $_token',
@@ -89,6 +91,13 @@ class ApiClient {
           headers: _headers,
           body: body != null ? jsonEncode(body) : null,
         )
+        .timeout(const Duration(seconds: 60));
+    return _handleResponse(res);
+  }
+
+  Future<dynamic> delete(String path) async {
+    final res = await http
+        .delete(Uri.parse('$apiBaseUrl$path'), headers: _headers)
         .timeout(const Duration(seconds: 60));
     return _handleResponse(res);
   }

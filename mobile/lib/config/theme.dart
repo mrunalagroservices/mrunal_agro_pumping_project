@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Matches the dashboard's Tailwind "primary" green palette.
 class AppColors {
@@ -17,6 +18,8 @@ class AppColors {
 }
 
 ThemeData buildAppTheme() {
+  final textTheme = GoogleFonts.plusJakartaSansTextTheme();
+
   return ThemeData(
     useMaterial3: true,
     scaffoldBackgroundColor: AppColors.background,
@@ -24,11 +27,18 @@ ThemeData buildAppTheme() {
       seedColor: AppColors.primary600,
       primary: AppColors.primary600,
     ),
-    appBarTheme: const AppBarTheme(
+    textTheme: textTheme,
+    primaryTextTheme: textTheme,
+    appBarTheme: AppBarTheme(
       backgroundColor: AppColors.background,
       foregroundColor: Colors.black87,
       elevation: 0,
       centerTitle: false,
+      titleTextStyle: GoogleFonts.plusJakartaSans(
+        color: Colors.black87,
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+      ),
     ),
     cardTheme: CardThemeData(
       color: Colors.white,
