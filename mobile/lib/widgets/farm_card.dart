@@ -1,0 +1,187 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../config/theme.dart';
+import '../models/actuator.dart';
+import '../models/device.dart';
+import '../models/farm.dart';
+import '../providers/app_state.dart';
+import 'actuator_tile.dart';
+import 'status_dot.dart';
+
+class FarmCard extends StatefulWidget {
+  final Farm farm;
+
+  const FarmCard({super.key, required this.farm});
+
+  @override
+  State<FarmCard> createState() => _FarmCardState();
+}
+
+class _FarmCardState extends State<FarmCard> {
+  final Set<int> _busyActuatorIds = {};
+
+  Future<void> _handleToggle(Actuator actuator) async {
+    setState(() => _busyActuatorIds.add(actuator.id));
+    final error = await context.read<AppState>().toggleActuator(actuator);
+    if (!mounted) return;
+    setState(() => _busyActuatorIds.remove(actuator.id));
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final devices = state.devicesForFarm(widget.farm.id);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.farm.name,
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold),
+                      ),
+                      if (widget.farm.location != null &&
+                          widget.farm.location!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            widget.farm.location!,
+                            style:
+                                TextStyle(color: Colors.grey[600], fontSize: 13),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                _FarmStatusBadge(active: state.isFarmActive(widget.farm.id)),
+              ],
+            ),
+            if (devices.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  'No devices added for this farm yet.',
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+              )
+            else
+              ...devices.map((device) => _DeviceSection(
+                    device: device,
+                    busyActuatorIds: _busyActuatorIds,
+                    onToggle: (a) => _handleToggle(a),
+                  )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DeviceSection extends StatelessWidget {
+  final Device device;
+  final Set<int> busyActuatorIds;
+  final void Function(Actuator actuator) onToggle;
+
+  const _DeviceSection({
+    required this.device,
+    required this.busyActuatorIds,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final actuators = context.watch<AppState>().actuatorsForDevice(device.id);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 2),
+            child: Row(
+              children: [
+                StatusDot(
+                  color: device.isOnline
+                      ? AppColors.primary600
+                      : AppColors.offlineRed,
+                  size: 8,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  device.name,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  device.isOnline ? 'Online' : 'Offline',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          if (actuators.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 14, top: 4, bottom: 4),
+              child: Text(
+                'No actuators configured.',
+                style: TextStyle(color: Colors.grey[500], fontSize: 13),
+              ),
+            )
+          else
+            ...actuators.map((a) => ActuatorTile(
+                  actuator: a,
+                  deviceOnline: device.isOnline,
+                  busy: busyActuatorIds.contains(a.id),
+                  onToggle: () => onToggle(a),
+                )),
+        ],
+      ),
+    );
+  }
+}
+
+class _FarmStatusBadge extends StatelessWidget {
+  final bool active;
+
+  const _FarmStatusBadge({required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = active ? AppColors.primary600 : AppColors.offGray;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          StatusDot(color: color, size: 8),
+          const SizedBox(width: 6),
+          Text(
+            active ? 'Running' : 'Idle',
+            style: TextStyle(
+                color: color, fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+}
