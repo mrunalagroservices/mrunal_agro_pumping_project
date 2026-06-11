@@ -4,26 +4,13 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../providers/app_state.dart';
-import '../widgets/farm_card.dart';
+import '../widgets/top_bar_actions.dart';
 
 // Default map center: Pune, Maharashtra (used when no farm has GPS coordinates yet).
 const _defaultCenter = LatLng(18.5204, 73.8567);
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadDashboard();
-    });
-  }
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +20,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final center = farmsWithLocation.isNotEmpty
         ? LatLng(farmsWithLocation.first.latitude!, farmsWithLocation.first.longitude!)
         : _defaultCenter;
+
+    final onlineDevices = state.devices.where((d) => d.isOnline).length;
+    final activeActuators = state.actuators.where((a) => a.isOn).length;
 
     return Scaffold(
       appBar: AppBar(
@@ -47,13 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: () => context.read<AppState>().logout(),
-          ),
-        ],
+        actions: const [TopBarActions()],
       ),
       body: RefreshIndicator(
         onRefresh: () => context.read<AppState>().loadDashboard(),
@@ -119,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Row(
                   children: [
-                    const Text('Your farms',
+                    const Text('Overview',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const Spacer(),
                     if (state.isLoadingDashboard)
@@ -148,29 +132,92 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-              )
-            else if (!state.isLoadingDashboard && state.farms.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Center(
-                    child: Text(
-                      'No farms yet. Add one from the dashboard.',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                sliver: SliverList.separated(
-                  itemCount: state.farms.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) =>
-                      FarmCard(farm: state.farms[index]),
-                ),
               ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              sliver: SliverGrid.count(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 1.5,
+                children: [
+                  _StatCard(
+                    icon: Icons.agriculture_outlined,
+                    color: AppColors.primary600,
+                    label: 'Farms',
+                    value: '${state.farms.length}',
+                  ),
+                  _StatCard(
+                    icon: Icons.developer_board_outlined,
+                    color: AppColors.primary600,
+                    label: 'Devices online',
+                    value: '$onlineDevices / ${state.devices.length}',
+                  ),
+                  _StatCard(
+                    icon: Icons.water_drop_outlined,
+                    color: AppColors.primary600,
+                    label: 'Pumps running',
+                    value: '$activeActuators / ${state.actuators.length}',
+                  ),
+                  _StatCard(
+                    icon: Icons.bolt_outlined,
+                    color: activeActuators > 0
+                        ? AppColors.primary600
+                        : AppColors.offGray,
+                    label: 'Status',
+                    value: activeActuators > 0 ? 'Running' : 'Idle',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String value;
+
+  const _StatCard({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
           ],
         ),
       ),

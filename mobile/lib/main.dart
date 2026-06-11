@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'config/theme.dart';
 import 'providers/app_state.dart';
-import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/main_shell.dart';
 
 void main() {
   runApp(const MrunalAgroApp());
@@ -41,7 +41,7 @@ class AuthGate extends StatelessWidget {
       case AuthStatus.loggedOut:
         return const LoginScreen();
       case AuthStatus.loggedIn:
-        return const HomeScreen();
+        return const MainShell();
     }
   }
 }
