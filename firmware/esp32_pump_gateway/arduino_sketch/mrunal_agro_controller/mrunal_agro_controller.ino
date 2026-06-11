@@ -13,7 +13,7 @@
  */
 
 #include <WiFi.h>
-#include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
@@ -21,21 +21,22 @@
 // CONFIGURATION - CHANGE THESE VALUES
 // ============================================================
 
-// WiFi Credentials — must be the SAME network as the Mac running the backend
+// WiFi Credentials
 const char* WIFI_SSID     = "Airtel_nish_4793";   // <-- fill in your home WiFi name
 const char* WIFI_PASSWORD = "air14414";
 
-// Local MQTT broker (backend/scripts/local-mqtt-broker.js, port 1883, no auth)
-const char* MQTT_HOST     = "192.168.1.4";       // Mac's LAN IP
-const int   MQTT_PORT     = 1883;
-const char* MQTT_USERNAME = "";
-const char* MQTT_PASSWORD = "";
+// HiveMQ Cloud (TLS) — Console > your cluster > Overview for the host
+const char* MQTT_HOST     = "815316df970944e88c8ac4e9ce1da8d5.s1.eu.hivemq.cloud";
+const int   MQTT_PORT     = 8883;
+const char* MQTT_USERNAME = "nishikesh";
+const char* MQTT_PASSWORD = "!!Sumit!!@25";
 
-// Device identity — matches the "controller" device created in the backend
+// Device identity — copy ORG_ID and API_KEY from the "controller" device
+// page on the dashboard (mrunalagro.in/devices/<id>)
 // Topics become: farm/{ORG_ID}/{API_KEY}/sensors|status|command
 const char* ORG_ID           = "1";
-const char* API_KEY          = "pump_600527edb5d1d8243d5dfe72ad8b7cd7";
-const char* FIRMWARE_VERSION = "1.0.0-test";
+const char* API_KEY          = "pump_1adef47c83b0a6886be07ca0ee39818d";
+const char* FIRMWARE_VERSION = "1.0.0-prod";
 
 // Relay channel 1 ("Motor" actuator) -> onboard LED on GPIO2
 #define RELAY_PIN 2
@@ -49,7 +50,7 @@ const unsigned long STATUS_PUBLISH_INTERVAL_MS = 60000;
 // STATE
 // ============================================================
 
-WiFiClient espClient;
+WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
 
 bool relayState = false;
@@ -202,6 +203,8 @@ void setup() {
   setRelay(false); // motor OFF on boot
 
   connectWiFi();
+
+  espClient.setInsecure(); // skip CA validation (HiveMQ Cloud uses TLS, but ESP32 has no root CA store loaded)
 
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
   mqttClient.setCallback(onMqttMessage);
