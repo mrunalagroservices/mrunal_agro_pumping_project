@@ -156,8 +156,8 @@ class _FarmCardState extends State<FarmCard> {
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
                             widget.farm.location!,
-                            style:
-                                TextStyle(color: Colors.grey[600], fontSize: 13),
+                            style: TextStyle(
+                                color: AppColors.textSecondary, fontSize: 13),
                           ),
                         ),
                     ],
@@ -201,7 +201,7 @@ class _FarmCardState extends State<FarmCard> {
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
                   'No devices added for this farm yet.',
-                  style: TextStyle(color: Colors.grey[500]),
+                  style: TextStyle(color: AppColors.textMuted),
                 ),
               )
             else
@@ -256,7 +256,7 @@ class _DeviceSection extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   device.isOnline ? 'Online' : 'Offline',
-                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
               ],
             ),
@@ -266,7 +266,7 @@ class _DeviceSection extends StatelessWidget {
               padding: const EdgeInsets.only(left: 14, top: 4, bottom: 4),
               child: Text(
                 'No actuators configured.',
-                style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
               ),
             )
           else

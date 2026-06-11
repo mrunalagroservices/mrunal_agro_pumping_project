@@ -61,7 +61,7 @@ class AnalysisScreen extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'No actuators configured yet.',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 ),
@@ -97,7 +97,7 @@ class AnalysisScreen extends StatelessWidget {
                         ),
                         Text(
                           '${entry.value.length - running} off',
-                          style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                         ),
                       ],
                     ),
@@ -115,7 +115,7 @@ class AnalysisScreen extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'No farms yet.',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 ),
@@ -146,7 +146,7 @@ class AnalysisScreen extends StatelessWidget {
                           style: TextStyle(
                             color: active
                                 ? AppColors.primary600
-                                : Colors.grey[600],
+                                : AppColors.textSecondary,
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
                           ),

@@ -61,7 +61,7 @@ class ActuatorTile extends StatelessWidget {
                       actuator.isOn
                           ? 'Running'
                           : (deviceOnline ? 'Off' : 'Device offline'),
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                     ),
                   ],
                 ),

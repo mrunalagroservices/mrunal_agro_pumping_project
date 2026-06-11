@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, FormEvent, useEffect } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Droplets, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
@@ -51,12 +52,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
-          <div className="w-12 h-12 rounded-xl bg-primary-600 flex items-center justify-center mb-3">
-            <Droplets className="w-6 h-6 text-white" />
-          </div>
-          <h1 className="text-xl font-semibold text-slate-800">
-            Mrunal Agro Pumping
-          </h1>
+          <Image
+            src="/logo.png"
+            alt="Mrunal Agro"
+            width={433}
+            height={355}
+            className="h-20 w-auto mb-3"
+            priority
+          />
           <p className="text-sm text-slate-500">
             {mode === "login"
               ? "Sign in to manage your farm pumps"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -13,7 +14,6 @@ import {
   CalendarClock,
   Bell,
   LogOut,
-  Droplets,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -46,9 +46,7 @@ export default function Topbar({ title }: { title: string }) {
             )}
           </button>
           <div className="lg:hidden flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
-              <Droplets className="w-4 h-4 text-white" />
-            </div>
+            <Image src="/icon.png" alt="Mrunal Agro" width={32} height={32} className="rounded-lg" />
           </div>
           <h1 className="text-lg font-semibold text-slate-800">{title}</h1>
         </div>

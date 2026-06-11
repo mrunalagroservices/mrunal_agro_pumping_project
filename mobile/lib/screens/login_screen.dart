@@ -53,24 +53,14 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 48),
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary600,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(Icons.water_drop, color: Colors.white, size: 36),
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 96,
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Mrunal Agro Pumping',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 12),
                 Text(
                   'Sign in to manage your farm pumps',
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 32),
                 TextField(

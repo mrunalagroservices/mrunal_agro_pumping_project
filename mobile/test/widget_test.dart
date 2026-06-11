@@ -10,7 +10,7 @@ void main() {
     await tester.pumpWidget(const MrunalAgroApp());
     await tester.pump();
 
-    expect(find.text('Mrunal Agro Pumping'), findsOneWidget);
+    expect(find.text('Sign in to manage your farm pumps'), findsOneWidget);
     expect(find.text('Sign in'), findsOneWidget);
   });
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// Matches the dashboard's Tailwind "primary" green palette.
+/// Matches the web dashboard's Tailwind palette: "primary" green +
+/// "slate" grays for text/borders/background.
 class AppColors {
   static const primary50 = Color(0xFFF0FDF4);
   static const primary100 = Color(0xFFDCFCE7);
@@ -11,31 +11,43 @@ class AppColors {
   static const primary600 = Color(0xFF16A34A);
   static const primary700 = Color(0xFF15803D);
 
-  static const offGray = Color(0xFF6B7280);
+  // Tailwind "slate" palette
+  static const slate50 = Color(0xFFF8FAFC);
+  static const slate200 = Color(0xFFE2E8F0);
+  static const slate400 = Color(0xFF94A3B8);
+  static const slate500 = Color(0xFF64748B);
+  static const slate600 = Color(0xFF475569);
+  static const slate900 = Color(0xFF0F172A);
+
+  static const offGray = slate500;
   static const offlineRed = Color(0xFFEF4444);
-  static const background = Color(0xFFF7F8FA);
-  static const cardBorder = Color(0xFFE5E7EB);
+  static const background = slate50;
+  static const cardBorder = slate200;
+  static const textPrimary = slate900;
+  static const textSecondary = slate500;
+  static const textMuted = slate400;
 }
 
 ThemeData buildAppTheme() {
-  final textTheme = GoogleFonts.plusJakartaSansTextTheme();
+  final base = ThemeData(useMaterial3: true);
 
-  return ThemeData(
-    useMaterial3: true,
+  return base.copyWith(
     scaffoldBackgroundColor: AppColors.background,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary600,
       primary: AppColors.primary600,
     ),
-    textTheme: textTheme,
-    primaryTextTheme: textTheme,
-    appBarTheme: AppBarTheme(
+    textTheme: base.textTheme.apply(
+      bodyColor: AppColors.textPrimary,
+      displayColor: AppColors.textPrimary,
+    ),
+    appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.background,
-      foregroundColor: Colors.black87,
+      foregroundColor: AppColors.textPrimary,
       elevation: 0,
       centerTitle: false,
-      titleTextStyle: GoogleFonts.plusJakartaSans(
-        color: Colors.black87,
+      titleTextStyle: TextStyle(
+        color: AppColors.textPrimary,
         fontSize: 18,
         fontWeight: FontWeight.bold,
       ),

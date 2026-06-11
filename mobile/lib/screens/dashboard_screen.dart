@@ -26,14 +26,20 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            const Text('Mrunal Agro',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            Text(
-              state.user != null ? 'Hi, ${state.user!.name}' : 'Pumping Control',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            Image.asset('assets/images/icon.png', height: 28),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Mrunal Agro',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                Text(
+                  state.user != null ? 'Hi, ${state.user!.name}' : 'Pumping Control',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+              ],
             ),
           ],
         ),
@@ -216,7 +222,7 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ],
         ),

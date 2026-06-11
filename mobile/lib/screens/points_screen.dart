@@ -34,7 +34,7 @@ class PointsScreen extends StatelessWidget {
                 'Earn rewards for keeping your farms running smoothly. '
                 'This feature is on its way.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
           ),

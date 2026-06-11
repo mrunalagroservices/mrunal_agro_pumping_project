@@ -48,9 +48,6 @@ dependencies:
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
 
-  # Custom app font
-  google_fonts: ^6.2.1
-
   # Realtime updates (actuator/device status) shared with the web dashboard
   socket_io_client: ^2.0.3+1
 
@@ -75,6 +72,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/images/icon.png
+    - assets/images/logo.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

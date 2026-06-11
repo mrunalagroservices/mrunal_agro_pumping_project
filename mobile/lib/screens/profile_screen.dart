@@ -43,7 +43,7 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     user?.role.toUpperCase() ?? '',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                   ),
                 ],
               ),
@@ -108,7 +108,7 @@ class _InfoTile extends StatelessWidget {
         if (showDivider) const Divider(height: 1),
         ListTile(
           leading: Icon(icon, color: AppColors.primary600),
-          title: Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+          title: Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
           subtitle: Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
         ),
       ],

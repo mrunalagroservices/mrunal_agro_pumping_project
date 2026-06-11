@@ -51,7 +51,7 @@ class FarmsScreen extends StatelessWidget {
                     child: Center(
                       child: Text(
                         'No farms yet. Add one from the dashboard.',
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                     ),
                   ),
