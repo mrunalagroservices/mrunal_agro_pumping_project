@@ -26,7 +26,6 @@ import {
   ApiResponse,
   Farm,
   AnalyticsOverview,
-  AnalyticsSeries,
   AnalyticsDailyRuntime,
 } from "@/lib/types";
 
@@ -51,12 +50,15 @@ function formatHours(hours: number): string {
   return formatRuntime(hours * 60);
 }
 
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
 export default function AnalyticsPage() {
   const [range, setRange] = useState<Range>("24h");
   const [farmId, setFarmId] = useState<string>("");
   const [farms, setFarms] = useState<Farm[]>([]);
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
-  const [series, setSeries] = useState<AnalyticsSeries | null>(null);
   const [dailyRuntime, setDailyRuntime] = useState<AnalyticsDailyRuntime | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -77,13 +79,11 @@ export default function AnalyticsPage() {
         dailyParams.set("farm_id", farmId);
       }
       const query = `?${params.toString()}`;
-      const [overviewRes, seriesRes, dailyRes] = await Promise.all([
+      const [overviewRes, dailyRes] = await Promise.all([
         httpClient.get<ApiResponse<AnalyticsOverview>>(`/analytics/overview${query}`),
-        httpClient.get<ApiResponse<AnalyticsSeries>>(`/analytics/series${query}`),
         httpClient.get<ApiResponse<AnalyticsDailyRuntime>>(`/analytics/daily-runtime?${dailyParams.toString()}`),
       ]);
       setOverview(overviewRes.data);
-      setSeries(seriesRes.data);
       setDailyRuntime(dailyRes.data);
     } finally {
       setLoading(false);
@@ -99,8 +99,12 @@ export default function AnalyticsPage() {
   const noSpecsConfigured =
     !!overview && overview.actuators.length > 0 && overview.actuators.every((a) => !a.specs_configured);
 
-  const chartData = series?.buckets ?? [];
-  const labelInterval = range === "24h" ? 2 : 0;
+  const chartData = (dailyRuntime?.days ?? []).map((d) => ({
+    label: d.label,
+    runtime_minutes: round2(d.total_hours * 60),
+    water_liters: d.water_liters,
+    electricity_kwh: d.electricity_kwh,
+  }));
 
   return (
     <DashboardShell breadcrumb={[{ label: "Analytics" }]}>
@@ -211,7 +215,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={labelInterval} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={0} />
                   <YAxis tick={{ fontSize: 11 }} width={32} />
                   <Tooltip formatter={(value) => [`${formatNumber(Number(value))} min`, "Runtime"]} />
                   <Bar dataKey="runtime_minutes" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
@@ -224,7 +228,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={labelInterval} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={0} />
                   <YAxis tick={{ fontSize: 11 }} width={32} />
                   <Tooltip formatter={(value) => [`${formatNumber(Number(value))} L`, "Water"]} />
                   <Bar dataKey="water_liters" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
@@ -237,7 +241,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={labelInterval} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={0} />
                   <YAxis tick={{ fontSize: 11 }} width={32} />
                   <Tooltip formatter={(value) => [`${formatNumber(Number(value), 2)} kWh`, "Electricity"]} />
                   <Bar dataKey="electricity_kwh" fill="#f59e0b" radius={[4, 4, 0, 0]} />

@@ -15,6 +15,7 @@ import {
   CalendarClock,
   Bell,
   BarChart3,
+  Map,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -28,6 +29,7 @@ const mobileMenuItems = [
   { icon: CalendarClock, label: "Schedules", href: "/schedules" },
   { icon: Bell, label: "Alerts", href: "/alerts" },
   { icon: BarChart3, label: "Analytics", href: "/analytics" },
+  { icon: Map, label: "Map", href: "/map" },
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 

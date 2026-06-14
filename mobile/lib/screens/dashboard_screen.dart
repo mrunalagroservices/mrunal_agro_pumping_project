@@ -10,7 +10,9 @@ import '../widgets/top_bar_actions.dart';
 const _defaultCenter = LatLng(18.5204, 73.8567);
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  final VoidCallback? onViewMap;
+
+  const DashboardScreen({super.key, this.onViewMap});
 
   @override
   Widget build(BuildContext context) {
@@ -54,34 +56,75 @@ class DashboardScreen extends StatelessWidget {
                 height: 240,
                 child: Stack(
                   children: [
-                    FlutterMap(
-                      options: MapOptions(
-                        initialCenter: center,
-                        initialZoom: farmsWithLocation.isNotEmpty ? 12 : 6,
+                    IgnorePointer(
+                      child: FlutterMap(
+                        options: MapOptions(
+                          initialCenter: center,
+                          initialZoom: farmsWithLocation.isNotEmpty ? 12 : 6,
+                          interactionOptions:
+                              const InteractionOptions(flags: InteractiveFlag.none),
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                            subdomains: const ['a', 'b', 'c', 'd'],
+                            userAgentPackageName: 'com.mrunalagro.mobile',
+                          ),
+                          MarkerLayer(
+                            markers: farmsWithLocation.map((farm) {
+                              final color = state.isFarmActive(farm.id)
+                                  ? AppColors.primary600
+                                  : AppColors.offGray;
+                              return Marker(
+                                point: LatLng(farm.latitude!, farm.longitude!),
+                                width: 80,
+                                height: 60,
+                                child: _FarmMarker(
+                                  color: color,
+                                  label: farm.name,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
                       ),
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.mrunalagro.mobile',
-                        ),
-                        MarkerLayer(
-                          markers: farmsWithLocation.map((farm) {
-                            final color = state.isFarmActive(farm.id)
-                                ? AppColors.primary600
-                                : AppColors.offGray;
-                            return Marker(
-                              point: LatLng(farm.latitude!, farm.longitude!),
-                              width: 80,
-                              height: 60,
-                              child: _FarmMarker(
-                                color: color,
-                                label: farm.name,
+                    ),
+                    Positioned(
+                      right: 12,
+                      bottom: 12,
+                      child: GestureDetector(
+                        onTap: onViewMap,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
                               ),
-                            );
-                          }).toList(),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.map_outlined, size: 14, color: AppColors.primary700),
+                              SizedBox(width: 4),
+                              Text(
+                                'View live map',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
                     ),
                     if (farmsWithLocation.isEmpty)
                       Positioned.fill(

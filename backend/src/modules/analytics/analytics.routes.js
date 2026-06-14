@@ -303,6 +303,8 @@ router.get('/daily-runtime', async (req, res) => {
       const dayEnd = new Date(dayStart.getTime() + DAY_MS);
 
       let totalMinutes = 0;
+      let waterLiters = 0;
+      let electricityKwh = 0;
       const actuatorsOut = [];
       for (const { act, intervals } of actuatorIntervals) {
         const sessions = [];
@@ -317,6 +319,10 @@ router.get('/daily-runtime', async (req, res) => {
         }
         if (minutes > 0) {
           totalMinutes += minutes;
+          const effectiveLpm = getEffectiveFlowRateLpm(act);
+          if (effectiveLpm != null) waterLiters += effectiveLpm * minutes;
+          const powerKw = act.power_rating_watts != null ? Number(act.power_rating_watts) / 1000 : 0;
+          electricityKwh += powerKw * (minutes / 60);
           actuatorsOut.push({ id: act.id, name: act.name, hours: round2(minutes / 60), sessions });
         }
       }
@@ -325,6 +331,8 @@ router.get('/daily-runtime', async (req, res) => {
         date: formatISTDate(dayStart),
         label: formatISTDateLabel(dayStart),
         total_hours: round2(totalMinutes / 60),
+        water_liters: round2(waterLiters),
+        electricity_kwh: round2(electricityKwh),
         actuators: actuatorsOut,
       });
     }

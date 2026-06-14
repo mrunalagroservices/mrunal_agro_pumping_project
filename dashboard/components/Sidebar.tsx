@@ -11,6 +11,7 @@ import {
   CalendarClock,
   Bell,
   BarChart3,
+  Map,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -73,6 +74,13 @@ const menuItems: MenuItem[] = [
     href: "/analytics",
     textColor: "text-violet-700",
     bgLight: "bg-violet-50",
+  },
+  {
+    icon: Map,
+    label: "Map",
+    href: "/map",
+    textColor: "text-sky-700",
+    bgLight: "bg-sky-50",
   },
   {
     icon: Settings,

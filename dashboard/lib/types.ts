@@ -226,6 +226,8 @@ export interface AnalyticsDailyRuntimeDay {
   date: string;
   label: string;
   total_hours: number;
+  water_liters: number;
+  electricity_kwh: number;
   actuators: AnalyticsDailyActuatorRuntime[];
 }
 
