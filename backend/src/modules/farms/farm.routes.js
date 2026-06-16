@@ -81,6 +81,37 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// GET /api/v1/farms/:id/diagram
+router.get('/:id/diagram', async (req, res) => {
+  try {
+    const result = await db.query(
+      'SELECT diagram FROM farms WHERE id = $1 AND organization_id = $2',
+      [req.params.id, req.user.organization_id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Not found' });
+    res.json({ success: true, data: result.rows[0].diagram || { elements: [], connections: [] } });
+  } catch (err) {
+    console.error('[Farms/diagram]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch diagram' });
+  }
+});
+
+// PUT /api/v1/farms/:id/diagram
+router.put('/:id/diagram', async (req, res) => {
+  try {
+    const result = await db.query(
+      `UPDATE farms SET diagram = $1::jsonb, updated_at = NOW()
+       WHERE id = $2 AND organization_id = $3 RETURNING diagram`,
+      [JSON.stringify(req.body), req.params.id, req.user.organization_id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Not found' });
+    res.json({ success: true, data: result.rows[0].diagram });
+  } catch (err) {
+    console.error('[Farms/diagram]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to save diagram' });
+  }
+});
+
 // DELETE /api/v1/farms/:id
 router.delete('/:id', async (req, res) => {
   try {

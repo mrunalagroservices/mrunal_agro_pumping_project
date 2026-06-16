@@ -65,6 +65,66 @@ body {
   }
 }
 
+/* Diagram canvas element markers */
+.diagram-el {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.diagram-el-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2.5px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: white;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.diagram-el-dot:hover {
+  transform: scale(1.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.36);
+}
+
+.diagram-el.selected .diagram-el-dot {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.5), 0 2px 8px rgba(0, 0, 0, 0.28);
+}
+
+.diagram-el.connecting-from .diagram-el-dot {
+  border-color: #f97316;
+  animation: diagram-ping 1s ease-in-out infinite;
+}
+
+@keyframes diagram-ping {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.16); box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.25); }
+}
+
+.diagram-el-label {
+  margin-top: 3px;
+  background: white;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #1e293b;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.15);
+  white-space: nowrap;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
 .farm-marker-label {
   position: absolute;
   top: 22px;

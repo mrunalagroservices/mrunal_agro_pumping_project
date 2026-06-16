@@ -20,6 +20,30 @@ export interface User {
   role: string;
 }
 
+export type DiagramElementType = 'well' | 'motor' | 'valve' | 'electricity_pole' | 'pipe_junction';
+export type DiagramConnectionType = 'pipe' | 'wire';
+export type DiagramTool = 'select' | DiagramElementType | DiagramConnectionType;
+
+export interface DiagramElement {
+  id: string;
+  type: DiagramElementType;
+  lat: number;
+  lng: number;
+  label?: string;
+}
+
+export interface DiagramConnection {
+  id: string;
+  from: string;
+  to: string;
+  type: DiagramConnectionType;
+}
+
+export interface FarmDiagram {
+  elements: DiagramElement[];
+  connections: DiagramConnection[];
+}
+
 export interface Farm {
   id: number;
   organization_id: number;
@@ -29,6 +53,7 @@ export interface Farm {
   longitude?: number | null;
   device_count?: string | number;
   devices?: { id: number; name: string; status: string; last_seen_at?: string | null }[];
+  diagram?: FarmDiagram | null;
   created_at: string;
   updated_at?: string;
 }
