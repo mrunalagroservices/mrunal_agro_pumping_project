@@ -44,6 +44,7 @@ export default function MapPage() {
   const [connectingFromId, setConnectingFromId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -86,19 +87,25 @@ export default function MapPage() {
     setActiveTool("select");
     setConnectingFromId(null);
     setSelectedElementId(null);
+    setSaveError(null);
   };
 
   const saveDiagram = async () => {
     if (!editingFarmId || !diagram) return;
     setSaving(true);
+    setSaveError(null);
     try {
       await httpClient.put(`/farms/${editingFarmId}/diagram`, diagram);
+      // success — exit edit mode
       setEditMode(false);
       setDiagram(null);
       setEditingFarmId(null);
       setActiveTool("select");
       setConnectingFromId(null);
       setSelectedElementId(null);
+      setSaveError(null);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Failed to save. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -194,14 +201,41 @@ export default function MapPage() {
           {editMode ? (
             /* ── Editor palette ─────────────────────────────────────────── */
             <>
-              <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
+              {/* Header */}
+              <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2 shrink-0">
                 <Pencil className="w-4 h-4 text-primary-600 shrink-0" />
                 <p className="text-sm font-semibold text-slate-800 truncate">
                   {editingFarm?.name ?? "Edit Layout"}
                 </p>
               </div>
 
-              <div className="overflow-y-auto flex-1 px-3 py-3 space-y-4">
+              {/* Save / Cancel — always visible, never scrolled away */}
+              <div className="px-3 pt-3 pb-2 shrink-0 flex gap-2">
+                <button
+                  onClick={cancelEdit}
+                  disabled={saving}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:opacity-50"
+                >
+                  <X className="w-4 h-4" /> Cancel
+                </button>
+                <button
+                  onClick={saveDiagram}
+                  disabled={saving}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors disabled:opacity-60 shadow-sm"
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? "Saving…" : "Save"}
+                </button>
+              </div>
+
+              {/* Error message */}
+              {saveError && (
+                <div className="mx-3 mb-1 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 shrink-0">
+                  {saveError}
+                </div>
+              )}
+
+              <div className="overflow-y-auto flex-1 px-3 pb-3 space-y-4">
                 {/* Select / Move */}
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">
@@ -304,23 +338,6 @@ export default function MapPage() {
                 </p>
               </div>
 
-              {/* Save / Cancel */}
-              <div className="px-3 py-3 border-t border-slate-100 flex gap-2">
-                <button
-                  onClick={cancelEdit}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-                >
-                  <X className="w-4 h-4" /> Cancel
-                </button>
-                <button
-                  onClick={saveDiagram}
-                  disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 transition-colors disabled:opacity-60"
-                >
-                  <Save className="w-4 h-4" />
-                  {saving ? "Saving…" : "Save"}
-                </button>
-              </div>
             </>
           ) : (
             /* ── Farm list ──────────────────────────────────────────────── */
