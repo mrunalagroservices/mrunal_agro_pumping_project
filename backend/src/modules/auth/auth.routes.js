@@ -7,7 +7,7 @@ const { requireAuth } = require('../../middleware/auth');
 
 function signToken(user) {
   return jwt.sign(
-    { id: user.id, organization_id: user.organization_id, role: user.role, email: user.email },
+    { id: user.id, organization_id: user.organization_id, role: user.role, email: user.email, is_admin: !!user.is_admin },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
@@ -87,7 +87,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT id, organization_id, name, email, phone, role, created_at FROM users WHERE id = $1`,
+      `SELECT id, organization_id, name, email, phone, role, is_admin, created_at FROM users WHERE id = $1`,
       [req.user.id]
     );
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'User not found' });

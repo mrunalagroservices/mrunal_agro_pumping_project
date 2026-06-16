@@ -7,6 +7,7 @@ import 'dashboard_screen.dart';
 import 'farms_screen.dart';
 import 'map_screen.dart';
 import 'schedules_screen.dart';
+import 'shop_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -17,8 +18,6 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
-
-  static const _mapTabIndex = 4;
 
   @override
   void initState() {
@@ -34,11 +33,16 @@ class _MainShellState extends State<MainShell> {
     final unresolvedAlerts = state.alerts.where((a) => !a.isResolved).length;
 
     final screens = [
-      DashboardScreen(onViewMap: () => setState(() => _selectedIndex = _mapTabIndex)),
+      DashboardScreen(
+        onViewMap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const MapScreen()),
+        ),
+      ),
       const FarmsScreen(),
       const AlertsScreen(),
       const SchedulesScreen(),
-      const MapScreen(),
+      const ShopScreen(),
     ];
 
     return Scaffold(
@@ -81,9 +85,9 @@ class _MainShellState extends State<MainShell> {
             label: 'Schedules',
           ),
           const NavigationDestination(
-            icon: Icon(Icons.map_outlined),
-            selectedIcon: Icon(Icons.map, color: AppColors.primary700),
-            label: 'Map',
+            icon: Icon(Icons.storefront_outlined),
+            selectedIcon: Icon(Icons.storefront, color: AppColors.primary700),
+            label: 'Shop',
           ),
         ],
       ),

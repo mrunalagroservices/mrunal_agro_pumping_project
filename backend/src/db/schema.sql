@@ -19,6 +19,7 @@ CREATE TABLE users (
   password_hash   VARCHAR(255) NOT NULL,
   phone           VARCHAR(20),
   role            VARCHAR(20) NOT NULL DEFAULT 'owner', -- owner, operator, viewer
+  is_admin        BOOLEAN NOT NULL DEFAULT false,       -- platform-wide admin flag
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

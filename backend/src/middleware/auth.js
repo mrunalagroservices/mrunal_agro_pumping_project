@@ -16,6 +16,13 @@ function requireAuth(req, res, next) {
   }
 }
 
+function requireAdmin(req, res, next) {
+  if (!req.user?.is_admin) {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
+  next();
+}
+
 function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
@@ -43,4 +50,4 @@ async function requireDeviceApiKey(req, res, next) {
   }
 }
 
-module.exports = { requireAuth, requireRole, requireDeviceApiKey };
+module.exports = { requireAuth, requireRole, requireAdmin, requireDeviceApiKey };
