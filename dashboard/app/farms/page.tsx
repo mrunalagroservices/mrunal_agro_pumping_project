@@ -19,20 +19,50 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Zap,
+  ZapOff,
+  Bell,
+  BellOff,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldOff,
+  Settings2,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import Modal from "@/components/Modal";
 import { httpClient } from "@/lib/api";
 import { socketClient } from "@/lib/socket";
-import { ApiResponse, Farm, Device } from "@/lib/types";
+import { ApiResponse, Farm, Device, Actuator } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
+
+type Tab = "farms" | "electricity" | "antitheft";
+
+function timeSince(dateStr: string | null | undefined): string {
+  if (!dateStr) return "Never seen";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
 
 export default function FarmsPage() {
   const { user, isAuthenticated } = useAuth();
 
+  const [tab, setTab] = useState<Tab>("farms");
   const [farms, setFarms] = useState<Farm[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
+  const [actuators, setActuators] = useState<Actuator[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // electricity tab — notification prefs (device IDs with notify enabled)
+  const [notifyEnabled, setNotifyEnabled] = useState<Set<number>>(new Set());
+
+  // anti-theft tab — per-actuator config
+  const [antitheftEnabled, setAntitheftEnabled] = useState<Set<number>>(new Set());
+  const [currentThresholds, setCurrentThresholds] = useState<Map<number, string>>(new Map());
 
   // farm CRUD
   const [showFarmModal, setShowFarmModal] = useState(false);
@@ -64,12 +94,14 @@ export default function FarmsPage() {
   async function loadAll() {
     setLoading(true);
     try {
-      const [farmsRes, devicesRes] = await Promise.all([
+      const [farmsRes, devicesRes, actuatorsRes] = await Promise.all([
         httpClient.get<ApiResponse<Farm[]>>("/farms"),
         httpClient.get<ApiResponse<Device[]>>("/devices"),
+        httpClient.get<ApiResponse<Actuator[]>>("/actuators"),
       ]);
       setFarms(farmsRes.data);
       setDevices(devicesRes.data);
+      setActuators(actuatorsRes.data);
     } finally {
       setLoading(false);
     }
@@ -93,6 +125,36 @@ export default function FarmsPage() {
     socketClient.on("device-status", handler);
     return () => socketClient.off("device-status", handler);
   }, [isAuthenticated]);
+
+  // ── group helpers ──────────────────────────────────────────────────────────
+  const devicesByFarm = new Map<number, Device[]>();
+  const unassigned: Device[] = [];
+  for (const d of devices) {
+    if (d.farm_id) {
+      const list = devicesByFarm.get(d.farm_id) ?? [];
+      list.push(d);
+      devicesByFarm.set(d.farm_id, list);
+    } else {
+      unassigned.push(d);
+    }
+  }
+
+  const actuatorsByFarm = new Map<number, Actuator[]>();
+  for (const a of actuators) {
+    if (a.farm_id) {
+      const list = actuatorsByFarm.get(a.farm_id) ?? [];
+      list.push(a);
+      actuatorsByFarm.set(a.farm_id, list);
+    }
+  }
+
+  function toggleCollapse(farmId: number) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      next.has(farmId) ? next.delete(farmId) : next.add(farmId);
+      return next;
+    });
+  }
 
   // ── farm helpers ────────────────────────────────────────────────────────────
   function resetFarmForm() {
@@ -168,137 +230,203 @@ export default function FarmsPage() {
     setDeviceDefaultFarmId(null);
   }
 
-  // ── group devices ───────────────────────────────────────────────────────────
-  const devicesByFarm = new Map<number, Device[]>();
-  const unassigned: Device[] = [];
-  for (const d of devices) {
-    if (d.farm_id) {
-      const list = devicesByFarm.get(d.farm_id) ?? [];
-      list.push(d);
-      devicesByFarm.set(d.farm_id, list);
-    } else {
-      unassigned.push(d);
-    }
-  }
-
-  function toggleCollapse(farmId: number) {
-    setCollapsed((prev) => {
+  // ── tab helpers ─────────────────────────────────────────────────────────────
+  function toggleNotify(deviceId: number) {
+    setNotifyEnabled((prev) => {
       const next = new Set(prev);
-      next.has(farmId) ? next.delete(farmId) : next.add(farmId);
+      next.has(deviceId) ? next.delete(deviceId) : next.add(deviceId);
       return next;
     });
   }
 
+  function toggleAntitheft(actuatorId: number) {
+    setAntitheftEnabled((prev) => {
+      const next = new Set(prev);
+      next.has(actuatorId) ? next.delete(actuatorId) : next.add(actuatorId);
+      return next;
+    });
+  }
+
+  function setThreshold(actuatorId: number, value: string) {
+    setCurrentThresholds((prev) => {
+      const next = new Map(prev);
+      next.set(actuatorId, value);
+      return next;
+    });
+  }
+
+  // ── electricity tab stats ─────────────────────────────────────────────────
+  const onlineCount = devices.filter((d) => d.status === "online").length;
+  const offlineCount = devices.length - onlineCount;
+
   return (
     <DashboardShell breadcrumb={[{ label: "Farms & Devices" }]}>
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-slate-500">Farms and their connected ESP32 gateways</p>
-        <div className="flex gap-2">
+      {/* ── Tab bar ── */}
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+        <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
           <button
-            onClick={() => openAddDevice()}
-            className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+            onClick={() => setTab("farms")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              tab === "farms" ? "bg-white text-primary-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            }`}
           >
-            <Cpu className="w-4 h-4" /> Add device
+            <Cpu className="w-4 h-4" />
+            Farms & Devices
           </button>
           <button
-            onClick={() => { resetFarmForm(); setShowFarmModal(true); }}
-            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+            onClick={() => setTab("electricity")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              tab === "electricity" ? "bg-white text-amber-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            }`}
           >
-            <Plus className="w-4 h-4" /> Add farm
+            <Zap className="w-4 h-4" />
+            Electricity
+            {onlineCount > 0 && tab !== "electricity" && (
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            )}
+          </button>
+          <button
+            onClick={() => setTab("antitheft")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              tab === "antitheft" ? "bg-white text-red-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <ShieldAlert className="w-4 h-4" />
+            Anti-Theft
           </button>
         </div>
+
+        {/* Action buttons — only on farms tab */}
+        {tab === "farms" && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => openAddDevice()}
+              className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+            >
+              <Cpu className="w-4 h-4" /> Add device
+            </button>
+            <button
+              onClick={() => { resetFarmForm(); setShowFarmModal(true); }}
+              className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Add farm
+            </button>
+          </div>
+        )}
       </div>
 
       {loading ? (
         <p className="text-sm text-slate-500">Loading…</p>
-      ) : farms.length === 0 && unassigned.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
-          <p className="text-slate-500 text-sm">No farms yet. Add your first farm to get started.</p>
-        </div>
       ) : (
-        <div className="space-y-4">
-          {/* ── Farm sections ── */}
-          {farms.map((farm) => {
-            const farmDevices = devicesByFarm.get(farm.id) ?? [];
-            const isCollapsed = collapsed.has(farm.id);
-            return (
-              <div key={farm.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                {/* Farm header */}
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
-                  <button
-                    onClick={() => toggleCollapse(farm.id)}
-                    className="text-slate-400 hover:text-slate-600 shrink-0"
-                  >
-                    {isCollapsed
-                      ? <ChevronRight className="w-4 h-4" />
-                      : <ChevronDown className="w-4 h-4" />}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-800 truncate">{farm.name}</h3>
-                    {farm.location && (
-                      <p className="flex items-center gap-1 text-xs text-slate-500 mt-0.5 truncate">
-                        <MapPin className="w-3 h-3 shrink-0" /> {farm.location}
-                      </p>
-                    )}
-                  </div>
-                  <span className="flex items-center gap-1 text-xs text-slate-500 shrink-0">
-                    <Cpu className="w-3.5 h-3.5" />
-                    {farmDevices.length} device{farmDevices.length !== 1 ? "s" : ""}
-                  </span>
-                  {/* kebab menu */}
-                  <div className="relative shrink-0">
-                    <button
-                      onClick={() => setOpenMenuId((id) => (id === farm.id ? null : farm.id))}
-                      className="text-slate-400 hover:text-slate-600 p-1 -m-1 rounded-lg"
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
-                    {openMenuId === farm.id && (
-                      <>
-                        <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                        <div className="absolute right-0 top-8 z-20 w-32 bg-white rounded-lg border border-slate-200 shadow-lg py-1">
-                          <button
-                            onClick={() => { setEditFarm(farm); setOpenMenuId(null); }}
-                            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-                          >
-                            <Pencil className="w-3.5 h-3.5" /> Edit
-                          </button>
-                          <button
-                            onClick={() => { setOpenMenuId(null); handleDeleteFarm(farm.id); }}
-                            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" /> Delete
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
+        <>
+          {/* ════════════════════════════════════════════════════════════
+              TAB 1 — Farms & Devices
+          ════════════════════════════════════════════════════════════ */}
+          {tab === "farms" && (
+            <>
+              {farms.length === 0 && unassigned.length === 0 ? (
+                <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+                  <p className="text-slate-500 text-sm">No farms yet. Add your first farm to get started.</p>
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  {farms.map((farm) => {
+                    const farmDevices = devicesByFarm.get(farm.id) ?? [];
+                    const isCollapsed = collapsed.has(farm.id);
+                    return (
+                      <div key={farm.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
+                          <button onClick={() => toggleCollapse(farm.id)} className="text-slate-400 hover:text-slate-600 shrink-0">
+                            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-slate-800 truncate">{farm.name}</h3>
+                            {farm.location && (
+                              <p className="flex items-center gap-1 text-xs text-slate-500 mt-0.5 truncate">
+                                <MapPin className="w-3 h-3 shrink-0" /> {farm.location}
+                              </p>
+                            )}
+                          </div>
+                          <span className="flex items-center gap-1 text-xs text-slate-500 shrink-0">
+                            <Cpu className="w-3.5 h-3.5" />
+                            {farmDevices.length} device{farmDevices.length !== 1 ? "s" : ""}
+                          </span>
+                          <div className="relative shrink-0">
+                            <button onClick={() => setOpenMenuId((id) => (id === farm.id ? null : farm.id))}
+                              className="text-slate-400 hover:text-slate-600 p-1 -m-1 rounded-lg">
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                            {openMenuId === farm.id && (
+                              <>
+                                <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
+                                <div className="absolute right-0 top-8 z-20 w-32 bg-white rounded-lg border border-slate-200 shadow-lg py-1">
+                                  <button onClick={() => { setEditFarm(farm); setOpenMenuId(null); }}
+                                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">
+                                    <Pencil className="w-3.5 h-3.5" /> Edit
+                                  </button>
+                                  <button onClick={() => { setOpenMenuId(null); handleDeleteFarm(farm.id); }}
+                                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
+                                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {!isCollapsed && (
+                          <div className="px-5 py-4">
+                            {farmDevices.length === 0 ? (
+                              <p className="text-sm text-slate-400 italic mb-3">No devices assigned to this farm yet.</p>
+                            ) : (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+                                {farmDevices.map((d) => (
+                                  <Link key={d.id} href={`/devices/${d.id}`}
+                                    className="flex items-start justify-between p-3 rounded-lg border border-slate-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors">
+                                    <div className="min-w-0">
+                                      <p className="font-medium text-slate-800 text-sm truncate">{d.name}</p>
+                                      <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
+                                        <span className="flex items-center gap-1"><Gauge className="w-3.5 h-3.5 text-sky-500" />{d.sensor_count ?? 0}</span>
+                                        <span className="flex items-center gap-1"><Power className="w-3.5 h-3.5 text-primary-500" />{d.actuator_count ?? 0}</span>
+                                      </div>
+                                    </div>
+                                    {d.status === "online" ? (
+                                      <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 shrink-0">
+                                        <Wifi className="w-3.5 h-3.5" /> Online
+                                      </span>
+                                    ) : (
+                                      <span className="flex items-center gap-1 text-xs font-medium text-slate-400 shrink-0">
+                                        <WifiOff className="w-3.5 h-3.5" /> Offline
+                                      </span>
+                                    )}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                            <button onClick={() => openAddDevice(farm.id)}
+                              className="flex items-center gap-1.5 text-xs font-medium text-primary-700 hover:text-primary-800 hover:bg-primary-50 px-3 py-1.5 rounded-lg border border-dashed border-primary-300 transition-colors">
+                              <Plus className="w-3.5 h-3.5" /> Add device to this farm
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
 
-                {/* Devices under this farm */}
-                {!isCollapsed && (
-                  <div className="px-5 py-4">
-                    {farmDevices.length === 0 ? (
-                      <p className="text-sm text-slate-400 italic mb-3">No devices assigned to this farm yet.</p>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
-                        {farmDevices.map((d) => (
-                          <Link
-                            key={d.id}
-                            href={`/devices/${d.id}`}
-                            className="flex items-start justify-between p-3 rounded-lg border border-slate-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors"
-                          >
+                  {unassigned.length > 0 && (
+                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                      <div className="px-5 py-4 border-b border-slate-100">
+                        <h3 className="font-semibold text-slate-600 text-sm">Unassigned devices</h3>
+                        <p className="text-xs text-slate-400 mt-0.5">Not linked to any farm</p>
+                      </div>
+                      <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {unassigned.map((d) => (
+                          <Link key={d.id} href={`/devices/${d.id}`}
+                            className="flex items-start justify-between p-3 rounded-lg border border-slate-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors">
                             <div className="min-w-0">
                               <p className="font-medium text-slate-800 text-sm truncate">{d.name}</p>
                               <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
-                                <span className="flex items-center gap-1">
-                                  <Gauge className="w-3.5 h-3.5 text-sky-500" />
-                                  {d.sensor_count ?? 0}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Power className="w-3.5 h-3.5 text-primary-500" />
-                                  {d.actuator_count ?? 0}
-                                </span>
+                                <span className="flex items-center gap-1"><Gauge className="w-3.5 h-3.5 text-sky-500" />{d.sensor_count ?? 0}</span>
+                                <span className="flex items-center gap-1"><Power className="w-3.5 h-3.5 text-primary-500" />{d.actuator_count ?? 0}</span>
                               </div>
                             </div>
                             {d.status === "online" ? (
@@ -313,61 +441,299 @@ export default function FarmsPage() {
                           </Link>
                         ))}
                       </div>
-                    )}
-                    <button
-                      onClick={() => openAddDevice(farm.id)}
-                      className="flex items-center gap-1.5 text-xs font-medium text-primary-700 hover:text-primary-800 hover:bg-primary-50 px-3 py-1.5 rounded-lg border border-dashed border-primary-300 transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> Add device to this farm
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {/* ── Unassigned devices ── */}
-          {unassigned.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-100">
-                <h3 className="font-semibold text-slate-600 text-sm">Unassigned devices</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Not linked to any farm</p>
-              </div>
-              <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {unassigned.map((d) => (
-                  <Link
-                    key={d.id}
-                    href={`/devices/${d.id}`}
-                    className="flex items-start justify-between p-3 rounded-lg border border-slate-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-medium text-slate-800 text-sm truncate">{d.name}</p>
-                      <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <Gauge className="w-3.5 h-3.5 text-sky-500" />
-                          {d.sensor_count ?? 0}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Power className="w-3.5 h-3.5 text-primary-500" />
-                          {d.actuator_count ?? 0}
-                        </span>
-                      </div>
                     </div>
-                    {d.status === "online" ? (
-                      <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 shrink-0">
-                        <Wifi className="w-3.5 h-3.5" /> Online
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-xs font-medium text-slate-400 shrink-0">
-                        <WifiOff className="w-3.5 h-3.5" /> Offline
-                      </span>
-                    )}
-                  </Link>
-                ))}
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════
+              TAB 2 — Electricity Monitoring
+          ════════════════════════════════════════════════════════════ */}
+          {tab === "electricity" && (
+            <div className="space-y-5">
+              {/* Summary bar */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-5 py-4 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                    <Zap className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-emerald-700">{onlineCount}</p>
+                    <p className="text-xs text-emerald-600 font-medium">Farm{onlineCount !== 1 ? "s" : ""} with power</p>
+                  </div>
+                </div>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                    <ZapOff className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-500">{offlineCount}</p>
+                    <p className="text-xs text-slate-500 font-medium">No power / offline</p>
+                  </div>
+                </div>
               </div>
+
+              {/* How it works banner */}
+              <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 flex items-start gap-3">
+                <Zap className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-700">
+                  Electricity status is detected automatically — when your ESP32 device is powered on, it shows <strong>Power ON</strong>. When electricity cuts, the device goes offline within ~60 seconds.
+                </p>
+              </div>
+
+              {/* Per-farm electricity status */}
+              {farms.length === 0 ? (
+                <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+                  <ZapOff className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">No farms added yet.</p>
+                </div>
+              ) : (
+                farms.map((farm) => {
+                  const farmDevices = devicesByFarm.get(farm.id) ?? [];
+                  return (
+                    <div key={farm.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                      <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50">
+                        <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-slate-700 text-sm truncate">{farm.name}</p>
+                          {farm.location && <p className="text-xs text-slate-400 truncate">{farm.location}</p>}
+                        </div>
+                        <span className="text-xs text-slate-400">{farmDevices.length} device{farmDevices.length !== 1 ? "s" : ""}</span>
+                      </div>
+
+                      {farmDevices.length === 0 ? (
+                        <p className="text-sm text-slate-400 italic px-5 py-4">No devices on this farm.</p>
+                      ) : (
+                        <div className="divide-y divide-slate-100">
+                          {farmDevices.map((d) => {
+                            const hasPower = d.status === "online";
+                            const notifyOn = notifyEnabled.has(d.id);
+                            return (
+                              <div key={d.id} className="flex items-center gap-4 px-5 py-4">
+                                {/* Power status indicator */}
+                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${hasPower ? "bg-emerald-50" : "bg-slate-100"}`}>
+                                  {hasPower
+                                    ? <Zap className="w-5 h-5 text-emerald-600" />
+                                    : <ZapOff className="w-5 h-5 text-slate-400" />}
+                                </div>
+
+                                {/* Device info */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-slate-800 text-sm truncate">{d.name}</p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${hasPower ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                                      {hasPower ? "⚡ Power ON" : "No Power"}
+                                    </span>
+                                    <span className="text-xs text-slate-400">{timeSince(d.last_seen_at)}</span>
+                                  </div>
+                                </div>
+
+                                {/* Notify toggle */}
+                                <div className="flex flex-col items-end gap-1 shrink-0">
+                                  <button
+                                    onClick={() => toggleNotify(d.id)}
+                                    title={notifyOn ? "Disable power-restore notification" : "Notify when electricity comes back"}
+                                    className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
+                                      notifyOn
+                                        ? "bg-amber-50 border-amber-200 text-amber-700"
+                                        : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
+                                    }`}
+                                  >
+                                    {notifyOn
+                                      ? <><Bell className="w-3.5 h-3.5" /> Notify ON</>
+                                      : <><BellOff className="w-3.5 h-3.5" /> Notify OFF</>}
+                                  </button>
+                                  <p className="text-[10px] text-slate-400">Alert when power returns</p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+
+              {unassigned.length > 0 && (
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
+                    <p className="font-semibold text-slate-500 text-sm">Unassigned devices</p>
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    {unassigned.map((d) => {
+                      const hasPower = d.status === "online";
+                      const notifyOn = notifyEnabled.has(d.id);
+                      return (
+                        <div key={d.id} className="flex items-center gap-4 px-5 py-4">
+                          <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${hasPower ? "bg-emerald-50" : "bg-slate-100"}`}>
+                            {hasPower ? <Zap className="w-5 h-5 text-emerald-600" /> : <ZapOff className="w-5 h-5 text-slate-400" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-800 text-sm truncate">{d.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${hasPower ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                                {hasPower ? "⚡ Power ON" : "No Power"}
+                              </span>
+                              <span className="text-xs text-slate-400">{timeSince(d.last_seen_at)}</span>
+                            </div>
+                          </div>
+                          <button onClick={() => toggleNotify(d.id)}
+                            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
+                              notifyOn ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
+                            }`}>
+                            {notifyOn ? <><Bell className="w-3.5 h-3.5" /> Notify ON</> : <><BellOff className="w-3.5 h-3.5" /> Notify OFF</>}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
-        </div>
+
+          {/* ════════════════════════════════════════════════════════════
+              TAB 3 — Anti-Theft
+          ════════════════════════════════════════════════════════════ */}
+          {tab === "antitheft" && (
+            <div className="space-y-5">
+              {/* Hardware notice */}
+              <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-4 flex items-start gap-3">
+                <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-red-700 mb-1">Requires CT current sensor hardware</p>
+                  <p className="text-sm text-red-600">
+                    Anti-theft works by monitoring the <strong>actual current</strong> drawn by your motor. If the motor is commanded ON but current drops to 0A, it means the wire was cut — the app will alert you immediately.
+                    You need a <strong>SCT-013 current transformer</strong> clipped around the motor wire, connected to your ESP32.
+                  </p>
+                </div>
+              </div>
+
+              {/* How it detects theft */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-white border border-slate-200 rounded-xl px-4 py-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-700">Normal operation</p>
+                  </div>
+                  <p className="text-xs text-slate-500">Motor is ON → current is high (e.g. 8A). All normal, no alert.</p>
+                </div>
+                <div className="bg-white border border-red-100 rounded-xl px-4 py-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center">
+                      <ShieldAlert className="w-4 h-4 text-red-500" />
+                    </div>
+                    <p className="text-sm font-semibold text-red-700">Wire cut detected</p>
+                  </div>
+                  <p className="text-xs text-slate-500">Motor is ON but current drops to 0A → wire forcefully cut → instant alert sent.</p>
+                </div>
+              </div>
+
+              {/* Per-farm motors */}
+              {actuators.filter((a) => a.farm_id).length === 0 ? (
+                <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+                  <ShieldOff className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">No motors/actuators found.</p>
+                  <p className="text-xs text-slate-400 mt-1">Add actuators to your devices first.</p>
+                </div>
+              ) : (
+                farms.map((farm) => {
+                  const farmActuators = actuatorsByFarm.get(farm.id) ?? [];
+                  if (farmActuators.length === 0) return null;
+                  return (
+                    <div key={farm.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                      <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50">
+                        <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-slate-700 text-sm truncate">{farm.name}</p>
+                          {farm.location && <p className="text-xs text-slate-400 truncate">{farm.location}</p>}
+                        </div>
+                        <span className="text-xs text-slate-400">{farmActuators.length} motor{farmActuators.length !== 1 ? "s" : ""}</span>
+                      </div>
+
+                      <div className="divide-y divide-slate-100">
+                        {farmActuators.map((a) => {
+                          const enabled = antitheftEnabled.has(a.id);
+                          const threshold = currentThresholds.get(a.id) ?? "";
+                          const isRunning = a.current_state === "on";
+                          return (
+                            <div key={a.id} className="px-5 py-4">
+                              <div className="flex items-center gap-4">
+                                {/* Motor icon */}
+                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${enabled ? "bg-red-50" : "bg-slate-100"}`}>
+                                  {enabled
+                                    ? <ShieldCheck className="w-5 h-5 text-red-500" />
+                                    : <ShieldOff className="w-5 h-5 text-slate-400" />}
+                                </div>
+
+                                {/* Motor info */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium text-slate-800 text-sm truncate">{a.name}</p>
+                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isRunning ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                                      {isRunning ? "Running" : "Off"}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-slate-400 mt-0.5 capitalize">{a.actuator_type}</p>
+                                </div>
+
+                                {/* Enable toggle */}
+                                <button
+                                  onClick={() => toggleAntitheft(a.id)}
+                                  className={`shrink-0 w-12 h-6 rounded-full transition-colors relative ${enabled ? "bg-red-500" : "bg-slate-200"}`}
+                                >
+                                  <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${enabled ? "translate-x-7" : "translate-x-1"}`} />
+                                </button>
+                              </div>
+
+                              {/* Expanded config when enabled */}
+                              {enabled && (
+                                <div className="mt-4 ml-15 pl-15 border-l-2 border-red-100 ml-[60px] pl-4 space-y-3">
+                                  <div className="flex items-center gap-3">
+                                    <Settings2 className="w-4 h-4 text-red-400 shrink-0" />
+                                    <label className="text-xs font-medium text-slate-600 shrink-0">Expected current (Amperes)</label>
+                                    <input
+                                      type="number"
+                                      step="0.1"
+                                      min="0.1"
+                                      value={threshold}
+                                      onChange={(e) => setThreshold(a.id, e.target.value)}
+                                      placeholder="e.g. 8.0"
+                                      className="w-28 px-2.5 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    />
+                                    <span className="text-xs text-slate-400">A</span>
+                                  </div>
+                                  <div className={`flex items-center gap-2 text-xs rounded-lg px-3 py-2 ${
+                                    !threshold
+                                      ? "bg-amber-50 text-amber-700 border border-amber-100"
+                                      : "bg-red-50 text-red-700 border border-red-100"
+                                  }`}>
+                                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                                    {!threshold
+                                      ? "Set expected current above to activate monitoring"
+                                      : `Alert will fire if current drops below ${Number(threshold) * 0.5}A while motor is ON`}
+                                  </div>
+                                  <p className="text-[11px] text-slate-400">
+                                    Requires CT sensor (SCT-013) connected to ESP32 analog pin. Firmware update needed.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {/* ── Add Farm modal ── */}
