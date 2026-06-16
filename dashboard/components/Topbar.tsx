@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   Warehouse,
   Zap,
-  CalendarClock,
   Bell,
   BarChart3,
   Map,
@@ -23,8 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const mobileMenuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
   { icon: Warehouse, label: "Farms & Devices", href: "/farms" },
-  { icon: Zap, label: "Automation", href: "/automation" },
-  { icon: CalendarClock, label: "Schedules", href: "/schedules" },
+  { icon: Zap, label: "Automation & Schedules", href: "/automation" },
   { icon: Bell, label: "Alerts", href: "/alerts" },
   { icon: BarChart3, label: "Analytics", href: "/analytics" },
   { icon: Map, label: "Map", href: "/map" },

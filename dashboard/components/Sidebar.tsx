@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Warehouse,
   Zap,
-  CalendarClock,
   Bell,
   BarChart3,
   Map,
@@ -41,17 +40,10 @@ const menuItems: MenuItem[] = [
   },
   {
     icon: Zap,
-    label: "Automation",
+    label: "Automation & Schedules",
     href: "/automation",
     textColor: "text-amber-700",
     bgLight: "bg-amber-50",
-  },
-  {
-    icon: CalendarClock,
-    label: "Schedules",
-    href: "/schedules",
-    textColor: "text-primary-700",
-    bgLight: "bg-primary-50",
   },
   {
     icon: Bell,
