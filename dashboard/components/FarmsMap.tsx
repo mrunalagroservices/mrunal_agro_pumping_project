@@ -92,6 +92,7 @@ export default function FarmsMap({ farms, activeFarmIds, selectedFarmId, onSelec
           <div class="farm-marker ${isActive ? "farm-marker-active" : ""}">
             ${isActive ? '<span class="farm-marker-pulse"></span>' : ""}
             <span class="farm-marker-dot"></span>
+            <span class="farm-marker-label">${escapeHtml(farm.name)}</span>
           </div>
         `;
       }

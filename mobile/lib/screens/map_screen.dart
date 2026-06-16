@@ -149,11 +149,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     final selected = _selectedFarmId == farm.id;
                     return Marker(
                       point: LatLng(farm.latitude!, farm.longitude!),
-                      width: 70,
-                      height: 70,
+                      width: 90,
+                      height: 90,
                       child: GestureDetector(
                         onTap: () => _selectFarm(farm),
-                        child: _LiveFarmMarker(active: isActive, selected: selected),
+                        child: _LiveFarmMarker(active: isActive, selected: selected, label: farm.name),
                       ),
                     );
                   }).toList(),
@@ -250,8 +250,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 class _LiveFarmMarker extends StatefulWidget {
   final bool active;
   final bool selected;
+  final String label;
 
-  const _LiveFarmMarker({required this.active, required this.selected});
+  const _LiveFarmMarker({required this.active, required this.selected, required this.label});
 
   @override
   State<_LiveFarmMarker> createState() => _LiveFarmMarkerState();
@@ -278,40 +279,69 @@ class _LiveFarmMarkerState extends State<_LiveFarmMarker> with SingleTickerProvi
     final color = widget.active ? AppColors.primary600 : AppColors.slate400;
     final dotSize = widget.selected ? 22.0 : 18.0;
 
-    return Center(
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (widget.active)
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                final t = _controller.value;
-                return Container(
-                  width: 18 + 36 * t,
-                  height: 18 + 36 * t,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary600.withValues(alpha: (1 - t) * 0.35),
-                    shape: BoxShape.circle,
-                  ),
-                );
-              },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            if (widget.active)
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  final t = _controller.value;
+                  return Container(
+                    width: 18 + 36 * t,
+                    height: 18 + 36 * t,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary600.withValues(alpha: (1 - t) * 0.35),
+                      shape: BoxShape.circle,
+                    ),
+                  );
+                },
+              ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: dotSize,
+              height: dotSize,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 3),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 4),
+                ],
+              ),
             ),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            width: dotSize,
-            height: dotSize,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 4),
-              ],
+          ],
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Text(
+            widget.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: widget.selected ? AppColors.primary700 : const Color(0xFF1e293b),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
