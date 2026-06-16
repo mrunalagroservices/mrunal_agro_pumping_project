@@ -441,7 +441,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                       {/* Slide toggle */}
                       <button
                         onClick={() => toggleAntitheft(a.id)}
-                        className={`shrink-0 w-12 h-6 rounded-full transition-colors relative ${enabled ? "bg-red-500" : "bg-slate-200"}`}
+                        className={`shrink-0 w-12 h-6 rounded-full transition-colors relative focus:outline-none ${enabled ? "bg-red-500" : "bg-slate-200"}`}
                       >
                         <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${enabled ? "translate-x-7" : "translate-x-1"}`} />
                       </button>
