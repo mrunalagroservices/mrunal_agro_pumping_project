@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Warehouse,
-  Cpu,
   Zap,
   CalendarClock,
   Bell,
@@ -35,17 +34,10 @@ const menuItems: MenuItem[] = [
   },
   {
     icon: Warehouse,
-    label: "Farms",
+    label: "Farms & Devices",
     href: "/farms",
     textColor: "text-emerald-700",
     bgLight: "bg-emerald-50",
-  },
-  {
-    icon: Cpu,
-    label: "Devices",
-    href: "/devices",
-    textColor: "text-sky-700",
-    bgLight: "bg-sky-50",
   },
   {
     icon: Zap,

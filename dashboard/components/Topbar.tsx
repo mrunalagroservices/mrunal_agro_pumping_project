@@ -10,7 +10,6 @@ import {
   ChevronRight,
   LayoutDashboard,
   Warehouse,
-  Cpu,
   Zap,
   CalendarClock,
   Bell,
@@ -23,8 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const mobileMenuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-  { icon: Warehouse, label: "Farms", href: "/farms" },
-  { icon: Cpu, label: "Devices", href: "/devices" },
+  { icon: Warehouse, label: "Farms & Devices", href: "/farms" },
   { icon: Zap, label: "Automation", href: "/automation" },
   { icon: CalendarClock, label: "Schedules", href: "/schedules" },
   { icon: Bell, label: "Alerts", href: "/alerts" },
