@@ -49,8 +49,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(res.data);
         socketClient.connect(token);
       })
-      .catch(() => {
-        httpClient.clearToken();
+      .catch((err: unknown) => {
+        // 401 (expired/invalid token) is already handled inside httpClient —
+        // it clears the token and redirects to /login automatically.
+        // For any other error (server 500, network timeout, cold-start hiccup)
+        // we keep the token so the user is not logged out unexpectedly.
+        const msg = err instanceof Error ? err.message : "";
+        if (msg === "Unauthorized") {
+          httpClient.clearToken();
+        }
+        // else: leave the token intact; the user stays "logged in" visually
+        // and can retry by refreshing again once the server is ready.
       })
       .finally(() => setIsLoading(false));
   }, []);
