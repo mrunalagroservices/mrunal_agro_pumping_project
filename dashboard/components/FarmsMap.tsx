@@ -10,18 +10,11 @@ import {
   DiagramElementType,
   DiagramTool,
 } from "@/lib/types";
+import { ELEMENT_CFG } from "@/lib/diagramConfig";
 
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DEFAULT_CENTER: [number, number] = [73.8567, 18.5204];
 const CONN_SOURCE = "diagram-connections";
-
-const ELEMENT_CFG: Record<DiagramElementType, { bg: string; symbol: string; label: string }> = {
-  well:             { bg: "#0284c7", symbol: "W",  label: "Well" },
-  motor:            { bg: "#15803d", symbol: "M",  label: "Motor" },
-  valve:            { bg: "#7c3aed", symbol: "V",  label: "Valve" },
-  electricity_pole: { bg: "#d97706", symbol: "⚡", label: "Pole" },
-  pipe_junction:    { bg: "#92400e", symbol: "+",  label: "Junction" },
-};
 
 const ELEMENT_TOOLS: DiagramElementType[] = [
   "well", "motor", "valve", "electricity_pole", "pipe_junction",
@@ -280,7 +273,7 @@ export default function FarmsMap({
         // Update draggable when edit mode changes.
         marker.setDraggable(!!editMode);
 
-        // Re-render inner HTML.
+        // Re-render inner HTML (SVGs are hardcoded — safe to inject directly).
         const el = marker.getElement();
         const classes = [
           "diagram-el",
@@ -292,8 +285,8 @@ export default function FarmsMap({
 
         el.innerHTML = `
           <div class="${classes}">
-            <div class="diagram-el-dot" style="background:${cfg.bg}">
-              ${escapeHtml(cfg.symbol)}
+            <div class="diagram-el-dot" style="background:${cfg.gradient}">
+              ${cfg.svg}
             </div>
             <div class="diagram-el-label">${escapeHtml(element.label || cfg.label)}</div>
           </div>

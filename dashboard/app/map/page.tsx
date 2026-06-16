@@ -23,20 +23,12 @@ import {
   DiagramConnectionType,
   DiagramTool,
 } from "@/lib/types";
+import { ELEMENT_CFG, CONN_CFG } from "@/lib/diagramConfig";
 
-// ── Element / connection tool config ─────────────────────────────────────────
-const ELEMENT_TOOLS: { type: DiagramElementType; label: string; color: string; symbol: string }[] = [
-  { type: "well",             label: "Well",      color: "#0284c7", symbol: "W"  },
-  { type: "motor",            label: "Motor",     color: "#15803d", symbol: "M"  },
-  { type: "valve",            label: "Valve",     color: "#7c3aed", symbol: "V"  },
-  { type: "electricity_pole", label: "Elec. Pole",color: "#d97706", symbol: "⚡" },
-  { type: "pipe_junction",    label: "Junction",  color: "#92400e", symbol: "+"  },
+const ELEMENT_TOOL_TYPES: DiagramElementType[] = [
+  "well", "motor", "valve", "electricity_pole", "pipe_junction",
 ];
-
-const CONN_TOOLS: { type: DiagramConnectionType; label: string; color: string }[] = [
-  { type: "pipe", label: "Pipe",  color: "#0ea5e9" },
-  { type: "wire", label: "Wire",  color: "#f59e0b" },
-];
+const CONN_TOOL_TYPES: DiagramConnectionType[] = ["pipe", "wire"];
 
 export default function MapPage() {
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -121,7 +113,7 @@ export default function MapPage() {
   // Called by FarmsMap when user clicks on the map canvas.
   const handleMapClick = (lat: number, lng: number) => {
     if (!editMode || !diagram) return;
-    const elTypes = ELEMENT_TOOLS.map((t) => t.type) as string[];
+    const elTypes = ELEMENT_TOOL_TYPES as string[];
     if (!elTypes.includes(activeTool)) return;
     const newEl: DiagramElement = {
       id: crypto.randomUUID(),
@@ -183,7 +175,7 @@ export default function MapPage() {
     if (activeTool === "pipe" || activeTool === "wire") {
       return connectingFromId ? "Now click the destination element" : "Click the first element";
     }
-    return `Click on the map to place a ${ELEMENT_TOOLS.find((t) => t.type === activeTool)?.label}`;
+    return `Click on the map to place a ${ELEMENT_CFG[activeTool as DiagramElementType]?.label ?? activeTool}`;
   })();
 
   return (
@@ -234,26 +226,29 @@ export default function MapPage() {
                     Place element
                   </p>
                   <div className="grid grid-cols-2 gap-1.5">
-                    {ELEMENT_TOOLS.map((t) => (
-                      <button
-                        key={t.type}
-                        onClick={() => selectTool(t.type)}
-                        className={`flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-                          activeTool === t.type
-                            ? "text-white border-transparent"
-                            : "border-slate-200 text-slate-700 hover:bg-slate-50"
-                        }`}
-                        style={activeTool === t.type ? { background: t.color, borderColor: t.color } : {}}
-                      >
-                        <span
-                          className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                          style={{ background: t.color }}
+                    {ELEMENT_TOOL_TYPES.map((type) => {
+                      const cfg = ELEMENT_CFG[type];
+                      const isActive = activeTool === type;
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => selectTool(type)}
+                          className={`flex flex-col items-center gap-1.5 px-2 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${
+                            isActive
+                              ? "border-transparent shadow-md scale-105"
+                              : "border-slate-200 text-slate-700 hover:border-slate-300 hover:shadow-sm"
+                          }`}
+                          style={isActive ? { background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", borderColor: "transparent" } : {}}
                         >
-                          {t.symbol}
-                        </span>
-                        {t.label}
-                      </button>
-                    ))}
+                          <span
+                            className="w-10 h-10 rounded-full flex items-center justify-center shadow-md"
+                            style={{ background: cfg.gradient, boxShadow: isActive ? "0 0 0 3px rgba(99,102,241,0.35), 0 3px 8px rgba(0,0,0,0.2)" : undefined }}
+                            dangerouslySetInnerHTML={{ __html: cfg.svg }}
+                          />
+                          <span className={isActive ? "text-slate-800" : "text-slate-600"}>{cfg.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -263,26 +258,32 @@ export default function MapPage() {
                     Draw connection
                   </p>
                   <div className="grid grid-cols-2 gap-1.5">
-                    {CONN_TOOLS.map((t) => (
-                      <button
-                        key={t.type}
-                        onClick={() => selectTool(t.type)}
-                        className={`flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-                          activeTool === t.type
-                            ? "text-white border-transparent"
-                            : "border-slate-200 text-slate-700 hover:bg-slate-50"
-                        }`}
-                        style={activeTool === t.type ? { background: t.color, borderColor: t.color } : {}}
-                      >
-                        <span
-                          className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                          style={{ background: t.color }}
+                    {CONN_TOOL_TYPES.map((type) => {
+                      const cfg = CONN_CFG[type];
+                      const isActive = activeTool === type;
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => selectTool(type)}
+                          className={`flex flex-col items-center gap-1.5 px-2 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${
+                            isActive
+                              ? "border-transparent shadow-md scale-105"
+                              : "border-slate-200 text-slate-700 hover:border-slate-300 hover:shadow-sm"
+                          }`}
                         >
-                          {t.type === "pipe" ? "~" : "≡"}
-                        </span>
-                        {t.label}
-                      </button>
-                    ))}
+                          <span
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-md"
+                            style={{
+                              background: cfg.color,
+                              boxShadow: isActive ? `0 0 0 3px ${cfg.color}55, 0 3px 8px rgba(0,0,0,0.2)` : undefined,
+                            }}
+                          >
+                            {cfg.symbol}
+                          </span>
+                          <span className={isActive ? "text-slate-800" : "text-slate-600"}>{cfg.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
