@@ -70,6 +70,7 @@ class DashboardScreen extends StatelessWidget {
                             urlTemplate:
                                 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                             subdomains: const ['a', 'b', 'c', 'd'],
+                            retinaMode: MediaQuery.devicePixelRatioOf(context) > 1,
                             userAgentPackageName: 'com.mrunalagro.mobile',
                           ),
                           MarkerLayer(
@@ -289,29 +290,29 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(9),
               ),
-              child: Icon(icon, color: color, size: 18),
+              child: Icon(icon, color: color, size: 16),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
             Text(
               value,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 1),
             Text(
               label,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
             ),
           ],
         ),

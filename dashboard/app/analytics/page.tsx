@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={0} />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, angle: -40, textAnchor: "end" }} interval={0} height={56} />
                   <YAxis tick={{ fontSize: 11 }} width={32} />
                   <Tooltip formatter={(value) => [`${formatNumber(Number(value))} min`, "Runtime"]} />
                   <Bar dataKey="runtime_minutes" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
@@ -228,7 +228,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={0} />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, angle: -40, textAnchor: "end" }} interval={0} height={56} />
                   <YAxis tick={{ fontSize: 11 }} width={32} />
                   <Tooltip formatter={(value) => [`${formatNumber(Number(value))} L`, "Water"]} />
                   <Bar dataKey="water_liters" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
@@ -241,7 +241,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={0} />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, angle: -40, textAnchor: "end" }} interval={0} height={56} />
                   <YAxis tick={{ fontSize: 11 }} width={32} />
                   <Tooltip formatter={(value) => [`${formatNumber(Number(value), 2)} kWh`, "Electricity"]} />
                   <Bar dataKey="electricity_kwh" fill="#f59e0b" radius={[4, 4, 0, 0]} />
