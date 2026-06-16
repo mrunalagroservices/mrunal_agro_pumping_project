@@ -37,6 +37,12 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type Tab = "farms" | "electricity" | "antitheft";
 
+interface PowerEvent { event_type: "power_on" | "power_off"; created_at: string; }
+
+interface PowerWindow { on: Date; off: Date | null; }
+
+interface DayRecord { label: string; dateKey: string; windows: PowerWindow[]; totalMinutes: number; }
+
 function timeSince(dateStr: string | null | undefined): string {
   if (!dateStr) return "Never seen";
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -46,6 +52,58 @@ function timeSince(dateStr: string | null | undefined): string {
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
+}
+
+function fmtTime(d: Date): string {
+  return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+}
+
+function fmtHours(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+function buildDayRecords(events: PowerEvent[], deviceOnline: boolean): DayRecord[] {
+  // Build last 7 day buckets
+  const days: DayRecord[] = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    const label = i === 0 ? "Today" : i === 1 ? "Yesterday"
+      : d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+    days.push({ label, dateKey: key, windows: [], totalMinutes: 0 });
+  }
+
+  // Walk events in order, pairing ON→OFF
+  let onTime: Date | null = null;
+  for (const ev of events) {
+    const t = new Date(ev.created_at);
+    if (ev.event_type === "power_on") {
+      onTime = t;
+    } else if (ev.event_type === "power_off" && onTime) {
+      const dayKey = onTime.toISOString().slice(0, 10);
+      const bucket = days.find((d) => d.dateKey === dayKey);
+      if (bucket) {
+        bucket.windows.push({ on: onTime, off: t });
+        bucket.totalMinutes += Math.round((t.getTime() - onTime.getTime()) / 60000);
+      }
+      onTime = null;
+    }
+  }
+  // If still on (no trailing off), close at now if device is currently online
+  if (onTime && deviceOnline) {
+    const dayKey = onTime.toISOString().slice(0, 10);
+    const bucket = days.find((d) => d.dateKey === dayKey);
+    if (bucket) {
+      bucket.windows.push({ on: onTime, off: null });
+      bucket.totalMinutes += Math.round((now.getTime() - onTime.getTime()) / 60000);
+    }
+  }
+  return days;
 }
 
 export default function FarmsPage() {
@@ -59,6 +117,9 @@ export default function FarmsPage() {
 
   // electricity tab — notification prefs (device IDs with notify enabled)
   const [notifyEnabled, setNotifyEnabled] = useState<Set<number>>(new Set());
+  // power event history per device: deviceId → events[]
+  const [powerHistory, setPowerHistory] = useState<Map<number, PowerEvent[]>>(new Map());
+  const [historyLoading, setHistoryLoading] = useState<Set<number>>(new Set());
 
   // anti-theft tab — per-actuator config
   const [antitheftEnabled, setAntitheftEnabled] = useState<Set<number>>(new Set());
@@ -229,6 +290,40 @@ export default function FarmsPage() {
     setShowDeviceModal(false); setCreatedDevice(null); setCopied(false);
     setDeviceDefaultFarmId(null);
   }
+
+  // ── power history loading ─────────────────────────────────────────────────
+  async function loadPowerHistory(deviceIds: number[]) {
+    const missing = deviceIds.filter((id) => !powerHistory.has(id));
+    if (missing.length === 0) return;
+    setHistoryLoading((prev) => new Set([...prev, ...missing]));
+    try {
+      const results = await Promise.all(
+        missing.map((id) =>
+          httpClient.get<ApiResponse<PowerEvent[]>>(`/devices/${id}/power-events?days=7`)
+            .then((res) => ({ id, events: res.data }))
+            .catch(() => ({ id, events: [] }))
+        )
+      );
+      setPowerHistory((prev) => {
+        const next = new Map(prev);
+        for (const r of results) next.set(r.id, r.events);
+        return next;
+      });
+    } finally {
+      setHistoryLoading((prev) => {
+        const next = new Set(prev);
+        missing.forEach((id) => next.delete(id));
+        return next;
+      });
+    }
+  }
+
+  useEffect(() => {
+    if (tab === "electricity" && devices.length > 0) {
+      loadPowerHistory(devices.map((d) => d.id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, devices]);
 
   // ── tab helpers ─────────────────────────────────────────────────────────────
   function toggleNotify(deviceId: number) {
@@ -461,7 +556,7 @@ export default function FarmsPage() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-emerald-700">{onlineCount}</p>
-                    <p className="text-xs text-emerald-600 font-medium">Farm{onlineCount !== 1 ? "s" : ""} with power</p>
+                    <p className="text-xs text-emerald-600 font-medium">Device{onlineCount !== 1 ? "s" : ""} with power now</p>
                   </div>
                 </div>
                 <div className="bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 flex items-center gap-4">
@@ -475,122 +570,149 @@ export default function FarmsPage() {
                 </div>
               </div>
 
-              {/* How it works banner */}
-              <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 flex items-start gap-3">
+              {/* Battery + AC sensor explanation */}
+              <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-4 flex items-start gap-3">
                 <Zap className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-700">
-                  Electricity status is detected automatically — when your ESP32 device is powered on, it shows <strong>Power ON</strong>. When electricity cuts, the device goes offline within ~60 seconds.
-                </p>
+                <div className="text-sm text-amber-800 space-y-1">
+                  <p><strong>Battery-powered ESP32:</strong> Since your device runs 24/7 on battery, it stays online even when farm electricity is cut.</p>
+                  <p>Connect a small <strong>AC voltage detection module</strong> (or optocoupler circuit) to an ESP32 GPIO pin. When mains power is present → GPIO HIGH → ESP32 sends <code className="bg-amber-100 px-1 rounded text-xs">power_on</code>. When cut → sends <code className="bg-amber-100 px-1 rounded text-xs">power_off</code>. The timeline below is built from these events.</p>
+                </div>
               </div>
 
-              {/* Per-farm electricity status */}
-              {farms.length === 0 ? (
+              {/* Per-device power timeline */}
+              {devices.length === 0 ? (
                 <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
                   <ZapOff className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm text-slate-500">No farms added yet.</p>
+                  <p className="text-sm text-slate-500">No devices added yet.</p>
                 </div>
               ) : (
-                farms.map((farm) => {
-                  const farmDevices = devicesByFarm.get(farm.id) ?? [];
-                  return (
-                    <div key={farm.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                      <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50">
-                        <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-slate-700 text-sm truncate">{farm.name}</p>
-                          {farm.location && <p className="text-xs text-slate-400 truncate">{farm.location}</p>}
+                [...farms.map((farm) => ({ farm, devList: devicesByFarm.get(farm.id) ?? [] })),
+                 unassigned.length > 0 ? { farm: null, devList: unassigned } : null]
+                  .filter(Boolean)
+                  .map((item) => {
+                    const { farm, devList } = item!;
+                    if (devList.length === 0) return null;
+                    return (
+                      <div key={farm?.id ?? "unassigned"} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                        {/* Farm header */}
+                        <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50">
+                          <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-slate-700 text-sm truncate">
+                              {farm ? farm.name : "Unassigned devices"}
+                            </p>
+                            {farm?.location && <p className="text-xs text-slate-400 truncate">{farm.location}</p>}
+                          </div>
                         </div>
-                        <span className="text-xs text-slate-400">{farmDevices.length} device{farmDevices.length !== 1 ? "s" : ""}</span>
-                      </div>
 
-                      {farmDevices.length === 0 ? (
-                        <p className="text-sm text-slate-400 italic px-5 py-4">No devices on this farm.</p>
-                      ) : (
+                        {/* Per-device rows */}
                         <div className="divide-y divide-slate-100">
-                          {farmDevices.map((d) => {
+                          {devList.map((d) => {
                             const hasPower = d.status === "online";
                             const notifyOn = notifyEnabled.has(d.id);
+                            const events = powerHistory.get(d.id) ?? [];
+                            const isLoadingHistory = historyLoading.has(d.id);
+                            const dayRecords = buildDayRecords(events, hasPower);
+                            const hasAnyHistory = dayRecords.some((r) => r.windows.length > 0);
+
                             return (
-                              <div key={d.id} className="flex items-center gap-4 px-5 py-4">
-                                {/* Power status indicator */}
-                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${hasPower ? "bg-emerald-50" : "bg-slate-100"}`}>
-                                  {hasPower
-                                    ? <Zap className="w-5 h-5 text-emerald-600" />
-                                    : <ZapOff className="w-5 h-5 text-slate-400" />}
-                                </div>
-
-                                {/* Device info */}
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-slate-800 text-sm truncate">{d.name}</p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${hasPower ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                                      {hasPower ? "⚡ Power ON" : "No Power"}
-                                    </span>
-                                    <span className="text-xs text-slate-400">{timeSince(d.last_seen_at)}</span>
+                              <div key={d.id} className="px-5 py-4">
+                                {/* Device status row */}
+                                <div className="flex items-center gap-3 mb-4">
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${hasPower ? "bg-emerald-50" : "bg-slate-100"}`}>
+                                    {hasPower
+                                      ? <Zap className="w-5 h-5 text-emerald-600" />
+                                      : <ZapOff className="w-5 h-5 text-slate-400" />}
                                   </div>
-                                </div>
-
-                                {/* Notify toggle */}
-                                <div className="flex flex-col items-end gap-1 shrink-0">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-slate-800 text-sm">{d.name}</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${hasPower ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                                        {hasPower ? "⚡ Power ON" : "No Power"}
+                                      </span>
+                                      <span className="text-xs text-slate-400">{timeSince(d.last_seen_at)}</span>
+                                    </div>
+                                  </div>
                                   <button
                                     onClick={() => toggleNotify(d.id)}
-                                    title={notifyOn ? "Disable power-restore notification" : "Notify when electricity comes back"}
-                                    className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
-                                      notifyOn
-                                        ? "bg-amber-50 border-amber-200 text-amber-700"
-                                        : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
+                                    className={`shrink-0 flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
+                                      notifyOn ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
                                     }`}
                                   >
-                                    {notifyOn
-                                      ? <><Bell className="w-3.5 h-3.5" /> Notify ON</>
-                                      : <><BellOff className="w-3.5 h-3.5" /> Notify OFF</>}
+                                    {notifyOn ? <><Bell className="w-3.5 h-3.5" /> Notify ON</> : <><BellOff className="w-3.5 h-3.5" /> Notify OFF</>}
                                   </button>
-                                  <p className="text-[10px] text-slate-400">Alert when power returns</p>
                                 </div>
+
+                                {/* 7-day power timeline */}
+                                {isLoadingHistory ? (
+                                  <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading history…
+                                  </div>
+                                ) : !hasAnyHistory ? (
+                                  <div className="bg-slate-50 rounded-lg px-4 py-3 text-xs text-slate-400 italic">
+                                    No power events recorded yet. Once AC detection is wired and firmware sends events, the daily timeline will appear here.
+                                  </div>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {dayRecords.map((day) => (
+                                      <div key={day.dateKey} className="flex gap-3 items-start">
+                                        {/* Day label */}
+                                        <div className="w-24 shrink-0 pt-1">
+                                          <p className="text-xs font-semibold text-slate-600">{day.label}</p>
+                                          {day.totalMinutes > 0 && (
+                                            <p className="text-[10px] text-slate-400">{fmtHours(day.totalMinutes)} total</p>
+                                          )}
+                                        </div>
+
+                                        {/* Windows */}
+                                        <div className="flex-1">
+                                          {day.windows.length === 0 ? (
+                                            <div className="flex items-center gap-1.5 h-6">
+                                              <div className="flex-1 h-1.5 rounded-full bg-slate-100" />
+                                              <span className="text-[10px] text-slate-300">No power</span>
+                                            </div>
+                                          ) : (
+                                            <div className="space-y-1">
+                                              {day.windows.map((w, i) => (
+                                                <div key={i} className="flex items-center gap-2">
+                                                  {/* Timeline bar */}
+                                                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                                    <span className="text-[11px] font-semibold text-emerald-700 shrink-0">
+                                                      {fmtTime(w.on)}
+                                                    </span>
+                                                    <div className="flex-1 h-2 rounded-full bg-emerald-200 min-w-4" />
+                                                    {w.off ? (
+                                                      <span className="text-[11px] font-semibold text-red-500 shrink-0">
+                                                        {fmtTime(w.off)}
+                                                      </span>
+                                                    ) : (
+                                                      <span className="text-[11px] font-semibold text-emerald-600 shrink-0 animate-pulse">
+                                                        Now ●
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                  {/* Duration */}
+                                                  <span className="text-[10px] text-slate-400 shrink-0 w-12 text-right">
+                                                    {w.off
+                                                      ? fmtHours(Math.round((w.off.getTime() - w.on.getTime()) / 60000))
+                                                      : fmtHours(Math.round((Date.now() - w.on.getTime()) / 60000))}
+                                                  </span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             );
                           })}
                         </div>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-
-              {unassigned.length > 0 && (
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
-                    <p className="font-semibold text-slate-500 text-sm">Unassigned devices</p>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                    {unassigned.map((d) => {
-                      const hasPower = d.status === "online";
-                      const notifyOn = notifyEnabled.has(d.id);
-                      return (
-                        <div key={d.id} className="flex items-center gap-4 px-5 py-4">
-                          <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${hasPower ? "bg-emerald-50" : "bg-slate-100"}`}>
-                            {hasPower ? <Zap className="w-5 h-5 text-emerald-600" /> : <ZapOff className="w-5 h-5 text-slate-400" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-slate-800 text-sm truncate">{d.name}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${hasPower ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                                {hasPower ? "⚡ Power ON" : "No Power"}
-                              </span>
-                              <span className="text-xs text-slate-400">{timeSince(d.last_seen_at)}</span>
-                            </div>
-                          </div>
-                          <button onClick={() => toggleNotify(d.id)}
-                            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
-                              notifyOn ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
-                            }`}>
-                            {notifyOn ? <><Bell className="w-3.5 h-3.5" /> Notify ON</> : <><BellOff className="w-3.5 h-3.5" /> Notify OFF</>}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                      </div>
+                    );
+                  })
               )}
             </div>
           )}

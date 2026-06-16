@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const db = require('../config/database');
 
 // Verifies JWT and attaches { id, organization_id, role, email } to req.user.
 // Every module query must scope by req.user.organization_id for tenant isolation.
@@ -24,4 +25,22 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { requireAuth, requireRole };
+// Authenticates ESP32 devices using their API key.
+// Attaches req.device = { id, organization_id } so route handlers can scope queries.
+async function requireDeviceApiKey(req, res, next) {
+  const apiKey = req.headers['x-api-key'] || req.query.api_key;
+  if (!apiKey) return res.status(401).json({ success: false, message: 'Missing API key' });
+  try {
+    const result = await db.query(
+      'SELECT id, organization_id FROM devices WHERE api_key = $1',
+      [apiKey]
+    );
+    if (!result.rows.length) return res.status(401).json({ success: false, message: 'Invalid API key' });
+    req.device = result.rows[0];
+    next();
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'Auth error' });
+  }
+}
+
+module.exports = { requireAuth, requireRole, requireDeviceApiKey };

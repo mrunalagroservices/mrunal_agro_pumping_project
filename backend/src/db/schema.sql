@@ -193,3 +193,13 @@ CREATE TABLE device_logs (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_device_logs_device ON device_logs(device_id, created_at DESC);
+
+-- ─── Power events (electricity ON/OFF reported by battery-powered ESP32) ──────
+CREATE TABLE power_events (
+  id               BIGSERIAL PRIMARY KEY,
+  organization_id  INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  device_id        INTEGER NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+  event_type       VARCHAR(20) NOT NULL CHECK (event_type IN ('power_on', 'power_off')),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_power_events_device ON power_events(device_id, created_at DESC);

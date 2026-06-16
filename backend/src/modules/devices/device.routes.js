@@ -2,7 +2,28 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const db = require('../../config/database');
-const { requireAuth } = require('../../middleware/auth');
+const { requireAuth, requireDeviceApiKey } = require('../../middleware/auth');
+
+// ── ESP32 ingest (API key auth, no JWT needed) ────────────────────────────────
+// POST /api/v1/devices/ingest/power-event
+// Body: { event_type: "power_on" | "power_off" }
+// Header: x-api-key: <device api key>
+router.post('/ingest/power-event', requireDeviceApiKey, async (req, res) => {
+  const { event_type } = req.body;
+  if (!['power_on', 'power_off'].includes(event_type)) {
+    return res.status(400).json({ success: false, message: 'event_type must be power_on or power_off' });
+  }
+  try {
+    await db.query(
+      'INSERT INTO power_events (organization_id, device_id, event_type) VALUES ($1, $2, $3)',
+      [req.device.organization_id, req.device.id, event_type]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[PowerEvent]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to record power event' });
+  }
+});
 
 router.use(requireAuth);
 
@@ -112,6 +133,32 @@ router.post('/:id/regenerate-key', async (req, res) => {
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to regenerate key' });
+  }
+});
+
+// GET /api/v1/devices/:id/power-events?days=7
+// Returns chronological list of power_on / power_off events for the last N days.
+router.get('/:id/power-events', async (req, res) => {
+  const days = Math.min(Number(req.query.days) || 7, 30);
+  try {
+    const check = await db.query(
+      'SELECT id FROM devices WHERE id = $1 AND organization_id = $2',
+      [req.params.id, req.user.organization_id]
+    );
+    if (!check.rows.length) return res.status(404).json({ success: false, message: 'Not found' });
+
+    const result = await db.query(
+      `SELECT event_type, created_at
+       FROM power_events
+       WHERE device_id = $1
+         AND created_at >= NOW() - ($2 || ' days')::INTERVAL
+       ORDER BY created_at ASC`,
+      [req.params.id, days]
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error('[PowerEvents]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch power events' });
   }
 });
 
