@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../providers/app_state.dart';
 import '../widgets/top_bar_actions.dart';
+import 'history_screen.dart';
 
 // Default map center: Pune, Maharashtra (used when no farm has GPS coordinates yet).
 const _defaultCenter = LatLng(18.5204, 73.8567);
@@ -183,7 +184,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               sliver: SliverGrid.count(
                 crossAxisCount: 2,
                 mainAxisSpacing: 12,
@@ -217,6 +218,51 @@ class DashboardScreen extends StatelessWidget {
                     value: activeActuators > 0 ? 'Running' : 'Idle',
                   ),
                 ],
+              ),
+            ),
+            // History shortcut
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 2))],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEDE9FE),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.bar_chart_outlined, color: Color(0xFF7C3AED), size: 20),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text('History & Analytics', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              Text('Runtime, water, electricity, cost', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_outlined, color: Color(0xFF94A3B8)),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

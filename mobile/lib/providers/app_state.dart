@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import '../models/actuator.dart';
+import '../models/alert_model.dart';
 import '../models/device.dart';
 import '../models/farm.dart';
+import '../models/power_event.dart';
+import '../models/schedule.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
 import '../services/socket_service.dart';
@@ -18,9 +21,16 @@ class AppState extends ChangeNotifier {
   List<Farm> farms = [];
   List<Device> devices = [];
   List<Actuator> actuators = [];
+  List<Schedule> schedules = [];
+  List<AlertModel> alerts = [];
+  Map<int, List<PowerEvent>> powerEvents = {}; // deviceId → events
 
   bool isLoadingDashboard = false;
+  bool isLoadingSchedules = false;
+  bool isLoadingAlerts = false;
   String? dashboardError;
+  String? schedulesError;
+  String? alertsError;
 
   Future<void> bootstrap() async {
     await _api.loadToken();
@@ -95,6 +105,9 @@ class AppState extends ChangeNotifier {
     farms = [];
     devices = [];
     actuators = [];
+    schedules = [];
+    alerts = [];
+    powerEvents = {};
     authStatus = AuthStatus.loggedOut;
     notifyListeners();
   }
@@ -229,6 +242,143 @@ class AppState extends ChangeNotifier {
       return e.message;
     } catch (e) {
       return 'Could not reach the server.';
+    }
+  }
+
+  // ── Schedules ──────────────────────────────────────────────────────────────
+  Future<void> loadSchedules() async {
+    isLoadingSchedules = true;
+    schedulesError = null;
+    notifyListeners();
+    try {
+      final data = await _api.get('/schedules');
+      schedules = (data as List).map((j) => Schedule.fromJson(j as Map<String, dynamic>)).toList();
+    } on UnauthorizedException {
+      await logout();
+    } on ApiException catch (e) {
+      schedulesError = e.message;
+    } catch (_) {
+      schedulesError = 'Could not load schedules.';
+    } finally {
+      isLoadingSchedules = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> createSchedule({
+    required int actuatorId,
+    required String name,
+    required List<int> daysOfWeek,
+    required String startTime,
+    required int durationMinutes,
+  }) async {
+    try {
+      final data = await _api.post('/schedules', {
+        'actuator_id': actuatorId,
+        'name': name,
+        'days_of_week': daysOfWeek,
+        'start_time': startTime,
+        'duration_minutes': durationMinutes,
+      });
+      schedules.insert(0, Schedule.fromJson(data as Map<String, dynamic>));
+      notifyListeners();
+      return null;
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not create schedule.';
+    }
+  }
+
+  Future<String?> toggleSchedule(Schedule schedule) async {
+    try {
+      final data = await _api.put('/schedules/${schedule.id}', {'is_active': !schedule.isActive});
+      final updated = Schedule.fromJson(data as Map<String, dynamic>);
+      final i = schedules.indexWhere((s) => s.id == schedule.id);
+      if (i != -1) schedules[i] = updated;
+      notifyListeners();
+      return null;
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not update schedule.';
+    }
+  }
+
+  Future<String?> deleteSchedule(int id) async {
+    try {
+      await _api.delete('/schedules/$id');
+      schedules.removeWhere((s) => s.id == id);
+      notifyListeners();
+      return null;
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not delete schedule.';
+    }
+  }
+
+  // ── Alerts ─────────────────────────────────────────────────────────────────
+  Future<void> loadAlerts() async {
+    isLoadingAlerts = true;
+    alertsError = null;
+    notifyListeners();
+    try {
+      final data = await _api.get('/alerts?limit=50');
+      alerts = (data as List).map((j) => AlertModel.fromJson(j as Map<String, dynamic>)).toList();
+    } on UnauthorizedException {
+      await logout();
+    } on ApiException catch (e) {
+      alertsError = e.message;
+    } catch (_) {
+      alertsError = 'Could not load alerts.';
+    } finally {
+      isLoadingAlerts = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> resolveAlert(int id) async {
+    try {
+      await _api.put('/alerts/$id/resolve', {});
+      final i = alerts.indexWhere((a) => a.id == id);
+      if (i != -1) alerts[i].isResolved = true;
+      notifyListeners();
+      return null;
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not resolve alert.';
+    }
+  }
+
+  // ── Analytics ──────────────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> fetchAnalytics(String range) async {
+    final data = await _api.get('/analytics/overview?range=$range');
+    return data as Map<String, dynamic>;
+  }
+
+  /// Returns per-day runtime breakdown with per-session ON→OFF times.
+  /// Response shape: { "days": [ { date, label, total_hours, water_liters,
+  ///   electricity_kwh, actuators: [ { id, name, hours, sessions: [{start, end}] } ] } ] }
+  Future<Map<String, dynamic>> fetchDailyRuntime(int days) async {
+    final data = await _api.get('/analytics/daily-runtime?days=$days');
+    return data as Map<String, dynamic>;
+  }
+
+  // ── Power events ────────────────────────────────────────────────────────────
+
+  Future<void> loadPowerEvents(int deviceId) async {
+    if (powerEvents.containsKey(deviceId)) return;
+    try {
+      final data = await _api.get('/devices/$deviceId/power-events?days=7');
+      powerEvents[deviceId] = (data as List)
+          .map((j) => PowerEvent.fromJson(j as Map<String, dynamic>))
+          .toList();
+      notifyListeners();
+    } catch (_) {
+      powerEvents[deviceId] = [];
+      notifyListeners();
     }
   }
 
