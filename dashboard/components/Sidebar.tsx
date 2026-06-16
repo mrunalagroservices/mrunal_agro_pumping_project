@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   ShieldCheck,
+  ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -73,6 +74,13 @@ const menuItems: MenuItem[] = [
     href: "/settings",
     textColor: "text-slate-700",
     bgLight: "bg-slate-100",
+  },
+  {
+    icon: ShoppingBag,
+    label: "Market",
+    href: "/shop",
+    textColor: "text-green-700",
+    bgLight: "bg-green-50",
   },
 ];
 
