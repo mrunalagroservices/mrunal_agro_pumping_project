@@ -169,7 +169,7 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
     onSuccess();
   }
 
-  const inp = "w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition";
+  const inp = "w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition";
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -195,10 +195,10 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
           <div className="flex items-center gap-1">
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center gap-1 flex-1">
-                <div className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 transition-colors ${i < stepIdx ? "bg-green-600 text-white" : i === stepIdx ? "bg-green-600 text-white" : "bg-slate-100 text-slate-400"}`}>
+                <div className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 transition-colors ${i < stepIdx ? "bg-indigo-600 text-white" : i === stepIdx ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-400"}`}>
                   {i < stepIdx ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
                 </div>
-                {i < STEPS.length - 1 && <div className={`h-0.5 flex-1 rounded-full ${i < stepIdx ? "bg-green-500" : "bg-slate-100"}`} />}
+                {i < STEPS.length - 1 && <div className={`h-0.5 flex-1 rounded-full ${i < stepIdx ? "bg-indigo-500" : "bg-slate-100"}`} />}
               </div>
             ))}
           </div>
@@ -220,20 +220,20 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
                         key={sa.id}
                         type="button"
                         onClick={() => pickSaved(sa)}
-                        className={`w-full flex items-start gap-3 border-2 rounded-xl p-3 text-left transition-colors ${selectedSavedId === sa.id ? "border-green-500 bg-green-50" : "border-slate-200 hover:border-slate-300 bg-white"}`}
+                        className={`w-full flex items-start gap-3 border-2 rounded-xl p-3 text-left transition-colors ${selectedSavedId === sa.id ? "border-indigo-500 bg-indigo-50" : "border-slate-200 hover:border-slate-300 bg-white"}`}
                       >
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${selectedSavedId === sa.id ? "bg-green-100" : "bg-slate-100"}`}>
-                          <MapPin className={`w-3.5 h-3.5 ${selectedSavedId === sa.id ? "text-green-600" : "text-slate-500"}`} />
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${selectedSavedId === sa.id ? "bg-indigo-100" : "bg-slate-100"}`}>
+                          <MapPin className={`w-3.5 h-3.5 ${selectedSavedId === sa.id ? "text-indigo-600" : "text-slate-500"}`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${selectedSavedId === sa.id ? "bg-green-600 text-white" : "bg-slate-100 text-slate-600"}`}>{sa.label}</span>
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${selectedSavedId === sa.id ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600"}`}>{sa.label}</span>
                             {sa.isDefault && <span className="text-[10px] font-semibold text-amber-600">★ Default</span>}
                           </div>
                           <p className="text-sm font-semibold text-slate-800">{sa.name} · {sa.phone}</p>
                           <p className="text-xs text-slate-500 truncate">{sa.line1}{sa.line2 ? `, ${sa.line2}` : ""}, {sa.city}, {sa.state} – {sa.pincode}</p>
                         </div>
-                        {selectedSavedId === sa.id && <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />}
+                        {selectedSavedId === sa.id && <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />}
                       </button>
                     ))}
                   </div>
@@ -281,9 +281,9 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 bg-green-50 border border-green-100 rounded-xl px-4 py-3">
-                <Truck className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                <p className="text-xs text-green-700">Delivery by <strong>{deliveryDate()}</strong> after order confirmation.</p>
+              <div className="flex items-start gap-2 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
+                <Truck className="w-4 h-4 text-indigo-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-indigo-700">Delivery by <strong>{deliveryDate()}</strong> after order confirmation.</p>
               </div>
             </>
           )}
@@ -294,19 +294,19 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
               <p className="text-sm font-semibold text-slate-700">Select Payment Method</p>
 
               {/* COD */}
-              <label className={`flex items-center gap-3 border-2 rounded-xl p-4 cursor-pointer transition-colors ${payMethod === "cod" ? "border-green-500 bg-green-50" : "border-slate-200 hover:border-slate-300"}`}>
-                <input type="radio" className="accent-green-600 w-4 h-4" checked={payMethod === "cod"} onChange={() => setPayMethod("cod")} />
-                <Banknote className="w-5 h-5 text-green-600 shrink-0" />
+              <label className={`flex items-center gap-3 border-2 rounded-xl p-4 cursor-pointer transition-colors ${payMethod === "cod" ? "border-indigo-500 bg-indigo-50" : "border-slate-200 hover:border-slate-300"}`}>
+                <input type="radio" className="accent-indigo-600 w-4 h-4" checked={payMethod === "cod"} onChange={() => setPayMethod("cod")} />
+                <Banknote className="w-5 h-5 text-indigo-600 shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-slate-800">Cash on Delivery</p>
-                  <p className="text-xs text-green-600 font-medium">FREE delivery · Pay when you receive</p>
+                  <p className="text-xs text-indigo-600 font-medium">FREE delivery · Pay when you receive</p>
                 </div>
               </label>
 
               {/* Card */}
-              <label className={`flex flex-col gap-3 border-2 rounded-xl p-4 cursor-pointer transition-colors ${payMethod === "card" ? "border-green-500 bg-green-50" : "border-slate-200 hover:border-slate-300"}`}>
+              <label className={`flex flex-col gap-3 border-2 rounded-xl p-4 cursor-pointer transition-colors ${payMethod === "card" ? "border-indigo-500 bg-indigo-50" : "border-slate-200 hover:border-slate-300"}`}>
                 <div className="flex items-center gap-3" onClick={() => setPayMethod("card")}>
-                  <input type="radio" className="accent-green-600 w-4 h-4" checked={payMethod === "card"} onChange={() => setPayMethod("card")} />
+                  <input type="radio" className="accent-indigo-600 w-4 h-4" checked={payMethod === "card"} onChange={() => setPayMethod("card")} />
                   <CreditCard className="w-5 h-5 text-blue-600 shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-slate-800">Debit / Credit Card</p>
@@ -330,9 +330,9 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
               </label>
 
               {/* UPI */}
-              <label className={`flex flex-col gap-3 border-2 rounded-xl p-4 cursor-pointer transition-colors ${payMethod === "upi" ? "border-green-500 bg-green-50" : "border-slate-200 hover:border-slate-300"}`}>
+              <label className={`flex flex-col gap-3 border-2 rounded-xl p-4 cursor-pointer transition-colors ${payMethod === "upi" ? "border-indigo-500 bg-indigo-50" : "border-slate-200 hover:border-slate-300"}`}>
                 <div className="flex items-center gap-3" onClick={() => setPayMethod("upi")}>
-                  <input type="radio" className="accent-green-600 w-4 h-4" checked={payMethod === "upi"} onChange={() => setPayMethod("upi")} />
+                  <input type="radio" className="accent-indigo-600 w-4 h-4" checked={payMethod === "upi"} onChange={() => setPayMethod("upi")} />
                   <Smartphone className="w-5 h-5 text-purple-600 shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-slate-800">UPI / GPay / PhonePe</p>
@@ -346,19 +346,19 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
 
               {/* Coupon */}
               <div className="border border-slate-200 rounded-xl p-4">
-                <p className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-green-600" /> Coupon Code</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-indigo-600" /> Coupon Code</p>
                 {appliedCoupon ? (
-                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                  <div className="flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2.5">
                     <div>
-                      <p className="text-sm font-bold text-green-700">{appliedCoupon.code} applied!</p>
-                      <p className="text-xs text-green-600">{appliedCoupon.desc}</p>
+                      <p className="text-sm font-bold text-indigo-700">{appliedCoupon.code} applied!</p>
+                      <p className="text-xs text-indigo-600">{appliedCoupon.desc}</p>
                     </div>
                     <button onClick={removeCoupon} className="text-red-400 hover:text-red-600 ml-2"><X className="w-4 h-4" /></button>
                   </div>
                 ) : (
                   <div className="flex gap-2">
                     <input className={`${inp} flex-1`} value={couponInput} onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }} placeholder="Enter coupon code" />
-                    <button onClick={applyCoupon} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl transition-colors whitespace-nowrap">Apply</button>
+                    <button onClick={applyCoupon} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors whitespace-nowrap">Apply</button>
                   </div>
                 )}
                 {couponError && <p className="text-xs text-red-500 mt-1.5">{couponError}</p>}
@@ -377,16 +377,16 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
                   <p className="text-sm font-semibold text-slate-800">{addr.name} · {addr.phone}</p>
                   <p className="text-xs text-slate-500">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}, {addr.city}, {addr.state} - {addr.pincode}</p>
                 </div>
-                <button onClick={() => setStep("address")} className="ml-auto text-xs text-green-600 font-semibold hover:underline shrink-0">Change</button>
+                <button onClick={() => setStep("address")} className="ml-auto text-xs text-indigo-600 font-semibold hover:underline shrink-0">Change</button>
               </div>
 
               {/* Payment summary */}
               <div className="bg-slate-50 rounded-xl p-4 flex items-center gap-3">
-                {payMethod === "cod" ? <Banknote className="w-4 h-4 text-green-600" /> : payMethod === "card" ? <CreditCard className="w-4 h-4 text-blue-600" /> : <Smartphone className="w-4 h-4 text-purple-600" />}
+                {payMethod === "cod" ? <Banknote className="w-4 h-4 text-indigo-600" /> : payMethod === "card" ? <CreditCard className="w-4 h-4 text-blue-600" /> : <Smartphone className="w-4 h-4 text-purple-600" />}
                 <p className="text-sm font-semibold text-slate-800 flex-1">
                   {payMethod === "cod" ? "Cash on Delivery" : payMethod === "card" ? `Card ending ${cardNum.slice(-4)}` : `UPI — ${upiId}`}
                 </p>
-                <button onClick={() => setStep("payment")} className="text-xs text-green-600 font-semibold hover:underline">Change</button>
+                <button onClick={() => setStep("payment")} className="text-xs text-indigo-600 font-semibold hover:underline">Change</button>
               </div>
 
               {/* Items */}
@@ -408,10 +408,10 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
               {/* Price breakdown */}
               <div className="bg-slate-50 rounded-xl p-4 space-y-2 text-sm">
                 <div className="flex justify-between text-slate-600"><span>Subtotal ({cart.reduce((s, i) => s + i.qty, 0)} items)</span><span>₹{subtotal.toLocaleString("en-IN")}</span></div>
-                {discount > 0 && <div className="flex justify-between text-green-600 font-medium"><span>Coupon ({appliedCoupon?.code})</span><span>−₹{discount}</span></div>}
+                {discount > 0 && <div className="flex justify-between text-indigo-600 font-medium"><span>Coupon ({appliedCoupon?.code})</span><span>−₹{discount}</span></div>}
                 <div className="flex justify-between text-slate-600">
                   <span>Delivery</span>
-                  <span className={deliveryCharge === 0 ? "text-green-600 font-medium" : ""}>{deliveryCharge === 0 ? "FREE" : `₹${deliveryCharge}`}</span>
+                  <span className={deliveryCharge === 0 ? "text-indigo-600 font-medium" : ""}>{deliveryCharge === 0 ? "FREE" : `₹${deliveryCharge}`}</span>
                 </div>
                 <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-base text-slate-900">
                   <span>Total</span>
@@ -420,7 +420,7 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
               </div>
 
               <div className="flex items-center gap-2 text-xs text-slate-400">
-                <Truck className="w-3.5 h-3.5 text-green-600" />
+                <Truck className="w-3.5 h-3.5 text-indigo-600" />
                 Expected delivery: <strong className="text-slate-600">{deliveryDate()}</strong>
               </div>
             </>
@@ -433,7 +433,7 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
             <button
               disabled={step === "address" ? !canProceedAddress() : !canProceedPayment()}
               onClick={() => setStep(STEPS[stepIdx + 1] as CheckoutStep)}
-              className="w-full flex items-center justify-center gap-2 py-3.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors"
             >
               Continue <ChevronRight className="w-4 h-4" />
             </button>
@@ -441,7 +441,7 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
             <button
               onClick={placeOrder}
               disabled={placing}
-              className="w-full flex items-center justify-center gap-2 py-3.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-bold rounded-xl transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold rounded-xl transition-colors"
             >
               {placing ? (
                 <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing…</>
@@ -474,7 +474,7 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
           <h3 className="text-xl font-bold text-slate-800 mb-1">{product.name}</h3>
           <p className="text-sm text-slate-500 mb-4">{product.unit} · {product.category}</p>
           <div className="flex items-center gap-2 mb-4">
-            <span className="flex items-center gap-1 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+            <span className="flex items-center gap-1 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded">
               <Star className="w-3 h-3 fill-white" /> {product.rating}
             </span>
             <span className="text-sm text-slate-500">{fmtCount(product.reviewCount)} ratings</span>
@@ -482,17 +482,17 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
           <div className="flex items-baseline gap-3 mb-4">
             <span className="text-3xl font-bold text-slate-900">₹{product.price}</span>
             <span className="text-lg text-slate-400 line-through">₹{product.originalPrice}</span>
-            <span className="text-sm font-bold text-green-600">{disc}% off</span>
+            <span className="text-sm font-bold text-indigo-600">{disc}% off</span>
           </div>
-          <div className="flex items-center gap-3 bg-green-50 border border-green-100 rounded-xl px-4 py-3 mb-4">
-            <Truck className="w-5 h-5 text-green-600 shrink-0" />
+          <div className="flex items-center gap-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 mb-4">
+            <Truck className="w-5 h-5 text-indigo-600 shrink-0" />
             <div>
-              <p className="text-sm font-bold text-green-700">FREE 1-Day Delivery</p>
-              <p className="text-xs text-green-600">Delivered by {deliveryDate()}</p>
+              <p className="text-sm font-bold text-indigo-700">FREE 1-Day Delivery</p>
+              <p className="text-xs text-indigo-600">Delivered by {deliveryDate()}</p>
             </div>
           </div>
           <p className="text-sm text-slate-600 mb-6 leading-relaxed">{product.description}</p>
-          <button onClick={() => { onAdd(); onClose(); }} className="w-full flex items-center justify-center gap-2 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors">
+          <button onClick={() => { onAdd(); onClose(); }} className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors">
             <ShoppingCart className="w-5 h-5" /> Add to Cart
           </button>
         </div>
@@ -548,16 +548,16 @@ function CartSidebar({ items, onClose, onChange, onCheckout }: {
             </div>
 
             <div className="px-5 py-4 border-t border-slate-100 space-y-3">
-              <div className="flex items-center gap-2 bg-green-50 rounded-xl px-3 py-2">
-                <Truck className="w-4 h-4 text-green-600 shrink-0" />
-                <p className="text-xs text-green-700 font-medium">
+              <div className="flex items-center gap-2 bg-indigo-50 rounded-xl px-3 py-2">
+                <Truck className="w-4 h-4 text-indigo-600 shrink-0" />
+                <p className="text-xs text-indigo-700 font-medium">
                   {subtotal >= 499 ? `Free COD delivery · Delivered by ${deliveryDate()}` : `Add ₹${499 - subtotal} more for free COD delivery`}
                 </p>
               </div>
               <div className="flex justify-between text-sm font-semibold text-slate-700">
                 <span>Subtotal</span><span>₹{subtotal.toLocaleString("en-IN")}</span>
               </div>
-              <button onClick={onCheckout} className="w-full flex items-center justify-center gap-2 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors">
+              <button onClick={onCheckout} className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors">
                 Proceed to Checkout <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -573,12 +573,12 @@ function OrderSuccess({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
-          <CheckCircle2 className="w-10 h-10 text-green-600" />
+        <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-5">
+          <CheckCircle2 className="w-10 h-10 text-indigo-600" />
         </div>
         <h2 className="text-2xl font-bold text-slate-800 mb-2">Order Placed!</h2>
         <p className="text-slate-500 text-sm mb-1">Your order has been confirmed.</p>
-        <p className="text-green-600 font-semibold text-sm mb-6">
+        <p className="text-indigo-600 font-semibold text-sm mb-6">
           Expected delivery by <strong>{deliveryDate()}</strong>
         </p>
         <div className="bg-slate-50 rounded-xl p-4 text-left space-y-1 text-sm text-slate-600 mb-6">
@@ -586,7 +586,7 @@ function OrderSuccess({ onClose }: { onClose: () => void }) {
           <p>🚚 Out for delivery tomorrow</p>
           <p>📞 Our team will call before delivery</p>
         </div>
-        <button onClick={onClose} className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors">
+        <button onClick={onClose} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors">
           Continue Shopping
         </button>
       </div>
@@ -663,7 +663,7 @@ export default function ShopPage() {
           <h1 className="text-2xl font-bold text-slate-800">Market</h1>
           <p className="text-sm text-slate-500">Quality farm essentials, delivered in 1 day</p>
         </div>
-        <button onClick={() => setCartOpen(true)} className="relative flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-colors">
+        <button onClick={() => setCartOpen(true)} className="relative flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors">
           <ShoppingCart className="w-4 h-4" />
           Cart
           {cartCount > 0 && <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">{cartCount}</span>}
@@ -671,15 +671,15 @@ export default function ShopPage() {
       </div>
 
       {/* Delivery banner */}
-      <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl px-6 py-4 mb-6 flex items-center gap-4">
+      <div className="bg-gradient-to-r from-indigo-700 to-indigo-500 rounded-2xl px-6 py-4 mb-6 flex items-center gap-4">
         <Truck className="w-8 h-8 text-white shrink-0" />
         <div className="flex-1">
           <p className="text-white font-bold text-lg">FREE 1-Day Delivery on COD</p>
-          <p className="text-green-100 text-sm">Delivered by {deliveryDate()} · Online payment: ₹100 delivery</p>
+          <p className="text-indigo-100 text-sm">Delivered by {deliveryDate()} · Online payment: ₹100 delivery</p>
         </div>
         <div className="text-right hidden sm:block">
           <p className="text-white font-bold">{PRODUCTS.length}+ products</p>
-          <p className="text-green-100 text-xs">Farm essentials</p>
+          <p className="text-indigo-100 text-xs">Farm essentials</p>
         </div>
       </div>
 
@@ -688,13 +688,13 @@ export default function ShopPage() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search seeds, fertilizers, tools…"
-            className="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            className="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           {search && <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {CATEGORIES.map((cat) => (
             <button key={cat} onClick={() => setCategory(cat)}
-              className={`px-3 py-2 text-sm font-medium rounded-xl border transition-colors ${category === cat ? "bg-green-600 text-white border-green-600" : "border-slate-200 text-slate-600 hover:bg-slate-50 bg-white"}`}>
+              className={`px-3 py-2 text-sm font-medium rounded-xl border transition-colors ${category === cat ? "bg-indigo-600 text-white border-indigo-600" : "border-slate-200 text-slate-600 hover:bg-slate-50 bg-white"}`}>
               {cat}
             </button>
           ))}
@@ -728,7 +728,7 @@ export default function ShopPage() {
                   <p className="text-sm font-semibold text-slate-800 leading-tight line-clamp-2 mb-1">{p.name}</p>
                   <p className="text-xs text-slate-400 mb-2">{p.unit}</p>
                   <div className="flex items-center gap-1.5 mb-2">
-                    <span className="flex items-center gap-0.5 bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                    <span className="flex items-center gap-0.5 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
                       <Star className="w-2.5 h-2.5 fill-white" /> {p.rating}
                     </span>
                     <span className="text-[10px] text-slate-400">({fmtCount(p.reviewCount)})</span>
@@ -738,21 +738,21 @@ export default function ShopPage() {
                     <span className="text-xs text-slate-400 line-through">₹{p.originalPrice}</span>
                   </div>
                   <div className="flex items-center gap-1 mb-3">
-                    <Truck className="w-3 h-3 text-green-600" />
-                    <span className="text-[10px] text-green-700 font-medium">By {deliveryDate()}</span>
+                    <Truck className="w-3 h-3 text-indigo-600" />
+                    <span className="text-[10px] text-indigo-700 font-medium">By {deliveryDate()}</span>
                   </div>
 
                   <div className="mt-auto" onClick={(e) => e.stopPropagation()}>
                     {inCart ? (
-                      <div className="flex items-center justify-between border border-green-500 rounded-xl px-2 py-1.5">
-                        <button onClick={() => changeQty(p.id, -1)} className="text-green-600 hover:text-green-800">
+                      <div className="flex items-center justify-between border border-indigo-500 rounded-xl px-2 py-1.5">
+                        <button onClick={() => changeQty(p.id, -1)} className="text-indigo-600 hover:text-indigo-800">
                           {inCart.qty === 1 ? <Trash2 className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
                         </button>
-                        <span className="text-sm font-bold text-green-700">{inCart.qty}</span>
-                        <button onClick={() => changeQty(p.id, 1)} className="text-green-600 hover:text-green-800"><Plus className="w-4 h-4" /></button>
+                        <span className="text-sm font-bold text-indigo-700">{inCart.qty}</span>
+                        <button onClick={() => changeQty(p.id, 1)} className="text-indigo-600 hover:text-indigo-800"><Plus className="w-4 h-4" /></button>
                       </div>
                     ) : (
-                      <button onClick={() => addToCart(p)} className="w-full py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl transition-colors">
+                      <button onClick={() => addToCart(p)} className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors">
                         Add to Cart
                       </button>
                     )}
