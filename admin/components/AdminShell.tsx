@@ -5,15 +5,18 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, ReactNode } from "react";
 import {
   LayoutDashboard, Users, ShoppingBag, LogOut, ShieldCheck,
-  Warehouse, Cpu,
+  Warehouse, ClipboardList, History, Settings2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const NAV = [
-  { href: "/overview",  label: "Overview",        icon: LayoutDashboard },
-  { href: "/farmers",   label: "Farmers",          icon: Users           },
-  { href: "/farms",     label: "Farms & Devices",  icon: Warehouse       },
-  { href: "/products",  label: "Products",         icon: ShoppingBag     },
+  { href: "/overview",       label: "Overview",        icon: LayoutDashboard },
+  { href: "/farmers",        label: "Farmers",         icon: Users           },
+  { href: "/farms",          label: "Farms & Devices", icon: Warehouse       },
+  { href: "/products",       label: "Products",        icon: ShoppingBag     },
+  { href: "/orders",         label: "Orders",          icon: ClipboardList   },
+  { href: "/search-history", label: "Search History",  icon: History         },
+  { href: "/shop-settings",  label: "Shop Settings",   icon: Settings2       },
 ];
 
 export default function AdminShell({ children, title }: { children: ReactNode; title: string }) {

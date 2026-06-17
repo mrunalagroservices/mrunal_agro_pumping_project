@@ -15,6 +15,10 @@ const alertRoutes = require('./modules/alerts/alert.routes');
 const organizationRoutes = require('./modules/organizations/organization.routes');
 const analyticsRoutes = require('./modules/analytics/analytics.routes');
 const adminRoutes = require('./modules/admin/admin.routes');
+const ordersRoutes = require('./modules/orders/orders.routes');
+const shopSettingsRoutes = require('./modules/shop-settings/shop-settings.routes');
+const searchRoutes = require('./modules/search/search.routes');
+const productsRoutes = require('./modules/products/products.routes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -61,6 +65,10 @@ app.use('/api/v1/alerts', alertRoutes);
 app.use('/api/v1/organizations', organizationRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/orders', ordersRoutes);
+app.use('/api/v1/shop-settings', shopSettingsRoutes);
+app.use('/api/v1/search', searchRoutes);
+app.use('/api/v1/products', productsRoutes);
 
 app.get('/health', (_, res) => res.json({ status: 'ok', service: 'mrunal-agro-pumping-backend' }));
 

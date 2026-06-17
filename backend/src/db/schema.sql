@@ -195,6 +195,86 @@ CREATE TABLE device_logs (
 );
 CREATE INDEX idx_device_logs_device ON device_logs(device_id, created_at DESC);
 
+-- ─── Marketplace products ────────────────────────────────────────────────────
+CREATE TABLE products (
+  id             SERIAL PRIMARY KEY,
+  name           VARCHAR(255) NOT NULL,
+  description    TEXT,
+  category       VARCHAR(100) NOT NULL,
+  price          NUMERIC(10,2) NOT NULL,
+  original_price NUMERIC(10,2) NOT NULL,
+  unit           VARCHAR(100),
+  image_url      TEXT,
+  is_best_seller BOOLEAN NOT NULL DEFAULT false,
+  is_active      BOOLEAN NOT NULL DEFAULT true,
+  stock_quantity INTEGER NOT NULL DEFAULT 100,
+  rating         NUMERIC(3,2) NOT NULL DEFAULT 0,
+  review_count   INTEGER NOT NULL DEFAULT 0,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX idx_products_active ON products(is_active);
+
+-- ─── Orders ────────────────────────────────────────────────────────────────────
+CREATE TABLE orders (
+  id               SERIAL PRIMARY KEY,
+  user_id          INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  status           VARCHAR(50) NOT NULL DEFAULT 'placed',
+  -- placed | confirmed | shipped | delivered | cancelled
+  payment_method   VARCHAR(50) NOT NULL,
+  delivery_address JSONB NOT NULL,
+  subtotal         NUMERIC(10,2) NOT NULL,
+  delivery_charge  NUMERIC(10,2) NOT NULL DEFAULT 0,
+  discount         NUMERIC(10,2) NOT NULL DEFAULT 0,
+  total            NUMERIC(10,2) NOT NULL,
+  coupon_code      VARCHAR(50),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_orders_user ON orders(user_id, created_at DESC);
+CREATE INDEX idx_orders_status ON orders(status);
+
+-- ─── Order items (product snapshot at checkout time) ───────────────────────────
+CREATE TABLE order_items (
+  id             SERIAL PRIMARY KEY,
+  order_id       INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id     INTEGER REFERENCES products(id) ON DELETE SET NULL,
+  product_name   VARCHAR(255) NOT NULL,
+  product_image  TEXT,
+  category       VARCHAR(100),
+  unit           VARCHAR(100),
+  price          NUMERIC(10,2) NOT NULL,
+  original_price NUMERIC(10,2),
+  qty            INTEGER NOT NULL DEFAULT 1
+);
+CREATE INDEX idx_order_items_order ON order_items(order_id);
+
+-- ─── Search history ────────────────────────────────────────────────────────────
+CREATE TABLE search_history (
+  id            BIGSERIAL PRIMARY KEY,
+  user_id       INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  query         TEXT NOT NULL,
+  results_count INTEGER,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_search_history_user ON search_history(user_id, created_at DESC);
+CREATE INDEX idx_search_history_time ON search_history(created_at DESC);
+
+-- ─── Shop settings (admin-controlled) ─────────────────────────────────────────
+CREATE TABLE shop_settings (
+  key        VARCHAR(100) PRIMARY KEY,
+  value      JSONB NOT NULL,
+  updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+INSERT INTO shop_settings (key, value) VALUES
+  ('price_range',           '{"min": 0, "max": 5000}'),
+  ('rating_options',        '[0, 3.5, 4, 4.5]'),
+  ('categories',            '["Seeds", "Fertilizers", "Irrigation", "Tools", "Pesticides", "Others"]'),
+  ('delivery_charge_online','100'),
+  ('coupons',               '[{"code":"FARM10","type":"percent","value":10,"min_order":0,"is_active":true},{"code":"SAVE50","type":"flat","value":50,"min_order":500,"is_active":true},{"code":"AGRO20","type":"percent","value":20,"min_order":1000,"is_active":true}]');
+
 -- ─── Power events (electricity ON/OFF reported by battery-powered ESP32) ──────
 CREATE TABLE power_events (
   id               BIGSERIAL PRIMARY KEY,

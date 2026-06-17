@@ -283,6 +283,72 @@ export interface AnalyticsSeries {
   buckets: AnalyticsSeriesBucket[];
 }
 
+export interface ShopSettings {
+  price_range: { min: number; max: number };
+  rating_options: number[];
+  categories: string[];
+  delivery_charge_online: number;
+  coupons: Array<{
+    code: string;
+    type: "percent" | "flat";
+    value: number;
+    min_order: number;
+    is_active: boolean;
+  }>;
+}
+
+export interface OrderItem {
+  id: number;
+  order_id: number;
+  product_id?: number | null;
+  product_name: string;
+  product_image?: string | null;
+  category?: string | null;
+  unit?: string | null;
+  price: number;
+  original_price?: number | null;
+  qty: number;
+}
+
+export interface Order {
+  id: number;
+  user_id?: number | null;
+  status: "placed" | "confirmed" | "shipped" | "delivered" | "cancelled" | string;
+  payment_method: string;
+  delivery_address: {
+    name: string;
+    phone: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+  subtotal: number;
+  delivery_charge: number;
+  discount: number;
+  total: number;
+  coupon_code?: string | null;
+  created_at: string;
+  updated_at: string;
+  items: OrderItem[];
+}
+
+export interface AdminOrder extends Order {
+  user_name?: string | null;
+  user_email?: string | null;
+  user_phone?: string | null;
+}
+
+export interface SearchHistoryEntry {
+  id: number;
+  query: string;
+  results_count?: number | null;
+  created_at: string;
+  user_name?: string | null;
+  user_email?: string | null;
+}
+
 export interface AnalyticsRuntimeSession {
   start: string;
   end: string;

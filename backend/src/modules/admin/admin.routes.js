@@ -269,6 +269,122 @@ router.delete('/devices/:id', async (req, res) => {
   }
 });
 
+// ── Orders (admin) ─────────────────────────────────────────────────────────────
+
+// GET /api/v1/admin/orders — all orders with user info + items
+router.get('/orders', async (req, res) => {
+  try {
+    const ordersRes = await db.query(`
+      SELECT o.*,
+        u.name AS user_name, u.email AS user_email, u.phone AS user_phone
+      FROM orders o
+      LEFT JOIN users u ON u.id = o.user_id
+      ORDER BY o.created_at DESC
+      LIMIT 200
+    `);
+    const orders = ordersRes.rows;
+    if (!orders.length) return res.json({ success: true, data: [] });
+
+    const orderIds = orders.map((o) => o.id);
+    const itemsRes = await db.query(
+      `SELECT * FROM order_items WHERE order_id = ANY($1::int[]) ORDER BY id`,
+      [orderIds]
+    );
+    const itemsByOrder = itemsRes.rows.reduce((acc, item) => {
+      (acc[item.order_id] = acc[item.order_id] || []).push(item);
+      return acc;
+    }, {});
+
+    res.json({ success: true, data: orders.map((o) => ({ ...o, items: itemsByOrder[o.id] || [] })) });
+  } catch (err) {
+    console.error('[Admin/orders GET]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch orders' });
+  }
+});
+
+// PUT /api/v1/admin/orders/:id — update order status
+router.put('/orders/:id', async (req, res) => {
+  const { status } = req.body;
+  const valid = ['placed', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+  if (!valid.includes(status)) {
+    return res.status(400).json({ success: false, message: `status must be one of: ${valid.join(', ')}` });
+  }
+  try {
+    const result = await db.query(
+      `UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
+      [status, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Order not found' });
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Admin/orders PUT]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to update order' });
+  }
+});
+
+// ── Search history (admin) ──────────────────────────────────────────────────────
+
+// GET /api/v1/admin/search-history
+router.get('/search-history', async (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+  const search = req.query.q || '';
+  try {
+    const result = await db.query(`
+      SELECT sh.id, sh.query, sh.results_count, sh.created_at,
+        u.name AS user_name, u.email AS user_email
+      FROM search_history sh
+      LEFT JOIN users u ON u.id = sh.user_id
+      WHERE ($1 = '' OR sh.query ILIKE $2 OR u.name ILIKE $2)
+      ORDER BY sh.created_at DESC
+      LIMIT $3
+    `, [search, `%${search}%`, limit]);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error('[Admin/search-history]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch search history' });
+  }
+});
+
+// ── Shop settings (admin) ──────────────────────────────────────────────────────
+
+// GET /api/v1/admin/shop-settings
+router.get('/shop-settings', async (req, res) => {
+  try {
+    const result = await db.query('SELECT key, value, updated_by, updated_at FROM shop_settings ORDER BY key');
+    const settings = result.rows.reduce((acc, row) => {
+      acc[row.key] = row.value;
+      return acc;
+    }, {});
+    res.json({ success: true, data: settings });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch shop settings' });
+  }
+});
+
+// PUT /api/v1/admin/shop-settings — update one or more keys
+router.put('/shop-settings', async (req, res) => {
+  const updates = req.body; // { key: value, ... }
+  if (!updates || typeof updates !== 'object' || !Object.keys(updates).length) {
+    return res.status(400).json({ success: false, message: 'Request body must be a non-empty object of {key: value}' });
+  }
+  try {
+    for (const [key, value] of Object.entries(updates)) {
+      await db.query(
+        `INSERT INTO shop_settings (key, value, updated_by, updated_at)
+         VALUES ($1, $2::jsonb, $3, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = $2::jsonb, updated_by = $3, updated_at = NOW()`,
+        [key, JSON.stringify(value), req.user.id]
+      );
+    }
+    const result = await db.query('SELECT key, value FROM shop_settings ORDER BY key');
+    const settings = result.rows.reduce((acc, row) => { acc[row.key] = row.value; return acc; }, {});
+    res.json({ success: true, data: settings });
+  } catch (err) {
+    console.error('[Admin/shop-settings PUT]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to update shop settings' });
+  }
+});
+
 // ── Farmers (org) delete ───────────────────────────────────────────────────────
 
 // DELETE /api/v1/admin/farmers/:orgId

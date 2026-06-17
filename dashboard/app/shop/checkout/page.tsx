@@ -4,16 +4,18 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ShoppingCart, MapPin, Plus, Minus, Trash2, CreditCard, Banknote,
-  Smartphone, Tag, CheckCircle2, Truck, ArrowLeft, X, Star, Lock,
+  Smartphone, Tag, CheckCircle2, Truck, ArrowLeft, X, Lock,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
-import { CartItem, COUPONS, cartFromStorage, cartToStorage, PRODUCTS } from "@/lib/products";
+import { CartItem, cartFromStorage, cartToStorage } from "@/lib/products";
 import { getSavedAddresses, SavedAddress } from "@/lib/savedAddresses";
+import { httpClient } from "@/lib/api";
+import type { ApiResponse, ShopSettings } from "@/lib/types";
 
-// ── Image with emoji fallback ──────────────────────────────────────────────────
-function PImg({ src, alt, bg, emoji, className }: { src: string; alt: string; bg: string; emoji: string; className?: string }) {
+// ── Image fallback ─────────────────────────────────────────────────────────────
+function PImg({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
   const [err, setErr] = useState(false);
-  if (err) return <div className={`flex items-center justify-center text-2xl ${className}`} style={{ background: bg }}>{emoji}</div>;
+  if (!src || err) return <div className={`flex items-center justify-center text-2xl bg-teal-50 ${className}`}>🌿</div>;
   return <img src={src} alt={alt} className={`object-cover ${className}`} onError={() => setErr(true)} />;
 }
 
@@ -30,10 +32,14 @@ interface Address {
 }
 
 const BLANK: Address = { name: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "" };
-const STATES = ["Andhra Pradesh","Bihar","Chhattisgarh","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Odisha","Punjab","Rajasthan","Tamil Nadu","Telangana","Uttar Pradesh","Uttarakhand","West Bengal"];
+const STATES = [
+  "Andhra Pradesh","Bihar","Chhattisgarh","Gujarat","Haryana","Himachal Pradesh",
+  "Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Odisha","Punjab",
+  "Rajasthan","Tamil Nadu","Telangana","Uttar Pradesh","Uttarakhand","West Bengal",
+];
 
 // ── Success Screen ─────────────────────────────────────────────────────────────
-function SuccessScreen({ total, onContinue }: { total: number; onContinue: () => void }) {
+function SuccessScreen({ orderId, total, onContinue }: { orderId: number; total: number; onContinue: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="w-24 h-24 bg-teal-50 rounded-full flex items-center justify-center mb-6">
@@ -41,15 +47,21 @@ function SuccessScreen({ total, onContinue }: { total: number; onContinue: () =>
       </div>
       <h2 className="text-2xl font-black text-slate-800 mb-2">Order Placed!</h2>
       <p className="text-slate-500 mb-1">Your order has been confirmed.</p>
+      <p className="text-xs text-slate-400 mb-1">Order ID: <span className="font-mono font-bold text-teal-600">#{orderId}</span></p>
       <p className="text-teal-600 font-semibold text-sm mb-8">Expected delivery by <strong>{deliveryDate()}</strong></p>
       <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-8 text-left space-y-2 text-sm text-slate-600 w-72 shadow-sm">
-        <p className="flex items-center gap-2">📦 Order confirmed · ₹{total.toLocaleString("en-IN")} paid</p>
-        <p className="flex items-center gap-2">🚚 Will be dispatched by tomorrow</p>
-        <p className="flex items-center gap-2">📞 Our team will call before delivery</p>
+        <p>📦 Order #{orderId} confirmed · ₹{total.toLocaleString("en-IN")} {}</p>
+        <p>🚚 Will be dispatched by tomorrow</p>
+        <p>📞 Our team will call before delivery</p>
       </div>
-      <button onClick={onContinue} className="px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-full transition-colors">
-        Continue Shopping
-      </button>
+      <div className="flex gap-3">
+        <button onClick={onContinue} className="px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-full transition-colors">
+          Continue Shopping
+        </button>
+        <button onClick={() => window.location.href = "/settings?tab=orders"} className="px-8 py-3 border-2 border-teal-500 text-teal-600 hover:bg-teal-50 font-bold rounded-full transition-colors">
+          View My Orders
+        </button>
+      </div>
     </div>
   );
 }
@@ -68,10 +80,13 @@ export default function CheckoutPage() {
   const [cardCvv, setCardCvv] = useState("");
   const [upiId, setUpiId] = useState("");
   const [couponInput, setCouponInput] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<null | { code: string; type: "percent" | "fixed"; value: number; desc: string }>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<null | { code: string; type: "percent" | "flat"; value: number; discount: number }>(null);
   const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
   const [placing, setPlacing] = useState(false);
-  const [placed, setPlaced] = useState(false);
+  const [placeError, setPlaceError] = useState("");
+  const [placedOrderId, setPlacedOrderId] = useState<number | null>(null);
+  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null);
 
   useEffect(() => {
     const c = cartFromStorage();
@@ -84,6 +99,10 @@ export default function CheckoutPage() {
       setSelectedSavedId(def.id);
       setAddr({ name: def.name, phone: def.phone, line1: def.line1, line2: def.line2, city: def.city, state: def.state, pincode: def.pincode });
     }
+    // Load shop settings for delivery charge
+    httpClient.get<ApiResponse<ShopSettings>>("/shop-settings")
+      .then((res) => setShopSettings(res.data))
+      .catch(() => {});
   }, []);
 
   function changeQty(id: number, delta: number) {
@@ -97,45 +116,71 @@ export default function CheckoutPage() {
   }
 
   const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0);
-  const deliveryCharge = payMethod !== "cod" ? 100 : 0;
-
-  function calcDiscount(sub: number) {
-    if (!appliedCoupon) return 0;
-    return appliedCoupon.type === "percent" ? Math.round(sub * appliedCoupon.value / 100) : appliedCoupon.value;
-  }
-  const discount = calcDiscount(subtotal);
-  const total = subtotal + deliveryCharge - discount;
+  const deliveryCharge = payMethod !== "cod" ? (shopSettings?.delivery_charge_online ?? 100) : 0;
+  const discount = appliedCoupon?.discount ?? 0;
+  const total = Math.max(0, subtotal + deliveryCharge - discount);
 
   function pickSaved(sa: SavedAddress) {
     if (selectedSavedId === sa.id) { setSelectedSavedId(null); setAddr(BLANK); setShowAddrForm(false); }
     else { setSelectedSavedId(sa.id); setAddr({ name: sa.name, phone: sa.phone, line1: sa.line1, line2: sa.line2, city: sa.city, state: sa.state, pincode: sa.pincode }); setShowAddrForm(false); }
   }
 
-  function applyCoupon() {
+  async function applyCoupon() {
     const code = couponInput.trim().toUpperCase();
-    const def = COUPONS[code];
-    if (!def) { setCouponError("Invalid coupon code"); return; }
-    if (def.min && subtotal < def.min) { setCouponError(`Minimum order ₹${def.min} required`); return; }
-    setAppliedCoupon({ code, ...def }); setCouponError("");
+    if (!code) return;
+    setCouponLoading(true);
+    setCouponError("");
+    try {
+      const res = await httpClient.post<ApiResponse<{ coupon: { code: string; type: "percent" | "flat"; value: number }; discount: number }>>("/shop-settings/validate-coupon", { code, subtotal });
+      setAppliedCoupon({ code, type: res.data.coupon.type, value: res.data.coupon.value, discount: res.data.discount });
+    } catch (err: unknown) {
+      setCouponError(err instanceof Error ? err.message : "Invalid coupon code");
+    } finally {
+      setCouponLoading(false);
+    }
   }
 
   const addrComplete = addr.name && addr.phone.replace(/\D/g, "").length >= 7 && addr.line1 && addr.city && addr.state && addr.pincode.length === 6;
   const payComplete = payMethod === "cod" || (payMethod === "upi" && upiId.includes("@")) || (payMethod === "card" && cardNum.replace(/\s/g, "").length === 16 && cardExpiry && cardCvv.length >= 3);
 
   async function placeOrder() {
+    setPlaceError("");
     setPlacing(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    cartToStorage([]);
-    setPlacing(false);
-    setPlaced(true);
+    try {
+      const res = await httpClient.post<ApiResponse<{ id: number }>>("/orders", {
+        payment_method: payMethod,
+        delivery_address: addr,
+        coupon_code: appliedCoupon?.code || null,
+        subtotal,
+        delivery_charge: deliveryCharge,
+        discount,
+        total,
+        items: cart.map((i) => ({
+          product_id: i.product.id,
+          product_name: i.product.name,
+          product_image: i.product.image_url || null,
+          category: i.product.category,
+          unit: i.product.unit || null,
+          price: i.product.price,
+          original_price: i.product.original_price,
+          qty: i.qty,
+        })),
+      });
+      cartToStorage([]);
+      setPlacedOrderId(res.data.id);
+    } catch (err: unknown) {
+      setPlaceError(err instanceof Error ? err.message : "Failed to place order. Please try again.");
+    } finally {
+      setPlacing(false);
+    }
   }
 
   const inp = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition bg-white";
 
-  if (placed) {
+  if (placedOrderId !== null) {
     return (
       <DashboardShell breadcrumb={[{ label: "Market", href: "/shop" }, { label: "Checkout" }]}>
-        <SuccessScreen total={total} onContinue={() => router.push("/shop")} />
+        <SuccessScreen orderId={placedOrderId} total={total} onContinue={() => router.push("/shop")} />
       </DashboardShell>
     );
   }
@@ -196,7 +241,6 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* New address form */}
             {showAddrForm && (
               <div className="px-5 py-4 border-t border-slate-100 space-y-3">
                 <div className="flex items-center justify-between mb-1">
@@ -236,19 +280,17 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* Delivery note */}
           <div className="flex items-center gap-3 bg-teal-50 border border-teal-100 rounded-2xl px-4 py-3">
             <Truck className="w-5 h-5 text-teal-600 shrink-0" />
             <div>
               <p className="text-sm font-bold text-teal-800">Delivery by {deliveryDate()}</p>
-              <p className="text-xs text-teal-600">COD: Free delivery · Online payment: ₹100</p>
+              <p className="text-xs text-teal-600">COD: Free · Online payment: ₹{shopSettings?.delivery_charge_online ?? 100} delivery charge</p>
             </div>
           </div>
         </div>
 
         {/* ── Col 2: Payment + Cart Items ────────────────────────── */}
         <div className="space-y-4">
-          {/* Payment methods */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
             <div className="px-5 py-4 border-b border-slate-100">
               <h2 className="font-bold text-slate-800">Choose how to pay</h2>
@@ -272,7 +314,7 @@ export default function CheckoutPage() {
                   <CreditCard className="w-5 h-5 text-blue-600 shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-slate-800">Debit / Credit Card</p>
-                    <p className="text-xs text-slate-500">Visa, Mastercard, RuPay · +₹100 delivery</p>
+                    <p className="text-xs text-slate-500">Visa, Mastercard, RuPay · +₹{shopSettings?.delivery_charge_online ?? 100} delivery</p>
                   </div>
                   {payMethod === "card" && <CheckCircle2 className="w-5 h-5 text-teal-600" />}
                 </label>
@@ -298,7 +340,7 @@ export default function CheckoutPage() {
                   <Smartphone className="w-5 h-5 text-purple-600 shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-slate-800">UPI / GPay / PhonePe</p>
-                    <p className="text-xs text-slate-500">+₹100 delivery charge</p>
+                    <p className="text-xs text-slate-500">+₹{shopSettings?.delivery_charge_online ?? 100} delivery charge</p>
                   </div>
                   {payMethod === "upi" && <CheckCircle2 className="w-5 h-5 text-teal-600" />}
                 </label>
@@ -314,14 +356,14 @@ export default function CheckoutPage() {
           {/* Cart items */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h2 className="font-bold text-slate-800">Cart · {cart.length} items</h2>
-              <p className="text-xs text-slate-400">Check your products before checkout</p>
+              <h2 className="font-bold text-slate-800">Cart · {cart.length} item{cart.length !== 1 ? "s" : ""}</h2>
+              <p className="text-xs text-slate-400">Review before checkout</p>
             </div>
             <div className="divide-y divide-slate-100">
               {cart.map(({ product: p, qty }) => (
                 <div key={p.id} className="flex items-center gap-3 px-5 py-4">
                   <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-slate-100">
-                    <PImg src={p.image} alt={p.name} bg={p.bg} emoji={p.emoji} className="w-full h-full" />
+                    <PImg src={p.image_url} alt={p.name} className="w-full h-full" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-slate-800 line-clamp-1">{p.name}</p>
@@ -343,7 +385,7 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* ── Col 3: Summary + Place Order ───────────────────────── */}
+        {/* ── Col 3: Coupon + Summary ─────────────────────────────── */}
         <div className="space-y-4">
           {/* Coupon */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
@@ -352,8 +394,7 @@ export default function CheckoutPage() {
               <div className="flex items-center justify-between bg-teal-50 border border-teal-200 rounded-xl px-4 py-3">
                 <div>
                   <p className="text-sm font-bold text-teal-700">{appliedCoupon.code}</p>
-                  <p className="text-xs text-teal-600">{appliedCoupon.desc}</p>
-                  <p className="text-xs text-teal-600 font-semibold">Coupon code is valid! ✓</p>
+                  <p className="text-xs text-teal-600 font-semibold">−₹{appliedCoupon.discount} saved ✓</p>
                 </div>
                 <button onClick={() => { setAppliedCoupon(null); setCouponInput(""); }} className="text-red-400 hover:text-red-600 ml-2">
                   <X className="w-4 h-4" />
@@ -362,11 +403,21 @@ export default function CheckoutPage() {
             ) : (
               <>
                 <div className="flex gap-2">
-                  <input className={`${inp} flex-1`} value={couponInput} onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }} placeholder="Enter coupon code" />
-                  <button onClick={applyCoupon} className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-xl transition-colors">Apply</button>
+                  <input className={`${inp} flex-1`} value={couponInput}
+                    onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
+                    placeholder="Enter coupon code" />
+                  <button onClick={applyCoupon} disabled={couponLoading || !couponInput.trim()}
+                    className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors">
+                    {couponLoading ? "…" : "Apply"}
+                  </button>
                 </div>
                 {couponError && <p className="text-xs text-red-500 mt-1.5">{couponError}</p>}
-                <p className="text-xs text-slate-400 mt-2">Try: FARM10 · SAVE50 · MRUNAL · AGRO20</p>
+                {shopSettings?.coupons?.length ? (
+                  <p className="text-xs text-slate-400 mt-2">
+                    Available: {shopSettings.coupons.filter((c) => c.is_active).map((c) => c.code).join(" · ")}
+                  </p>
+                ) : null}
               </>
             )}
           </div>
@@ -395,12 +446,15 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment icons */}
             <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100">
               {["VISA", "MC", "UPI", "Cash"].map((m) => (
                 <span key={m} className="text-[10px] font-bold px-2 py-1 bg-slate-100 text-slate-500 rounded">{m}</span>
               ))}
             </div>
+
+            {placeError && (
+              <div className="mt-3 bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2.5 rounded-xl">{placeError}</div>
+            )}
 
             <button
               disabled={!addrComplete || !payComplete || placing || cart.length === 0}
