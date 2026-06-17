@@ -34,6 +34,7 @@ import { httpClient } from "@/lib/api";
 import { socketClient } from "@/lib/socket";
 import { ApiResponse, Farm, Device, Actuator } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 
 type Tab = "farms" | "electricity" | "antitheft";
 
@@ -108,6 +109,7 @@ function buildDayRecords(events: PowerEvent[], deviceOnline: boolean): DayRecord
 
 export default function FarmsPage() {
   const { user, isAuthenticated } = useAuth();
+  const toast = useToast();
 
   const [tab, setTab] = useState<Tab>("farms");
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -128,7 +130,6 @@ export default function FarmsPage() {
   // farm CRUD
   const [showFarmModal, setShowFarmModal] = useState(false);
   const [farmSubmitting, setFarmSubmitting] = useState(false);
-  const [farmError, setFarmError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [editFarm, setEditFarm] = useState<Farm | null>(null);
   const [farmName, setFarmName] = useState("");
@@ -142,7 +143,6 @@ export default function FarmsPage() {
   const [showDeviceModal, setShowDeviceModal] = useState(false);
   const [deviceDefaultFarmId, setDeviceDefaultFarmId] = useState<number | null>(null);
   const [devSubmitting, setDevSubmitting] = useState(false);
-  const [devError, setDevError] = useState<string | null>(null);
   const [createdDevice, setCreatedDevice] = useState<Device | null>(null);
   const [copied, setCopied] = useState(false);
   const [devName, setDevName] = useState("");
@@ -220,7 +220,7 @@ export default function FarmsPage() {
   // ── farm helpers ────────────────────────────────────────────────────────────
   function resetFarmForm() {
     setFarmName(""); setFarmLocation(""); setFarmLat(""); setFarmLng("");
-    setFarmError(null); setLocationError(null);
+    setLocationError(null);
   }
 
   function useCurrentLocation() {
@@ -242,7 +242,7 @@ export default function FarmsPage() {
   }
 
   async function handleCreateFarm(e: FormEvent) {
-    e.preventDefault(); setFarmError(null); setFarmSubmitting(true);
+    e.preventDefault(); setFarmSubmitting(true);
     try {
       await httpClient.post<ApiResponse<Farm>>("/farms", {
         name: farmName,
@@ -251,27 +251,33 @@ export default function FarmsPage() {
         longitude: farmLng ? Number(farmLng) : undefined,
       });
       setShowFarmModal(false); resetFarmForm(); loadAll();
+      toast.success("Farm created", `"${farmName}" has been added successfully.`);
     } catch (err) {
-      setFarmError(err instanceof Error ? err.message : "Failed to create farm");
+      toast.error("Failed to create farm", err instanceof Error ? err.message : undefined);
     } finally { setFarmSubmitting(false); }
   }
 
   async function handleDeleteFarm(id: number) {
     if (!confirm("Delete this farm? Devices assigned to it will become unassigned.")) return;
-    await httpClient.delete<ApiResponse<null>>(`/farms/${id}`);
-    loadAll();
+    try {
+      await httpClient.delete<ApiResponse<null>>(`/farms/${id}`);
+      loadAll();
+      toast.success("Farm deleted");
+    } catch (err) {
+      toast.error("Failed to delete farm", err instanceof Error ? err.message : undefined);
+    }
   }
 
   // ── device helpers ──────────────────────────────────────────────────────────
   function openAddDevice(farmId?: number) {
     setDeviceDefaultFarmId(farmId ?? null);
     setDevFarmId(farmId ? String(farmId) : "");
-    setDevName(""); setDevRelayCount("4"); setDevError(null);
+    setDevName(""); setDevRelayCount("4");
     setShowDeviceModal(true);
   }
 
   async function handleCreateDevice(e: FormEvent) {
-    e.preventDefault(); setDevError(null); setDevSubmitting(true);
+    e.preventDefault(); setDevSubmitting(true);
     try {
       const res = await httpClient.post<ApiResponse<Device>>("/devices", {
         name: devName,
@@ -281,8 +287,9 @@ export default function FarmsPage() {
       setCreatedDevice(res.data);
       setShowDeviceModal(false);
       loadAll();
+      toast.success("Device created", "Copy the API key shown — it won't be displayed again.");
     } catch (err) {
-      setDevError(err instanceof Error ? err.message : "Failed to create device");
+      toast.error("Failed to create device", err instanceof Error ? err.message : undefined);
     } finally { setDevSubmitting(false); }
   }
 
@@ -896,7 +903,6 @@ export default function FarmsPage() {
                   placeholder="73.8567" />
               </div>
             </div>
-            {farmError && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{farmError}</p>}
             <button type="submit" disabled={farmSubmitting}
               className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {farmSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -930,7 +936,6 @@ export default function FarmsPage() {
                 onChange={(e) => setDevRelayCount(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
             </div>
-            {devError && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{devError}</p>}
             <button type="submit" disabled={devSubmitting}
               className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {devSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -989,7 +994,7 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   function useCurrentLocation() {
     if (!navigator.geolocation) { setLocationError("Geolocation not supported"); return; }
@@ -1010,7 +1015,7 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
   }
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault(); setError(null); setSubmitting(true);
+    e.preventDefault(); setSubmitting(true);
     try {
       await httpClient.put<ApiResponse<Farm>>(`/farms/${farm.id}`, {
         name,
@@ -1018,9 +1023,10 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
         latitude: latitude ? Number(latitude) : null,
         longitude: longitude ? Number(longitude) : null,
       });
+      toast.success("Farm updated", `"${name}" has been saved.`);
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update farm");
+      toast.error("Failed to update farm", err instanceof Error ? err.message : undefined);
     } finally { setSubmitting(false); }
   }
 
@@ -1061,7 +1067,6 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
               placeholder="73.8567" />
           </div>
         </div>
-        {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
         <button type="submit" disabled={submitting}
           className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
           {submitting && <Loader2 className="w-4 h-4 animate-spin" />}

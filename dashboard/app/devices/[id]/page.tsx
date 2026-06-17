@@ -14,6 +14,7 @@ import { httpClient } from "@/lib/api";
 import { socketClient } from "@/lib/socket";
 import { ApiResponse, Actuator, DeviceDetail, Sensor } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 
 // ── Power event helpers ───────────────────────────────────────────────────────
 interface PowerEvent { event_type: "power_on" | "power_off"; created_at: string; }
@@ -80,6 +81,7 @@ function buildDayRecords(events: PowerEvent[], deviceOnline: boolean): DayRecord
 export default function DeviceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { isAuthenticated } = useAuth();
+  const toast = useToast();
   const [device, setDevice] = useState<DeviceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [showApiKey, setShowApiKey] = useState(false);
@@ -152,8 +154,14 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
   }, [isAuthenticated, device?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleToggle(actuatorId: number, state: "on" | "off", durationMinutes: number) {
-    const res = await httpClient.post<ApiResponse<Actuator>>(`/actuators/${actuatorId}/toggle`, { state, duration_minutes: durationMinutes });
-    setDevice((prev) => prev ? { ...prev, actuators: prev.actuators.map((a) => a.id === actuatorId ? { ...a, ...res.data } : a) } : prev);
+    try {
+      const res = await httpClient.post<ApiResponse<Actuator>>(`/actuators/${actuatorId}/toggle`, { state, duration_minutes: durationMinutes });
+      setDevice((prev) => prev ? { ...prev, actuators: prev.actuators.map((a) => a.id === actuatorId ? { ...a, ...res.data } : a) } : prev);
+      const actuatorName = device?.actuators.find((a) => a.id === actuatorId)?.name ?? "Actuator";
+      toast.success(state === "on" ? `${actuatorName} turned ON` : `${actuatorName} turned OFF`);
+    } catch (err) {
+      toast.error("Failed to toggle actuator", err instanceof Error ? err.message : undefined);
+    }
   }
 
   async function handleRegenerateKey() {
@@ -543,11 +551,11 @@ function AddSensorModal({ deviceId, farmId, onClose, onCreated }: { deviceId: nu
   const [minThreshold, setMinThreshold] = useState("");
   const [maxThreshold, setMaxThreshold] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500";
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault(); setError(null); setSubmitting(true);
+    e.preventDefault(); setSubmitting(true);
     try {
       const res = await httpClient.post<ApiResponse<Sensor>>("/sensors", {
         device_id: deviceId, farm_id: farmId || undefined, name,
@@ -555,9 +563,10 @@ function AddSensorModal({ deviceId, farmId, onClose, onCreated }: { deviceId: nu
         min_threshold: minThreshold ? Number(minThreshold) : undefined,
         max_threshold: maxThreshold ? Number(maxThreshold) : undefined,
       });
+      toast.success("Sensor added", `"${name}" is now monitoring.`);
       onCreated(res.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add sensor");
+      toast.error("Failed to add sensor", err instanceof Error ? err.message : undefined);
     } finally { setSubmitting(false); }
   }
 
@@ -600,7 +609,6 @@ function AddSensorModal({ deviceId, farmId, onClose, onCreated }: { deviceId: nu
             <input type="number" step="any" value={maxThreshold} onChange={(e) => setMaxThreshold(e.target.value)} className={inp} />
           </div>
         </div>
-        {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
         <button type="submit" disabled={submitting}
           className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
           {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -622,20 +630,21 @@ function AddActuatorModal({ deviceId, farmId, relayCount, existingChannels, onCl
   const [relayChannel, setRelayChannel] = useState(availableChannels[0]?.toString() || "");
   const [maxRuntime, setMaxRuntime] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500";
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault(); setError(null); setSubmitting(true);
+    e.preventDefault(); setSubmitting(true);
     try {
       const res = await httpClient.post<ApiResponse<Actuator>>("/actuators", {
         device_id: deviceId, farm_id: farmId || undefined, name,
         actuator_type: actuatorType, relay_channel: Number(relayChannel),
         max_runtime_minutes: maxRuntime ? Number(maxRuntime) : undefined,
       });
+      toast.success("Actuator added", `"${name}" is ready to control.`);
       onCreated(res.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add actuator");
+      toast.error("Failed to add actuator", err instanceof Error ? err.message : undefined);
     } finally { setSubmitting(false); }
   }
 
@@ -672,7 +681,6 @@ function AddActuatorModal({ deviceId, farmId, relayCount, existingChannels, onCl
             <label className="block text-sm font-medium text-slate-700 mb-1">Max runtime, minutes (optional safety cutoff)</label>
             <input type="number" min={0} value={maxRuntime} onChange={(e) => setMaxRuntime(e.target.value)} className={inp} placeholder="e.g. 120" />
           </div>
-          {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
           <button type="submit" disabled={submitting}
             className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}

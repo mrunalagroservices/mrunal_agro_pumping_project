@@ -6,6 +6,7 @@ import DashboardShell from "@/components/DashboardShell";
 import Modal from "@/components/Modal";
 import { httpClient } from "@/lib/api";
 import { ApiResponse, AutomationRule, Schedule, Sensor, Actuator } from "@/lib/types";
+import { useToast } from "@/contexts/ToastContext";
 
 const CONDITION_LABELS: Record<string, string> = {
   "<": "is below",
@@ -20,6 +21,7 @@ type Tab = "rules" | "schedules";
 
 export default function AutomationPage() {
   const [tab, setTab] = useState<Tab>("rules");
+  const toast = useToast();
 
   // ── shared data ─────────────────────────────────────────────────────────────
   const [sensors, setSensors] = useState<Sensor[]>([]);
@@ -30,7 +32,6 @@ export default function AutomationPage() {
   const [rules, setRules] = useState<AutomationRule[]>([]);
   const [showRuleModal, setShowRuleModal] = useState(false);
   const [ruleSubmitting, setRuleSubmitting] = useState(false);
-  const [ruleError, setRuleError] = useState<string | null>(null);
   const [ruleName, setRuleName] = useState("");
   const [triggerSensorId, setTriggerSensorId] = useState("");
   const [triggerCondition, setTriggerCondition] = useState("<");
@@ -43,7 +44,6 @@ export default function AutomationPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [showSchedModal, setShowSchedModal] = useState(false);
   const [schedSubmitting, setSchedSubmitting] = useState(false);
-  const [schedError, setSchedError] = useState<string | null>(null);
   const [schedName, setSchedName] = useState("");
   const [schedActuatorId, setSchedActuatorId] = useState("");
   const [startTime, setStartTime] = useState("06:00");
@@ -82,11 +82,11 @@ export default function AutomationPage() {
   // ── rule handlers ────────────────────────────────────────────────────────────
   function resetRuleForm() {
     setRuleName(""); setTriggerCondition("<"); setTriggerValue("");
-    setActionState("on"); setActionDuration(""); setRuleError(null);
+    setActionState("on"); setActionDuration("");
   }
 
   async function handleCreateRule(e: FormEvent) {
-    e.preventDefault(); setRuleError(null); setRuleSubmitting(true);
+    e.preventDefault(); setRuleSubmitting(true);
     try {
       await httpClient.post<ApiResponse<AutomationRule>>("/automation-rules", {
         name: ruleName,
@@ -98,28 +98,37 @@ export default function AutomationPage() {
         action_duration_minutes: actionDuration ? Number(actionDuration) : 0,
       });
       setShowRuleModal(false); resetRuleForm(); loadAll();
+      toast.success("Rule created", `"${ruleName}" will trigger automatically.`);
     } catch (err) {
-      setRuleError(err instanceof Error ? err.message : "Failed to create rule");
+      toast.error("Failed to create rule", err instanceof Error ? err.message : undefined);
     } finally { setRuleSubmitting(false); }
   }
 
   async function toggleRule(rule: AutomationRule) {
-    await httpClient.put<ApiResponse<AutomationRule>>(`/automation-rules/${rule.id}`, {
-      is_active: !rule.is_active,
-    });
-    setRules((prev) => prev.map((r) => r.id === rule.id ? { ...r, is_active: !rule.is_active } : r));
+    try {
+      await httpClient.put<ApiResponse<AutomationRule>>(`/automation-rules/${rule.id}`, { is_active: !rule.is_active });
+      setRules((prev) => prev.map((r) => r.id === rule.id ? { ...r, is_active: !rule.is_active } : r));
+      toast.info(rule.is_active ? "Rule paused" : "Rule activated");
+    } catch (err) {
+      toast.error("Failed to update rule", err instanceof Error ? err.message : undefined);
+    }
   }
 
   async function deleteRule(id: number) {
     if (!confirm("Delete this automation rule?")) return;
-    await httpClient.delete<ApiResponse<null>>(`/automation-rules/${id}`);
-    loadAll();
+    try {
+      await httpClient.delete<ApiResponse<null>>(`/automation-rules/${id}`);
+      loadAll();
+      toast.success("Rule deleted");
+    } catch (err) {
+      toast.error("Failed to delete rule", err instanceof Error ? err.message : undefined);
+    }
   }
 
   // ── schedule handlers ────────────────────────────────────────────────────────
   function resetSchedForm() {
     setSchedName(""); setStartTime("06:00"); setDurationMinutes("");
-    setDaysOfWeek([0, 1, 2, 3, 4, 5, 6]); setSchedError(null);
+    setDaysOfWeek([0, 1, 2, 3, 4, 5, 6]);
   }
 
   function toggleDay(day: number) {
@@ -129,8 +138,8 @@ export default function AutomationPage() {
   }
 
   async function handleCreateSchedule(e: FormEvent) {
-    e.preventDefault(); setSchedError(null);
-    if (daysOfWeek.length === 0) { setSchedError("Select at least one day"); return; }
+    e.preventDefault();
+    if (daysOfWeek.length === 0) { toast.warning("Select at least one day", "Choose which days this schedule runs."); return; }
     setSchedSubmitting(true);
     try {
       await httpClient.post<ApiResponse<Schedule>>("/schedules", {
@@ -141,20 +150,31 @@ export default function AutomationPage() {
         duration_minutes: Number(durationMinutes),
       });
       setShowSchedModal(false); resetSchedForm(); loadAll();
+      toast.success("Schedule created", `"${schedName}" is now active.`);
     } catch (err) {
-      setSchedError(err instanceof Error ? err.message : "Failed to create schedule");
+      toast.error("Failed to create schedule", err instanceof Error ? err.message : undefined);
     } finally { setSchedSubmitting(false); }
   }
 
   async function toggleSchedule(s: Schedule) {
-    await httpClient.put<ApiResponse<Schedule>>(`/schedules/${s.id}`, { is_active: !s.is_active });
-    setSchedules((prev) => prev.map((x) => x.id === s.id ? { ...x, is_active: !s.is_active } : x));
+    try {
+      await httpClient.put<ApiResponse<Schedule>>(`/schedules/${s.id}`, { is_active: !s.is_active });
+      setSchedules((prev) => prev.map((x) => x.id === s.id ? { ...x, is_active: !s.is_active } : x));
+      toast.info(s.is_active ? "Schedule paused" : "Schedule activated");
+    } catch (err) {
+      toast.error("Failed to update schedule", err instanceof Error ? err.message : undefined);
+    }
   }
 
   async function deleteSchedule(id: number) {
     if (!confirm("Delete this schedule?")) return;
-    await httpClient.delete<ApiResponse<null>>(`/schedules/${id}`);
-    loadAll();
+    try {
+      await httpClient.delete<ApiResponse<null>>(`/schedules/${id}`);
+      loadAll();
+      toast.success("Schedule deleted");
+    } catch (err) {
+      toast.error("Failed to delete schedule", err instanceof Error ? err.message : undefined);
+    }
   }
 
   // ── shared input class ───────────────────────────────────────────────────────
@@ -410,7 +430,6 @@ export default function AutomationPage() {
                   onChange={(e) => setActionDuration(e.target.value)} className={inp} placeholder="0" />
               </div>
             )}
-            {ruleError && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{ruleError}</p>}
             <button type="submit" disabled={ruleSubmitting}
               className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {ruleSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -459,7 +478,6 @@ export default function AutomationPage() {
                 ))}
               </div>
             </div>
-            {schedError && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{schedError}</p>}
             <button type="submit" disabled={schedSubmitting}
               className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {schedSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
