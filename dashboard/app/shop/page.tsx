@@ -7,6 +7,7 @@ import {
   ChevronLeft, Lock, Smartphone,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
+import { getSavedAddresses, SavedAddress } from "@/lib/savedAddresses";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Product {
@@ -94,7 +95,16 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
   onSuccess: () => void;
 }) {
   const [step, setStep] = useState<CheckoutStep>("address");
-  const [addr, setAddr] = useState<Address>({ name: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+  const [savedAddrs] = useState<SavedAddress[]>(() => getSavedAddresses());
+  const [selectedSavedId, setSelectedSavedId] = useState<string | null>(() => {
+    const def = getSavedAddresses().find((a) => a.isDefault);
+    return def?.id ?? null;
+  });
+  const [addr, setAddr] = useState<Address>(() => {
+    const def = getSavedAddresses().find((a) => a.isDefault);
+    if (def) return { name: def.name, phone: def.phone, line1: def.line1, line2: def.line2, city: def.city, state: def.state, pincode: def.pincode };
+    return { name: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "" };
+  });
   const [payMethod, setPayMethod] = useState<PayMethod>("cod");
   const [couponInput, setCouponInput] = useState("");
   const [couponError, setCouponError] = useState("");
@@ -116,6 +126,12 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
 
   function setField(key: keyof Address, val: string) {
     setAddr((a) => ({ ...a, [key]: val }));
+    setSelectedSavedId(null); // manual edit → deselect saved
+  }
+
+  function pickSaved(sa: SavedAddress) {
+    setSelectedSavedId(sa.id);
+    setAddr({ name: sa.name, phone: sa.phone, line1: sa.line1, line2: sa.line2, city: sa.city, state: sa.state, pincode: sa.pincode });
   }
 
   function applyCoupon() {
@@ -188,6 +204,41 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
           {/* ── Step 1: Address ── */}
           {step === "address" && (
             <>
+              {/* Saved address picker */}
+              {savedAddrs.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 mb-2">Saved Addresses</p>
+                  <div className="flex flex-col gap-2">
+                    {savedAddrs.map((sa) => (
+                      <button
+                        key={sa.id}
+                        type="button"
+                        onClick={() => pickSaved(sa)}
+                        className={`w-full flex items-start gap-3 border-2 rounded-xl p-3 text-left transition-colors ${selectedSavedId === sa.id ? "border-green-500 bg-green-50" : "border-slate-200 hover:border-slate-300 bg-white"}`}
+                      >
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${selectedSavedId === sa.id ? "bg-green-100" : "bg-slate-100"}`}>
+                          <MapPin className={`w-3.5 h-3.5 ${selectedSavedId === sa.id ? "text-green-600" : "text-slate-500"}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${selectedSavedId === sa.id ? "bg-green-600 text-white" : "bg-slate-100 text-slate-600"}`}>{sa.label}</span>
+                            {sa.isDefault && <span className="text-[10px] font-semibold text-amber-600">★ Default</span>}
+                          </div>
+                          <p className="text-sm font-semibold text-slate-800">{sa.name} · {sa.phone}</p>
+                          <p className="text-xs text-slate-500 truncate">{sa.line1}{sa.line2 ? `, ${sa.line2}` : ""}, {sa.city}, {sa.state} – {sa.pincode}</p>
+                        </div>
+                        {selectedSavedId === sa.id && <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-3 my-3">
+                    <div className="flex-1 h-px bg-slate-100" />
+                    <span className="text-xs text-slate-400 font-medium">or enter a new address</span>
+                    <div className="flex-1 h-px bg-slate-100" />
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">Full Name *</label>
