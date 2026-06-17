@@ -64,7 +64,7 @@ function AddressFormModal({ initial, onSave, onClose }: {
     onSave({ ...form, id: initial?.id ?? newId() } as SavedAddress);
   }
 
-  const valid = form.label && form.name && form.phone.length >= 10 && form.line1 && form.city && form.state && form.pincode.length === 6;
+  const valid = form.label && form.name && form.phone.replace(/\D/g, "").length >= 7 && form.line1 && form.city && form.state && form.pincode.length === 6;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -93,7 +93,7 @@ function AddressFormModal({ initial, onSave, onClose }: {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5">Phone *</label>
-              <input className={inp} type="tel" maxLength={10} value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="9876543210" />
+              <input className={inp} type="tel" maxLength={15} value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="9876543210" />
             </div>
           </div>
           <div>

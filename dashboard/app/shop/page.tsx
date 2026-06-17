@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ShoppingCart, Search, Star, Truck, X, Plus, Minus, Trash2, Package,
   MapPin, CreditCard, Banknote, Tag, CheckCircle2, ChevronRight,
@@ -130,8 +130,14 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
   }
 
   function pickSaved(sa: SavedAddress) {
-    setSelectedSavedId(sa.id);
-    setAddr({ name: sa.name, phone: sa.phone, line1: sa.line1, line2: sa.line2, city: sa.city, state: sa.state, pincode: sa.pincode });
+    if (selectedSavedId === sa.id) {
+      // Tap again to deselect → clear form
+      setSelectedSavedId(null);
+      setAddr({ name: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+    } else {
+      setSelectedSavedId(sa.id);
+      setAddr({ name: sa.name, phone: sa.phone, line1: sa.line1, line2: sa.line2, city: sa.city, state: sa.state, pincode: sa.pincode });
+    }
   }
 
   function applyCoupon() {
@@ -146,7 +152,7 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
   function removeCoupon() { setAppliedCoupon(null); setCouponInput(""); setCouponError(""); }
 
   function canProceedAddress() {
-    return addr.name && addr.phone.length >= 10 && addr.line1 && addr.city && addr.state && addr.pincode.length === 6;
+    return addr.name && addr.phone.replace(/\D/g, "").length >= 7 && addr.line1 && addr.city && addr.state && addr.pincode.length === 6;
   }
 
   function canProceedPayment() {
@@ -246,7 +252,7 @@ function CheckoutModal({ cart, onChange, onClose, onSuccess }: {
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">Phone Number *</label>
-                  <input className={inp} type="tel" value={addr.phone} onChange={(e) => setField("phone", e.target.value)} placeholder="98765 43210" maxLength={10} />
+                  <input className={inp} type="tel" value={addr.phone} onChange={(e) => setField("phone", e.target.value)} placeholder="98765 43210" maxLength={15} />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">Address Line 1 *</label>
@@ -592,11 +598,30 @@ function OrderSuccess({ onClose }: { onClose: () => void }) {
 export default function ShopPage() {
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("mrunal_cart") : null;
+      if (!raw) return [];
+      // Restore product references from PRODUCTS array (avoids stale embedded data)
+      const parsed: { productId: number; qty: number }[] = JSON.parse(raw);
+      return parsed.flatMap(({ productId, qty }) => {
+        const p = PRODUCTS.find((x) => x.id === productId);
+        return p ? [{ product: p, qty }] : [];
+      });
+    } catch {
+      return [];
+    }
+  });
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
+
+  // Persist cart to localStorage on every change
+  useEffect(() => {
+    const slim = cart.map((i) => ({ productId: i.product.id, qty: i.qty }));
+    localStorage.setItem("mrunal_cart", JSON.stringify(slim));
+  }, [cart]);
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
