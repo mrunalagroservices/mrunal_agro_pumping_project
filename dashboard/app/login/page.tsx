@@ -3,7 +3,7 @@
 import { useState, FormEvent, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, XCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
@@ -42,7 +42,8 @@ export default function LoginPage() {
         });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      setError(msg === "Unauthorized" ? "Incorrect email or password. Please try again." : msg);
     } finally {
       setSubmitting(false);
     }
@@ -145,9 +146,10 @@ export default function LoginPage() {
             )}
 
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-                {error}
-              </p>
+              <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                <p className="text-sm text-red-700 font-medium">{error}</p>
+              </div>
             )}
 
             <button

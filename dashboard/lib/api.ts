@@ -45,7 +45,7 @@ class HttpClient {
 
     if (res.status === 401) {
       this.clearToken();
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }
       throw new Error("Unauthorized");
