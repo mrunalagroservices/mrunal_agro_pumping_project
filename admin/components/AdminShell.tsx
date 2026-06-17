@@ -5,13 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, ReactNode } from "react";
 import {
   LayoutDashboard, Users, ShoppingBag, LogOut, ShieldCheck,
-  Warehouse, ClipboardList, History, Settings2,
+  Warehouse, ClipboardList, History, Settings2, UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const NAV = [
   { href: "/overview",       label: "Overview",        icon: LayoutDashboard },
   { href: "/farmers",        label: "Farmers",         icon: Users           },
+  { href: "/users",          label: "Users",           icon: UserCircle      },
   { href: "/farms",          label: "Farms & Devices", icon: Warehouse       },
   { href: "/products",       label: "Products",        icon: ShoppingBag     },
   { href: "/orders",         label: "Orders",          icon: ClipboardList   },

@@ -68,6 +68,38 @@ export interface AdminDevice {
   created_at: string;
 }
 
+export interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: string;
+  org_name: string;
+  order_count: number;
+  last_order_at?: string | null;
+  created_at: string;
+}
+
+export interface UserProfile {
+  user: AdminUser & { org_id: number };
+  orders: Array<{
+    id: number;
+    status: string;
+    payment_method: string;
+    delivery_address: { name: string; phone: string; line1: string; line2?: string; city: string; state: string; pincode: string };
+    subtotal: number;
+    delivery_charge: number;
+    discount: number;
+    total: number;
+    coupon_code?: string | null;
+    created_at: string;
+    items: OrderItem[];
+  }>;
+  cart: Array<{ product: { id: number; name: string; image_url?: string | null; unit?: string | null; price: number }; qty: number }>;
+  top_searches: Array<{ query: string; count: number }>;
+  payment_methods: Array<{ payment_method: string; count: number }>;
+}
+
 export interface ShopSettings {
   price_range: { min: number; max: number };
   rating_options: number[];

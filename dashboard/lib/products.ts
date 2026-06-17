@@ -22,4 +22,14 @@ export function cartFromStorage(): CartItem[] {
 export function cartToStorage(cart: CartItem[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  // Fire-and-forget server sync so admin can see live cart state
+  const token = localStorage.getItem("pumping_auth_token");
+  if (token) {
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3010/api/v1";
+    fetch(`${base}/cart`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ items: cart }),
+    }).catch(() => {});
+  }
 }

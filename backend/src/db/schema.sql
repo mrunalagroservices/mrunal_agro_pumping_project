@@ -275,6 +275,13 @@ INSERT INTO shop_settings (key, value) VALUES
   ('delivery_charge_online','100'),
   ('coupons',               '[{"code":"FARM10","type":"percent","value":10,"min_order":0,"is_active":true},{"code":"SAVE50","type":"flat","value":50,"min_order":500,"is_active":true},{"code":"AGRO20","type":"percent","value":20,"min_order":1000,"is_active":true}]');
 
+-- ─── User carts (server-side cart snapshot for admin visibility) ──────────────
+CREATE TABLE user_carts (
+  user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  items      JSONB NOT NULL DEFAULT '[]',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ─── Power events (electricity ON/OFF reported by battery-powered ESP32) ──────
 CREATE TABLE power_events (
   id               BIGSERIAL PRIMARY KEY,

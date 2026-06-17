@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import {
-  ChevronDown, ChevronRight, Wifi, WifiOff, Zap, Cpu, MapPin, Phone, Mail, Trash2, Users,
+  ChevronDown, ChevronRight, Wifi, WifiOff, Zap, Cpu, MapPin, Phone, Mail, Trash2, Users, UserCircle,
 } from "lucide-react";
 import AdminShell from "@/components/AdminShell";
 import { httpClient } from "@/lib/api";
@@ -62,13 +63,25 @@ function FarmerRow({ farmer, onDelete }: { farmer: AdminFarmer; onDelete: (id: n
           {new Date(farmer.created_at).toLocaleDateString("en-IN")}
         </td>
         <td className="px-4 py-3 text-center">
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(farmer.id, farmer.org_name); }}
-            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Delete organisation"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="flex items-center justify-center gap-1">
+            {farmer.owner_id && (
+              <Link
+                href={`/users/${farmer.owner_id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="p-1.5 text-teal-500 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
+                title="View user profile"
+              >
+                <UserCircle className="w-4 h-4" />
+              </Link>
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(farmer.id, farmer.org_name); }}
+              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Delete organisation"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </td>
       </tr>
 

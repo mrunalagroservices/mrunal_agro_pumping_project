@@ -385,6 +385,111 @@ router.put('/shop-settings', async (req, res) => {
   }
 });
 
+// ── Users ──────────────────────────────────────────────────────────────────────
+
+// GET /api/v1/admin/users — list all non-admin users with order count
+router.get('/users', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        u.id, u.name, u.email, u.phone, u.role, u.created_at,
+        o.name AS org_name,
+        COUNT(DISTINCT ord.id) AS order_count,
+        MAX(ord.created_at)    AS last_order_at
+      FROM users u
+      JOIN organizations o ON o.id = u.organization_id
+      LEFT JOIN orders ord ON ord.user_id = u.id
+      WHERE u.is_admin = false
+      GROUP BY u.id, o.name
+      ORDER BY u.created_at DESC
+    `);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error('[Admin/users GET]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch users' });
+  }
+});
+
+// GET /api/v1/admin/users/:id — full user profile
+router.get('/users/:id', async (req, res) => {
+  try {
+    const uid = req.params.id;
+
+    // User + org info
+    const userRes = await db.query(`
+      SELECT u.id, u.name, u.email, u.phone, u.role, u.created_at,
+             o.name AS org_name, o.id AS org_id
+      FROM users u
+      JOIN organizations o ON o.id = u.organization_id
+      WHERE u.id = $1
+    `, [uid]);
+    if (!userRes.rows.length) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // Orders with items
+    const ordersRes = await db.query(`
+      SELECT o.id, o.status, o.payment_method, o.delivery_address,
+             o.subtotal, o.delivery_charge, o.discount, o.total,
+             o.coupon_code, o.created_at
+      FROM orders o
+      WHERE o.user_id = $1
+      ORDER BY o.created_at DESC
+      LIMIT 50
+    `, [uid]);
+
+    let orders = ordersRes.rows;
+    if (orders.length) {
+      const orderIds = orders.map((o) => o.id);
+      const itemsRes = await db.query(
+        `SELECT * FROM order_items WHERE order_id = ANY($1)`,
+        [orderIds]
+      );
+      const itemsByOrder = {};
+      itemsRes.rows.forEach((item) => {
+        if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
+        itemsByOrder[item.order_id].push(item);
+      });
+      orders = orders.map((o) => ({ ...o, items: itemsByOrder[o.id] || [] }));
+    }
+
+    // Cart
+    const cartRes = await db.query('SELECT items FROM user_carts WHERE user_id = $1', [uid]);
+    const cartItems = cartRes.rows[0]?.items ?? [];
+
+    // Top searches
+    const searchRes = await db.query(`
+      SELECT query, COUNT(*) AS count
+      FROM search_history
+      WHERE user_id = $1
+      GROUP BY query
+      ORDER BY count DESC
+      LIMIT 10
+    `, [uid]);
+
+    // Payment preference
+    const paymentRes = await db.query(`
+      SELECT payment_method, COUNT(*) AS count
+      FROM orders
+      WHERE user_id = $1
+      GROUP BY payment_method
+      ORDER BY count DESC
+    `, [uid]);
+
+    res.json({
+      success: true,
+      data: {
+        user: userRes.rows[0],
+        orders,
+        cart: cartItems,
+        top_searches: searchRes.rows,
+        payment_methods: paymentRes.rows,
+      },
+    });
+  } catch (err) {
+    console.error('[Admin/users/:id GET]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch user profile' });
+  }
+});
+
 // ── Farmers (org) delete ───────────────────────────────────────────────────────
 
 // DELETE /api/v1/admin/farmers/:orgId
