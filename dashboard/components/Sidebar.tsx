@@ -12,7 +12,6 @@ import {
   Map,
   Settings,
   LogOut,
-  ShieldCheck,
   ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -121,22 +120,6 @@ export default function Sidebar() {
           );
         })}
 
-        {user?.is_admin && (
-          <>
-            <div className="my-2 border-t border-slate-100" />
-            <Link
-              href="/admin"
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                pathname.startsWith("/admin")
-                  ? "bg-red-50 text-red-700"
-                  : "text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              <ShieldCheck className="w-5 h-5" />
-              Admin Dashboard
-            </Link>
-          </>
-        )}
       </nav>
 
       <div className="px-3 py-4 border-t border-slate-200">
