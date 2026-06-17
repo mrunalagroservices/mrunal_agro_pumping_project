@@ -172,4 +172,114 @@ router.delete('/products/:id', async (req, res) => {
   }
 });
 
+// ── Farms CRUD ─────────────────────────────────────────────────────────────────
+
+// GET /api/v1/admin/farms — all farms across all orgs
+router.get('/farms', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT f.*, o.name AS org_name,
+        COUNT(DISTINCT d.id)::int AS device_count,
+        COUNT(DISTINCT a.id)::int AS actuator_count
+      FROM farms f
+      LEFT JOIN organizations o ON o.id = f.organization_id
+      LEFT JOIN devices d ON d.farm_id = f.id
+      LEFT JOIN actuators a ON a.farm_id = f.id
+      GROUP BY f.id, o.name
+      ORDER BY f.created_at DESC
+    `);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch farms' });
+  }
+});
+
+// PUT /api/v1/admin/farms/:id
+router.put('/farms/:id', async (req, res) => {
+  const { name, location } = req.body;
+  try {
+    const result = await db.query(
+      `UPDATE farms SET name = COALESCE($1, name), location = COALESCE($2, location) WHERE id = $3 RETURNING *`,
+      [name, location, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Farm not found' });
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to update farm' });
+  }
+});
+
+// DELETE /api/v1/admin/farms/:id
+router.delete('/farms/:id', async (req, res) => {
+  try {
+    const result = await db.query('DELETE FROM farms WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Farm not found' });
+    res.json({ success: true, data: { id: result.rows[0].id } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete farm' });
+  }
+});
+
+// ── Devices CRUD ───────────────────────────────────────────────────────────────
+
+// GET /api/v1/admin/devices — all devices
+router.get('/devices', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT d.*, f.name AS farm_name, o.name AS org_name,
+        COUNT(DISTINCT a.id)::int AS actuator_count,
+        COUNT(DISTINCT s.id)::int AS sensor_count
+      FROM devices d
+      LEFT JOIN farms f ON f.id = d.farm_id
+      LEFT JOIN organizations o ON o.id = d.organization_id
+      LEFT JOIN actuators a ON a.device_id = d.id
+      LEFT JOIN sensors s ON s.device_id = d.id
+      GROUP BY d.id, f.name, o.name
+      ORDER BY d.created_at DESC
+    `);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch devices' });
+  }
+});
+
+// PUT /api/v1/admin/devices/:id
+router.put('/devices/:id', async (req, res) => {
+  const { name, device_type } = req.body;
+  try {
+    const result = await db.query(
+      `UPDATE devices SET name = COALESCE($1, name), device_type = COALESCE($2, device_type) WHERE id = $3 RETURNING *`,
+      [name, device_type, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Device not found' });
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to update device' });
+  }
+});
+
+// DELETE /api/v1/admin/devices/:id
+router.delete('/devices/:id', async (req, res) => {
+  try {
+    const result = await db.query('DELETE FROM devices WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Device not found' });
+    res.json({ success: true, data: { id: result.rows[0].id } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete device' });
+  }
+});
+
+// ── Farmers (org) delete ───────────────────────────────────────────────────────
+
+// DELETE /api/v1/admin/farmers/:orgId
+router.delete('/farmers/:orgId', async (req, res) => {
+  try {
+    const result = await db.query('DELETE FROM organizations WHERE id = $1 RETURNING id', [req.params.orgId]);
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Organisation not found' });
+    res.json({ success: true, data: { id: result.rows[0].id } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete organisation' });
+  }
+});
+
 module.exports = router;

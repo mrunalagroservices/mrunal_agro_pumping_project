@@ -42,6 +42,32 @@ export interface AdminFarmerDetail {
   actuators: { id: number; name: string; actuator_type: string; current_state: string; device_id: number }[];
 }
 
+export interface AdminFarm {
+  id: number;
+  name: string;
+  location?: string | null;
+  organization_id: number;
+  org_name: string;
+  device_count: number;
+  actuator_count: number;
+  created_at: string;
+}
+
+export interface AdminDevice {
+  id: number;
+  name: string;
+  device_type: string;
+  status: string;
+  last_seen_at?: string | null;
+  farm_id?: number | null;
+  farm_name?: string | null;
+  organization_id: number;
+  org_name: string;
+  actuator_count: number;
+  sensor_count: number;
+  created_at: string;
+}
+
 export interface Product {
   id: number;
   name: string;
