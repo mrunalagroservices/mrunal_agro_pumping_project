@@ -116,18 +116,25 @@ function ZoneModal({
 }) {
   const [form, setForm] = useState<Partial<Zone>>(zone ?? {});
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    try { await onSave(form); }
-    finally { setSaving(false); }
+    setError(null);
+    try {
+      await onSave(form);
+    } catch (err) {
+      setError((err as Error).message || "Failed to save zone");
+      setSaving(false);
+    }
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
         <h3 className="font-bold text-lg text-slate-800 mb-5">{zone?.id ? "Edit Zone" : "Add Zone"}</h3>
+        {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-3 py-2">{error}</div>}
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label className={labelCls}>Zone Name *</label>
@@ -189,6 +196,7 @@ function PlanModal({
     plan?.steps?.map((s) => ({ zone_id: s.zone_id ?? null, zone_name: s.zone_name ?? "", duration_minutes: s.duration_minutes })) ?? [{ zone_id: null, zone_name: "", duration_minutes: 15 }]
   );
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const totalMins = steps.reduce((s, st) => s + st.duration_minutes, 0);
 
@@ -215,14 +223,20 @@ function PlanModal({
     e.preventDefault();
     if (!steps.length) return;
     setSaving(true);
-    try { await onSave({ name, motor_actuator_id: motorId, steps }); }
-    finally { setSaving(false); }
+    setError(null);
+    try {
+      await onSave({ name, motor_actuator_id: motorId, steps });
+    } catch (err) {
+      setError((err as Error).message || "Failed to save plan");
+      setSaving(false);
+    }
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <h3 className="font-bold text-lg text-slate-800 mb-5">{plan?.id ? "Edit Plan" : "Create Irrigation Plan"}</h3>
+        {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-3 py-2">{error}</div>}
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label className={labelCls}>Plan Name *</label>
