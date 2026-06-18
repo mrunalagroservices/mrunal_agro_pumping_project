@@ -2,6 +2,7 @@
 
 import { useEffect, useState, FormEvent } from "react";
 import Link from "next/link";
+import Link from "next/link";
 import {
   Plus,
   MapPin,
@@ -27,6 +28,7 @@ import {
   ShieldCheck,
   ShieldOff,
   Settings2,
+  Droplets,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import Modal from "@/components/Modal";
@@ -449,6 +451,12 @@ export default function FarmsPage() {
                               </p>
                             )}
                           </div>
+                          <Link
+                            href={`/farms/${farm.id}`}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-bold rounded-xl transition-colors shrink-0"
+                          >
+                            <Droplets className="w-3.5 h-3.5" /> Zones & Plans
+                          </Link>
                           <span className="flex items-center gap-1 text-xs text-slate-500 shrink-0">
                             <Cpu className="w-3.5 h-3.5" />
                             {farmDevices.length} device{farmDevices.length !== 1 ? "s" : ""}

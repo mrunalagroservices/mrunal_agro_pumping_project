@@ -275,6 +275,72 @@ INSERT INTO shop_settings (key, value) VALUES
   ('delivery_charge_online','100'),
   ('coupons',               '[{"code":"FARM10","type":"percent","value":10,"min_order":0,"is_active":true},{"code":"SAVE50","type":"flat","value":50,"min_order":500,"is_active":true},{"code":"AGRO20","type":"percent","value":20,"min_order":1000,"is_active":true}]');
 
+-- ─── Irrigation / Zone Management ────────────────────────────────────────────
+
+CREATE TABLE zones (
+  id                  SERIAL PRIMARY KEY,
+  farm_id             INTEGER NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  organization_id     INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name                VARCHAR(100) NOT NULL,
+  crop_type           VARCHAR(100),
+  area_sqm            NUMERIC,
+  description         TEXT,
+  valve_actuator_id   INTEGER REFERENCES actuators(id) ON DELETE SET NULL,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_zones_farm ON zones(farm_id);
+
+CREATE TABLE irrigation_plans (
+  id                  SERIAL PRIMARY KEY,
+  farm_id             INTEGER NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  organization_id     INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name                VARCHAR(150) NOT NULL,
+  motor_actuator_id   INTEGER REFERENCES actuators(id) ON DELETE SET NULL,
+  is_active           BOOLEAN NOT NULL DEFAULT true,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE irrigation_plan_steps (
+  id                  SERIAL PRIMARY KEY,
+  plan_id             INTEGER NOT NULL REFERENCES irrigation_plans(id) ON DELETE CASCADE,
+  step_order          INTEGER NOT NULL,
+  zone_id             INTEGER REFERENCES zones(id) ON DELETE SET NULL,
+  zone_name           VARCHAR(100),
+  duration_minutes    INTEGER NOT NULL DEFAULT 15,
+  UNIQUE(plan_id, step_order)
+);
+
+CREATE TABLE irrigation_runs (
+  id                  SERIAL PRIMARY KEY,
+  plan_id             INTEGER REFERENCES irrigation_plans(id) ON DELETE SET NULL,
+  plan_name           VARCHAR(150),
+  farm_id             INTEGER REFERENCES farms(id) ON DELETE SET NULL,
+  organization_id     INTEGER REFERENCES organizations(id) ON DELETE SET NULL,
+  status              VARCHAR(50) NOT NULL DEFAULT 'running',
+  current_step        INTEGER NOT NULL DEFAULT 0,
+  total_steps         INTEGER NOT NULL DEFAULT 0,
+  triggered_by        VARCHAR(50) NOT NULL DEFAULT 'manual',
+  is_simulation       BOOLEAN NOT NULL DEFAULT false,
+  started_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at        TIMESTAMPTZ,
+  notes               TEXT
+);
+CREATE INDEX idx_irrigation_runs_farm ON irrigation_runs(farm_id, started_at DESC);
+
+CREATE TABLE irrigation_run_logs (
+  id                  SERIAL PRIMARY KEY,
+  run_id              INTEGER NOT NULL REFERENCES irrigation_runs(id) ON DELETE CASCADE,
+  step_order          INTEGER NOT NULL,
+  zone_id             INTEGER REFERENCES zones(id) ON DELETE SET NULL,
+  zone_name           VARCHAR(100),
+  duration_minutes    INTEGER NOT NULL,
+  started_at          TIMESTAMPTZ,
+  completed_at        TIMESTAMPTZ,
+  status              VARCHAR(50) NOT NULL DEFAULT 'pending'
+);
+
 -- ─── User carts (server-side cart snapshot for admin visibility) ──────────────
 CREATE TABLE user_carts (
   user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,

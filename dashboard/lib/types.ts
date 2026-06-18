@@ -106,6 +106,69 @@ export interface Farm {
   updated_at?: string;
 }
 
+// ─── Irrigation / Zone types ──────────────────────────────────────────────────
+export interface Zone {
+  id: number;
+  farm_id: number;
+  organization_id: number;
+  name: string;
+  crop_type?: string | null;
+  area_sqm?: number | null;
+  description?: string | null;
+  valve_actuator_id?: number | null;
+  valve_name?: string | null;
+  valve_state?: "on" | "off" | string | null;
+  created_at: string;
+}
+
+export interface IrrigationPlanStep {
+  id: number;
+  plan_id: number;
+  step_order: number;
+  zone_id?: number | null;
+  zone_name?: string | null;
+  duration_minutes: number;
+  valve_actuator_id?: number | null;
+  valve_name?: string | null;
+  valve_state?: string | null;
+}
+
+export interface IrrigationPlan {
+  id: number;
+  farm_id: number;
+  name: string;
+  motor_actuator_id?: number | null;
+  motor_name?: string | null;
+  motor_state?: string | null;
+  is_active: boolean;
+  created_at: string;
+  steps: IrrigationPlanStep[];
+}
+
+export interface IrrigationRunLog {
+  step_order: number;
+  zone_name?: string | null;
+  duration_minutes: number;
+  status: "pending" | "running" | "completed" | "aborted" | string;
+  started_at?: string | null;
+  completed_at?: string | null;
+}
+
+export interface IrrigationRun {
+  id: number;
+  plan_id?: number | null;
+  plan_name?: string | null;
+  farm_id?: number | null;
+  status: "running" | "completed" | "aborted" | string;
+  current_step: number;
+  total_steps: number;
+  triggered_by: string;
+  is_simulation: boolean;
+  started_at: string;
+  completed_at?: string | null;
+  steps?: IrrigationRunLog[];
+}
+
 export interface Device {
   id: number;
   organization_id: number;
