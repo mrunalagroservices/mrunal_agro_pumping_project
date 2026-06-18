@@ -593,7 +593,7 @@ export default function FarmDetailPage() {
 
   if (loading) {
     return (
-      <DashboardShell title="Farm">
+      <DashboardShell breadcrumb={[{ label: "Farms", href: "/farms" }, { label: "Farm" }]}>
         <div className="flex items-center justify-center h-64">
           <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -602,7 +602,7 @@ export default function FarmDetailPage() {
   }
 
   return (
-    <DashboardShell title={farm?.name ?? "Farm"}>
+    <DashboardShell breadcrumb={[{ label: "Farms", href: "/farms" }, { label: farm?.name ?? "Farm" }]}>
       {/* Back */}
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-5 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Farms
