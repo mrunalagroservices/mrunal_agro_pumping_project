@@ -8,12 +8,12 @@ import { ShopSettings, ApiResponse } from "@/lib/types";
 
 type Coupon = ShopSettings["coupons"][number];
 
-const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition";
+const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition";
 
 function SaveBtn({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick} disabled={saving}
-      className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-colors">
+      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-colors">
       {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         : saved ? <Check className="w-4 h-4" />
         : <Save className="w-4 h-4" />}
@@ -116,7 +116,7 @@ export default function ShopSettingsPage() {
     return (
       <AdminShell title="Shop Settings">
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
       </AdminShell>
     );
@@ -129,8 +129,8 @@ export default function ShopSettingsPage() {
         {/* Price Range */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center">
-              <IndianRupee className="w-4 h-4 text-teal-600" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <IndianRupee className="w-4 h-4 text-emerald-600" />
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-800">Price Range Filter</h2>
@@ -164,7 +164,7 @@ export default function ShopSettingsPage() {
           </div>
           <div className="flex flex-wrap gap-2 mb-4">
             {ratingOptions.map((r) => (
-              <div key={r} className="flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold px-3 py-1.5 rounded-full">
+              <div key={r} className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full">
                 {r === 0 ? "All" : <><Star className="w-3 h-3 fill-amber-400 text-amber-400" /> {r}+</>}
                 {r !== 0 && (
                   <button onClick={() => setRatingOptions((p) => p.filter((x) => x !== r))} className="ml-0.5 text-red-400 hover:text-red-600">
@@ -248,8 +248,8 @@ export default function ShopSettingsPage() {
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center">
-                <Tag className="w-4 h-4 text-teal-600" />
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <Tag className="w-4 h-4 text-emerald-600" />
               </div>
               <div>
                 <h2 className="text-sm font-bold text-slate-800">Coupon Codes</h2>
@@ -257,7 +257,7 @@ export default function ShopSettingsPage() {
               </div>
             </div>
             <button onClick={() => setShowNewCoupon((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition-colors">
+              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add Coupon
             </button>
           </div>
@@ -266,15 +266,15 @@ export default function ShopSettingsPage() {
           <div className="space-y-2 mb-4">
             {coupons.length === 0 && <p className="text-sm text-slate-400 italic">No coupons added yet</p>}
             {coupons.map((c) => (
-              <div key={c.code} className={`flex items-center gap-3 border rounded-xl px-4 py-3 ${c.is_active ? "border-teal-200 bg-teal-50/40" : "border-slate-200 bg-slate-50 opacity-60"}`}>
-                <span className="font-mono font-bold text-teal-700 text-sm">{c.code}</span>
+              <div key={c.code} className={`flex items-center gap-3 border rounded-xl px-4 py-3 ${c.is_active ? "border-emerald-200 bg-emerald-50/40" : "border-slate-200 bg-slate-50 opacity-60"}`}>
+                <span className="font-mono font-bold text-emerald-700 text-sm">{c.code}</span>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${c.type === "percent" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"}`}>
                   {c.type === "percent" ? `${c.value}% off` : `₹${c.value} off`}
                 </span>
                 {c.min_order > 0 && <span className="text-xs text-slate-500">Min ₹{c.min_order}</span>}
                 <div className="ml-auto flex items-center gap-2">
                   <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-600 font-medium">
-                    <input type="checkbox" checked={c.is_active} onChange={() => toggleCouponActive(c.code)} className="accent-teal-600 w-3.5 h-3.5" />
+                    <input type="checkbox" checked={c.is_active} onChange={() => toggleCouponActive(c.code)} className="accent-emerald-600 w-3.5 h-3.5" />
                     Active
                   </label>
                   <button onClick={() => setCoupons((p) => p.filter((x) => x.code !== c.code))} className="text-red-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition-colors">
@@ -287,7 +287,7 @@ export default function ShopSettingsPage() {
 
           {/* New coupon form */}
           {showNewCoupon && (
-            <div className="border border-dashed border-teal-300 rounded-xl p-4 mb-4 space-y-3 bg-teal-50/30">
+            <div className="border border-dashed border-emerald-300 rounded-xl p-4 mb-4 space-y-3 bg-emerald-50/30">
               <p className="text-xs font-bold text-slate-600 uppercase">New Coupon</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -312,7 +312,7 @@ export default function ShopSettingsPage() {
               </div>
               <div className="flex gap-2">
                 <button onClick={addCoupon} disabled={!newCoupon.code?.trim() || !newCoupon.value}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors">
+                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors">
                   <Plus className="w-4 h-4" /> Add
                 </button>
                 <button onClick={() => setShowNewCoupon(false)} className="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors">

@@ -15,7 +15,7 @@ import type { ApiResponse, ShopSettings } from "@/lib/types";
 // ── Image fallback ─────────────────────────────────────────────────────────────
 function PImg({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
   const [err, setErr] = useState(false);
-  if (!src || err) return <div className={`flex items-center justify-center text-2xl bg-teal-50 ${className}`}>🌿</div>;
+  if (!src || err) return <div className={`flex items-center justify-center text-2xl bg-emerald-50 ${className}`}>🌿</div>;
   return <img src={src} alt={alt} className={`object-cover ${className}`} onError={() => setErr(true)} />;
 }
 
@@ -42,23 +42,23 @@ const STATES = [
 function SuccessScreen({ orderId, total, onContinue }: { orderId: number; total: number; onContinue: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-24 h-24 bg-teal-50 rounded-full flex items-center justify-center mb-6">
-        <CheckCircle2 className="w-12 h-12 text-teal-600" />
+      <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-6">
+        <CheckCircle2 className="w-12 h-12 text-emerald-600" />
       </div>
       <h2 className="text-2xl font-black text-slate-800 mb-2">Order Placed!</h2>
       <p className="text-slate-500 mb-1">Your order has been confirmed.</p>
-      <p className="text-xs text-slate-400 mb-1">Order ID: <span className="font-mono font-bold text-teal-600">#{orderId}</span></p>
-      <p className="text-teal-600 font-semibold text-sm mb-8">Expected delivery by <strong>{deliveryDate()}</strong></p>
+      <p className="text-xs text-slate-400 mb-1">Order ID: <span className="font-mono font-bold text-emerald-600">#{orderId}</span></p>
+      <p className="text-emerald-600 font-semibold text-sm mb-8">Expected delivery by <strong>{deliveryDate()}</strong></p>
       <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-8 text-left space-y-2 text-sm text-slate-600 w-72 shadow-sm">
         <p>📦 Order #{orderId} confirmed · ₹{total.toLocaleString("en-IN")} {}</p>
         <p>🚚 Will be dispatched by tomorrow</p>
         <p>📞 Our team will call before delivery</p>
       </div>
       <div className="flex gap-3">
-        <button onClick={onContinue} className="px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-full transition-colors">
+        <button onClick={onContinue} className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full transition-colors">
           Continue Shopping
         </button>
-        <button onClick={() => window.location.href = "/settings?tab=orders"} className="px-8 py-3 border-2 border-teal-500 text-teal-600 hover:bg-teal-50 font-bold rounded-full transition-colors">
+        <button onClick={() => window.location.href = "/settings?tab=orders"} className="px-8 py-3 border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-bold rounded-full transition-colors">
           View My Orders
         </button>
       </div>
@@ -175,7 +175,7 @@ export default function CheckoutPage() {
     }
   }
 
-  const inp = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition bg-white";
+  const inp = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition bg-white";
 
   if (placedOrderId !== null) {
     return (
@@ -188,7 +188,7 @@ export default function CheckoutPage() {
   return (
     <DashboardShell breadcrumb={[{ label: "Market", href: "/shop" }, { label: "Checkout" }]}>
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.push("/shop")} className="flex items-center gap-2 text-sm text-slate-500 hover:text-teal-600 transition-colors">
+        <button onClick={() => router.push("/shop")} className="flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-600 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Market
         </button>
         <h1 className="text-2xl font-black text-slate-800">Checkout</h1>
@@ -202,7 +202,7 @@ export default function CheckoutPage() {
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
               <h2 className="font-bold text-slate-800">Delivery Address</h2>
               <button onClick={() => { setShowAddrForm(true); setSelectedSavedId(null); }}
-                className="flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700">
+                className="flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700">
                 <Plus className="w-3.5 h-3.5" /> New Address
               </button>
             </div>
@@ -215,7 +215,7 @@ export default function CheckoutPage() {
                 <p className="font-semibold text-slate-700 mb-1">No address saved</p>
                 <p className="text-xs text-slate-400 mb-4">Add an address to track your delivery</p>
                 <button onClick={() => setShowAddrForm(true)}
-                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-full transition-colors">
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-full transition-colors">
                   + Add New Address
                 </button>
               </div>
@@ -223,19 +223,19 @@ export default function CheckoutPage() {
               <div className="divide-y divide-slate-100">
                 {savedAddrs.map((sa) => (
                   <button key={sa.id} onClick={() => pickSaved(sa)}
-                    className={`w-full flex items-start gap-3 px-5 py-4 text-left transition-colors ${selectedSavedId === sa.id ? "bg-teal-50" : "hover:bg-slate-50"}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${selectedSavedId === sa.id ? "bg-teal-100" : "bg-slate-100"}`}>
-                      <MapPin className={`w-4 h-4 ${selectedSavedId === sa.id ? "text-teal-600" : "text-slate-400"}`} />
+                    className={`w-full flex items-start gap-3 px-5 py-4 text-left transition-colors ${selectedSavedId === sa.id ? "bg-emerald-50" : "hover:bg-slate-50"}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${selectedSavedId === sa.id ? "bg-emerald-100" : "bg-slate-100"}`}>
+                      <MapPin className={`w-4 h-4 ${selectedSavedId === sa.id ? "text-emerald-600" : "text-slate-400"}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${selectedSavedId === sa.id ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-600"}`}>{sa.label}</span>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${selectedSavedId === sa.id ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600"}`}>{sa.label}</span>
                         {sa.isDefault && <span className="text-[10px] font-semibold text-amber-600">★ Default</span>}
                       </div>
                       <p className="text-sm font-semibold text-slate-800">{sa.name} · {sa.phone}</p>
                       <p className="text-xs text-slate-500 line-clamp-1">{sa.line1}, {sa.city}, {sa.state} – {sa.pincode}</p>
                     </div>
-                    {selectedSavedId === sa.id && <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0 mt-1" />}
+                    {selectedSavedId === sa.id && <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-1" />}
                   </button>
                 ))}
               </div>
@@ -280,11 +280,11 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-3 bg-teal-50 border border-teal-100 rounded-2xl px-4 py-3">
-            <Truck className="w-5 h-5 text-teal-600 shrink-0" />
+          <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3">
+            <Truck className="w-5 h-5 text-emerald-600 shrink-0" />
             <div>
-              <p className="text-sm font-bold text-teal-800">Delivery by {deliveryDate()}</p>
-              <p className="text-xs text-teal-600">COD: Free · Online payment: ₹{shopSettings?.delivery_charge_online ?? 100} delivery charge</p>
+              <p className="text-sm font-bold text-emerald-800">Delivery by {deliveryDate()}</p>
+              <p className="text-xs text-emerald-600">COD: Free · Online payment: ₹{shopSettings?.delivery_charge_online ?? 100} delivery charge</p>
             </div>
           </div>
         </div>
@@ -297,26 +297,26 @@ export default function CheckoutPage() {
             </div>
             <div className="p-4 space-y-3">
               {/* COD */}
-              <label className={`flex items-center gap-3 border-2 rounded-xl p-3.5 cursor-pointer transition-colors ${payMethod === "cod" ? "border-teal-500 bg-teal-50" : "border-slate-200 hover:border-slate-300"}`}>
-                <input type="radio" className="accent-teal-600 w-4 h-4" checked={payMethod === "cod"} onChange={() => setPayMethod("cod")} />
-                <Banknote className="w-5 h-5 text-teal-600 shrink-0" />
+              <label className={`flex items-center gap-3 border-2 rounded-xl p-3.5 cursor-pointer transition-colors ${payMethod === "cod" ? "border-emerald-500 bg-emerald-50" : "border-slate-200 hover:border-slate-300"}`}>
+                <input type="radio" className="accent-emerald-600 w-4 h-4" checked={payMethod === "cod"} onChange={() => setPayMethod("cod")} />
+                <Banknote className="w-5 h-5 text-emerald-600 shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-slate-800">Cash on Delivery</p>
-                  <p className="text-xs text-teal-600 font-medium">Free delivery · Pay when you receive</p>
+                  <p className="text-xs text-emerald-600 font-medium">Free delivery · Pay when you receive</p>
                 </div>
-                {payMethod === "cod" && <CheckCircle2 className="w-5 h-5 text-teal-600" />}
+                {payMethod === "cod" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
               </label>
 
               {/* Card */}
-              <div className={`border-2 rounded-xl cursor-pointer transition-colors ${payMethod === "card" ? "border-teal-500 bg-teal-50" : "border-slate-200 hover:border-slate-300"}`}>
+              <div className={`border-2 rounded-xl cursor-pointer transition-colors ${payMethod === "card" ? "border-emerald-500 bg-emerald-50" : "border-slate-200 hover:border-slate-300"}`}>
                 <label className="flex items-center gap-3 p-3.5 cursor-pointer" onClick={() => setPayMethod("card")}>
-                  <input type="radio" className="accent-teal-600 w-4 h-4" checked={payMethod === "card"} onChange={() => setPayMethod("card")} />
+                  <input type="radio" className="accent-emerald-600 w-4 h-4" checked={payMethod === "card"} onChange={() => setPayMethod("card")} />
                   <CreditCard className="w-5 h-5 text-blue-600 shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-slate-800">Debit / Credit Card</p>
                     <p className="text-xs text-slate-500">Visa, Mastercard, RuPay · +₹{shopSettings?.delivery_charge_online ?? 100} delivery</p>
                   </div>
-                  {payMethod === "card" && <CheckCircle2 className="w-5 h-5 text-teal-600" />}
+                  {payMethod === "card" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
                 </label>
                 {payMethod === "card" && (
                   <div className="px-4 pb-4 space-y-2" onClick={(e) => e.stopPropagation()}>
@@ -334,15 +334,15 @@ export default function CheckoutPage() {
               </div>
 
               {/* UPI */}
-              <div className={`border-2 rounded-xl cursor-pointer transition-colors ${payMethod === "upi" ? "border-teal-500 bg-teal-50" : "border-slate-200 hover:border-slate-300"}`}>
+              <div className={`border-2 rounded-xl cursor-pointer transition-colors ${payMethod === "upi" ? "border-emerald-500 bg-emerald-50" : "border-slate-200 hover:border-slate-300"}`}>
                 <label className="flex items-center gap-3 p-3.5 cursor-pointer" onClick={() => setPayMethod("upi")}>
-                  <input type="radio" className="accent-teal-600 w-4 h-4" checked={payMethod === "upi"} onChange={() => setPayMethod("upi")} />
+                  <input type="radio" className="accent-emerald-600 w-4 h-4" checked={payMethod === "upi"} onChange={() => setPayMethod("upi")} />
                   <Smartphone className="w-5 h-5 text-purple-600 shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-slate-800">UPI / GPay / PhonePe</p>
                     <p className="text-xs text-slate-500">+₹{shopSettings?.delivery_charge_online ?? 100} delivery charge</p>
                   </div>
-                  {payMethod === "upi" && <CheckCircle2 className="w-5 h-5 text-teal-600" />}
+                  {payMethod === "upi" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
                 </label>
                 {payMethod === "upi" && (
                   <div className="px-4 pb-4" onClick={(e) => e.stopPropagation()}>
@@ -389,12 +389,12 @@ export default function CheckoutPage() {
         <div className="space-y-4">
           {/* Coupon */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <h2 className="font-bold text-slate-800 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-teal-600" /> Discount Code</h2>
+            <h2 className="font-bold text-slate-800 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-emerald-600" /> Discount Code</h2>
             {appliedCoupon ? (
-              <div className="flex items-center justify-between bg-teal-50 border border-teal-200 rounded-xl px-4 py-3">
+              <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
                 <div>
-                  <p className="text-sm font-bold text-teal-700">{appliedCoupon.code}</p>
-                  <p className="text-xs text-teal-600 font-semibold">−₹{appliedCoupon.discount} saved ✓</p>
+                  <p className="text-sm font-bold text-emerald-700">{appliedCoupon.code}</p>
+                  <p className="text-xs text-emerald-600 font-semibold">−₹{appliedCoupon.discount} saved ✓</p>
                 </div>
                 <button onClick={() => { setAppliedCoupon(null); setCouponInput(""); }} className="text-red-400 hover:text-red-600 ml-2">
                   <X className="w-4 h-4" />
@@ -408,7 +408,7 @@ export default function CheckoutPage() {
                     onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
                     placeholder="Enter coupon code" />
                   <button onClick={applyCoupon} disabled={couponLoading || !couponInput.trim()}
-                    className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors">
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors">
                     {couponLoading ? "…" : "Apply"}
                   </button>
                 </div>
@@ -431,14 +431,14 @@ export default function CheckoutPage() {
                 <span>₹{subtotal.toLocaleString("en-IN")}</span>
               </div>
               {discount > 0 && (
-                <div className="flex justify-between text-teal-600 font-medium">
+                <div className="flex justify-between text-emerald-600 font-medium">
                   <span>Discount ({appliedCoupon?.code})</span>
                   <span>−₹{discount}</span>
                 </div>
               )}
               <div className="flex justify-between text-slate-600">
                 <span>Shipping</span>
-                <span className={deliveryCharge === 0 ? "text-teal-600 font-semibold" : ""}>{deliveryCharge === 0 ? "Free" : `₹${deliveryCharge}`}</span>
+                <span className={deliveryCharge === 0 ? "text-emerald-600 font-semibold" : ""}>{deliveryCharge === 0 ? "Free" : `₹${deliveryCharge}`}</span>
               </div>
               <div className="border-t border-slate-200 pt-3 flex justify-between font-black text-base text-slate-900">
                 <span>Total</span>
@@ -459,7 +459,7 @@ export default function CheckoutPage() {
             <button
               disabled={!addrComplete || !payComplete || placing || cart.length === 0}
               onClick={placeOrder}
-              className="w-full mt-4 flex items-center justify-center gap-2 py-3.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-base"
+              className="w-full mt-4 flex items-center justify-center gap-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-base"
             >
               {placing ? (
                 <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing…</>

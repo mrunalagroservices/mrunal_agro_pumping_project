@@ -45,7 +45,7 @@ export default function OverviewPage() {
     <AdminShell title="Overview">
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : error ? (
         <div className="text-red-500 text-center py-20">{error}</div>

@@ -32,7 +32,7 @@ export default function AdminShell({ children, title }: { children: ReactNode; t
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -43,7 +43,7 @@ export default function AdminShell({ children, title }: { children: ReactNode; t
       {/* Sidebar */}
       <aside className="w-60 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0">
         <div className="flex items-center gap-2.5 px-5 h-16 border-b border-slate-200">
-          <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center">
             <ShieldCheck className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -58,9 +58,9 @@ export default function AdminShell({ children, title }: { children: ReactNode; t
             return (
               <Link key={href} href={href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  active ? "bg-teal-50 text-teal-700 font-semibold" : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+                  active ? "bg-emerald-50 text-emerald-700 font-semibold" : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
                 }`}>
-                <Icon className={`w-4 h-4 ${active ? "text-teal-600" : "text-slate-400"}`} />
+                <Icon className={`w-4 h-4 ${active ? "text-emerald-600" : "text-slate-400"}`} />
                 {label}
               </Link>
             );
@@ -83,7 +83,7 @@ export default function AdminShell({ children, title }: { children: ReactNode; t
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0 sticky top-0 z-10">
           <h1 className="text-lg font-bold text-slate-800">{title}</h1>
-          <span className="text-xs bg-teal-50 text-teal-700 font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-teal-200">
+          <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-200">
             <ShieldCheck className="w-3.5 h-3.5" /> Admin
           </span>
         </header>

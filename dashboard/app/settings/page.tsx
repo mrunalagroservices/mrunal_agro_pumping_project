@@ -144,7 +144,7 @@ const STATUS_COLORS: Record<string, string> = {
   placed:    "bg-amber-100 text-amber-700",
   confirmed: "bg-blue-100 text-blue-700",
   shipped:   "bg-purple-100 text-purple-700",
-  delivered: "bg-teal-100 text-teal-700",
+  delivered: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-red-100 text-red-600",
 };
 
@@ -171,7 +171,7 @@ function OrderCard({ order }: { order: Order }) {
         <div className="border-t border-slate-100 px-4 py-3 space-y-2 bg-slate-50/60">
           {order.items.map((item) => (
             <div key={item.id} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center shrink-0 text-lg overflow-hidden">
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 text-lg overflow-hidden">
                 {item.product_image
                   ? <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover rounded-lg" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                   : "🌿"}
@@ -185,7 +185,7 @@ function OrderCard({ order }: { order: Order }) {
           ))}
           <div className="border-t border-slate-200 pt-2 mt-2 flex justify-between text-xs text-slate-500">
             <span>Delivery: {order.delivery_address.line1}, {order.delivery_address.city}</span>
-            {Number(order.discount) > 0 && <span className="text-teal-600 font-semibold">Saved ₹{Number(order.discount)}</span>}
+            {Number(order.discount) > 0 && <span className="text-emerald-600 font-semibold">Saved ₹{Number(order.discount)}</span>}
           </div>
         </div>
       )}
@@ -314,11 +314,11 @@ export default function SettingsPage() {
       {/* Tab switcher */}
       <div className="flex gap-1 mb-6 bg-slate-100 rounded-2xl p-1 w-fit">
         <button onClick={() => setTab("settings")}
-          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "settings" ? "bg-white text-teal-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "settings" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
           <Settings className="w-4 h-4" /> Settings
         </button>
         <button onClick={() => setTab("orders")}
-          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "orders" ? "bg-white text-teal-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "orders" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
           <ClipboardList className="w-4 h-4" /> My Orders
         </button>
       </div>
@@ -328,14 +328,14 @@ export default function SettingsPage() {
         <div className="max-w-3xl space-y-3">
           {ordersLoading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : orders.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
               <Package className="w-12 h-12 text-slate-200 mx-auto mb-3" />
               <p className="font-semibold text-slate-600 mb-1">No orders yet</p>
               <p className="text-sm text-slate-400 mb-4">Start shopping in the Market to see your orders here.</p>
-              <a href="/shop" className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-full text-sm transition-colors">
+              <a href="/shop" className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full text-sm transition-colors">
                 Go to Market →
               </a>
             </div>

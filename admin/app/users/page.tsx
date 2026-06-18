@@ -39,7 +39,7 @@ export default function UsersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, email or org…"
-            className="pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 w-72 transition"
+            className="pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-72 transition"
           />
         </div>
         <span className="text-sm text-slate-500">{filtered.length} user{filtered.length !== 1 ? "s" : ""}</span>
@@ -48,7 +48,7 @@ export default function UsersPage() {
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-48">
-            <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -76,8 +76,8 @@ export default function UsersPage() {
                   <tr key={u.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                          <span className="text-sm font-bold text-teal-700">
+                        <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                          <span className="text-sm font-bold text-emerald-700">
                             {u.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
@@ -90,7 +90,7 @@ export default function UsersPage() {
                     <td className="px-4 py-3 text-sm text-slate-600">{u.org_name}</td>
                     <td className="px-4 py-3 text-sm text-slate-500">{u.phone || "—"}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${Number(u.order_count) > 0 ? "bg-teal-50 text-teal-700" : "bg-slate-100 text-slate-400"}`}>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${Number(u.order_count) > 0 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400"}`}>
                         <ShoppingBag className="w-3 h-3" /> {u.order_count}
                       </span>
                     </td>
@@ -104,7 +104,7 @@ export default function UsersPage() {
                     </td>
                     <td className="px-4 py-3">
                       <Link href={`/users/${u.id}`}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-semibold rounded-lg transition-colors">
+                        className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg transition-colors">
                         View <ChevronRight className="w-3.5 h-3.5" />
                       </Link>
                     </td>

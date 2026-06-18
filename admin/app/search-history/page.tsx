@@ -34,7 +34,7 @@ export default function SearchHistoryPage() {
         {/* Top searches summary */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <h2 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
-            <Search className="w-4 h-4 text-teal-600" /> Top Searches
+            <Search className="w-4 h-4 text-emerald-600" /> Top Searches
           </h2>
           {topQueries.length === 0 ? (
             <p className="text-sm text-slate-400">No data yet</p>
@@ -44,7 +44,7 @@ export default function SearchHistoryPage() {
                 <div key={q} className="flex items-center gap-3">
                   <span className="text-xs font-bold text-slate-400 w-5">{i + 1}</span>
                   <span className="flex-1 text-sm text-slate-700 font-medium truncate">{q}</span>
-                  <span className="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full">{count}×</span>
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{count}×</span>
                 </div>
               ))}
             </div>
@@ -60,7 +60,7 @@ export default function SearchHistoryPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Filter by query or user…"
-                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
               />
             </div>
             <span className="text-sm text-slate-500">{entries.length} entries</span>
@@ -69,7 +69,7 @@ export default function SearchHistoryPage() {
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
             {loading ? (
               <div className="flex items-center justify-center h-48">
-                <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
               <table className="w-full text-sm">
@@ -98,7 +98,7 @@ export default function SearchHistoryPage() {
                           <p className="text-xs text-slate-400">{e.user_email || ""}</p>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${(e.results_count ?? 0) > 0 ? "bg-teal-50 text-teal-700" : "bg-red-50 text-red-500"}`}>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${(e.results_count ?? 0) > 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-500"}`}>
                             {e.results_count ?? 0}
                           </span>
                         </td>

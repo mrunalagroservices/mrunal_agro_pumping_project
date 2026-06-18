@@ -42,7 +42,7 @@ function FarmerRow({ farmer, onDelete }: { farmer: AdminFarmer; onDelete: (id: n
         <td className="px-4 py-3 text-sm text-slate-600">{farmer.owner_name || "—"}</td>
         <td className="px-4 py-3 text-sm text-slate-500">{farmer.owner_email || "—"}</td>
         <td className="px-4 py-3 text-center">
-          <Badge color="bg-teal-100 text-teal-700">{farmer.farm_count}</Badge>
+          <Badge color="bg-emerald-100 text-emerald-700">{farmer.farm_count}</Badge>
         </td>
         <td className="px-4 py-3 text-center">
           <div className="flex items-center justify-center gap-1.5">
@@ -68,7 +68,7 @@ function FarmerRow({ farmer, onDelete }: { farmer: AdminFarmer; onDelete: (id: n
               <Link
                 href={`/users/${farmer.owner_id}`}
                 onClick={(e) => e.stopPropagation()}
-                className="p-1.5 text-teal-500 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
+                className="p-1.5 text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
                 title="View user profile"
               >
                 <UserCircle className="w-4 h-4" />
@@ -87,10 +87,10 @@ function FarmerRow({ farmer, onDelete }: { farmer: AdminFarmer; onDelete: (id: n
 
       {open && (
         <tr>
-          <td colSpan={8} className="bg-teal-50/40 px-8 pb-5 pt-3">
+          <td colSpan={8} className="bg-emerald-50/40 px-8 pb-5 pt-3">
             {loading ? (
               <div className="flex items-center gap-2 text-sm text-slate-400 py-4">
-                <div className="w-4 h-4 border-2 border-teal-300 border-t-teal-600 rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
                 Loading details…
               </div>
             ) : detail ? (
@@ -186,7 +186,7 @@ export default function FarmersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by organisation or email…"
-          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 w-72 transition"
+          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-72 transition"
         />
         <span className="text-sm text-slate-500">{filtered.length} farmer{filtered.length !== 1 ? "s" : ""}</span>
       </div>
@@ -194,7 +194,7 @@ export default function FarmersPage() {
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-48">
-            <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <table className="w-full text-sm">

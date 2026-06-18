@@ -30,7 +30,7 @@ function elapsed(startedAt: string) {
   return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
 }
 
-const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition";
+const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition";
 const labelCls = "block text-xs font-semibold text-slate-500 mb-1.5";
 
 // ─── Zone Card ────────────────────────────────────────────────────────────────
@@ -45,18 +45,18 @@ function ZoneCard({
 }) {
   const valveOn = zone.valve_state === "on";
   return (
-    <div className={`bg-white border-2 rounded-2xl p-4 transition-colors ${valveOn ? "border-teal-400 bg-teal-50/30" : "border-slate-200"}`}>
+    <div className={`bg-white border-2 rounded-2xl p-4 transition-colors ${valveOn ? "border-emerald-400 bg-emerald-50/30" : "border-slate-200"}`}>
       <div className="flex items-start justify-between mb-3">
         <div>
           <h3 className="font-bold text-slate-800 text-base">{zone.name}</h3>
           {zone.crop_type && (
-            <span className="inline-flex items-center gap-1 text-xs text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full mt-1">
+            <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mt-1">
               <Leaf className="w-3 h-3" /> {zone.crop_type}
             </span>
           )}
         </div>
         <div className="flex gap-1">
-          <button onClick={() => onEdit(zone)} className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition">
+          <button onClick={() => onEdit(zone)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition">
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => onDelete(zone.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
@@ -77,8 +77,8 @@ function ZoneCard({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-slate-600">{zone.valve_name || "Solenoid Valve"}</p>
-              <div className={`flex items-center gap-1 text-xs font-bold mt-0.5 ${valveOn ? "text-teal-600" : "text-slate-400"}`}>
-                <span className={`w-2 h-2 rounded-full ${valveOn ? "bg-teal-500 animate-pulse" : "bg-slate-300"}`} />
+              <div className={`flex items-center gap-1 text-xs font-bold mt-0.5 ${valveOn ? "text-emerald-600" : "text-slate-400"}`}>
+                <span className={`w-2 h-2 rounded-full ${valveOn ? "bg-emerald-500 animate-pulse" : "bg-slate-300"}`} />
                 {valveOn ? "OPEN — water flowing" : "CLOSED"}
               </div>
             </div>
@@ -87,7 +87,7 @@ function ZoneCard({
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                 valveOn
                   ? "bg-red-100 text-red-700 hover:bg-red-200"
-                  : "bg-teal-600 text-white hover:bg-teal-700"
+                  : "bg-emerald-600 text-white hover:bg-emerald-700"
               }`}
             >
               {valveOn ? "Close Valve" : "Open Valve"}
@@ -162,7 +162,7 @@ function ZoneModal({
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold rounded-xl">
+            <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl">
               {saving ? "Saving…" : "Save Zone"}
             </button>
           </div>
@@ -241,14 +241,14 @@ function PlanModal({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className={labelCls + " mb-0"}>Zone Steps (in order)</label>
-              <span className="text-xs text-teal-700 font-semibold">Total: {fmt(totalMins)}</span>
+              <span className="text-xs text-emerald-700 font-semibold">Total: {fmt(totalMins)}</span>
             </div>
             <div className="space-y-2">
               {steps.map((step, i) => (
                 <div key={i} className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2.5">
                   <span className="text-xs font-bold text-slate-400 w-5 shrink-0">{i + 1}</span>
                   <select
-                    className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     value={step.zone_id ?? ""}
                     onChange={(e) => updateStep(i, "zone_id", e.target.value)}
                   >
@@ -258,7 +258,7 @@ function PlanModal({
                   <div className="flex items-center gap-1 shrink-0">
                     <input
                       type="number" min={1} max={180}
-                      className="w-16 border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-16 border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       value={step.duration_minutes}
                       onChange={(e) => updateStep(i, "duration_minutes", Math.max(1, Number(e.target.value)))}
                     />
@@ -272,18 +272,18 @@ function PlanModal({
                 </div>
               ))}
             </div>
-            <button type="button" onClick={addStep} className="mt-2 flex items-center gap-1.5 text-xs text-teal-600 font-semibold hover:text-teal-700">
+            <button type="button" onClick={addStep} className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700">
               <Plus className="w-3.5 h-3.5" /> Add Zone Step
             </button>
           </div>
 
           {/* Preview timeline */}
-          <div className="bg-teal-50 border border-teal-100 rounded-xl p-3">
-            <p className="text-xs font-bold text-teal-700 mb-2">Execution Order</p>
+          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+            <p className="text-xs font-bold text-emerald-700 mb-2">Execution Order</p>
             <div className="flex flex-wrap gap-1.5 items-center">
-              {motorId && <span className="text-xs bg-teal-600 text-white px-2 py-0.5 rounded-full">Motor ON</span>}
+              {motorId && <span className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full">Motor ON</span>}
               {steps.map((s, i) => (
-                <span key={i} className="flex items-center gap-1 text-xs bg-white border border-teal-200 text-teal-800 px-2 py-0.5 rounded-full">
+                <span key={i} className="flex items-center gap-1 text-xs bg-white border border-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">
                   {s.zone_name || `Zone ${i + 1}`} · {s.duration_minutes}min
                 </span>
               ))}
@@ -293,7 +293,7 @@ function PlanModal({
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
-            <button type="submit" disabled={saving || !name.trim()} className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold rounded-xl">
+            <button type="submit" disabled={saving || !name.trim()} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl">
               {saving ? "Saving…" : "Save Plan"}
             </button>
           </div>
@@ -343,8 +343,8 @@ function LiveRunner({
 
   const stepColors: Record<string, string> = {
     pending: "bg-slate-200",
-    running: "bg-teal-500",
-    completed: "bg-teal-700",
+    running: "bg-emerald-500",
+    completed: "bg-emerald-700",
     aborted: "bg-red-400",
   };
 
@@ -353,10 +353,10 @@ function LiveRunner({
   const progressPct = r ? Math.round((r.current_step / r.total_steps) * 100) : 0;
 
   return (
-    <div className={`border-2 rounded-2xl p-5 ${run.is_simulation ? "border-violet-300 bg-violet-50/40" : "border-teal-400 bg-teal-50/40"}`}>
+    <div className={`border-2 rounded-2xl p-5 ${run.is_simulation ? "border-violet-300 bg-violet-50/40" : "border-emerald-400 bg-emerald-50/40"}`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${r?.status === "running" ? (run.is_simulation ? "bg-violet-500" : "bg-teal-500") : "bg-slate-400"}`} />
+          <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${r?.status === "running" ? (run.is_simulation ? "bg-violet-500" : "bg-emerald-500") : "bg-slate-400"}`} />
           <span className="font-bold text-sm text-slate-800">
             {run.is_simulation ? "🧪 Simulating" : "▶ Running"}: {r?.plan_name ?? "…"}
           </span>
@@ -372,7 +372,7 @@ function LiveRunner({
       {/* Progress bar */}
       <div className="h-2 bg-slate-200 rounded-full mb-4 overflow-hidden">
         <div
-          className={`h-2 rounded-full transition-all duration-1000 ${run.is_simulation ? "bg-violet-500" : "bg-teal-500"}`}
+          className={`h-2 rounded-full transition-all duration-1000 ${run.is_simulation ? "bg-violet-500" : "bg-emerald-500"}`}
           style={{ width: `${progressPct}%` }}
         />
       </div>
@@ -382,13 +382,13 @@ function LiveRunner({
         {steps.map((step) => {
           const isActive = step.status === "running";
           return (
-            <div key={step.step_order} className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${isActive ? "bg-white border border-teal-200" : "bg-slate-50"}`}>
+            <div key={step.step_order} className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${isActive ? "bg-white border border-emerald-200" : "bg-slate-50"}`}>
               <div className={`w-3 h-3 rounded-full shrink-0 ${stepColors[step.status] ?? "bg-slate-200"} ${isActive ? "animate-pulse" : ""}`} />
               <span className="font-semibold text-sm text-slate-700 flex-1">{step.zone_name || `Step ${step.step_order}`}</span>
               <span className="text-xs text-slate-500">{fmt(step.duration_minutes)}</span>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${
-                step.status === "completed" ? "bg-teal-100 text-teal-700"
-                  : step.status === "running" ? "bg-teal-600 text-white"
+                step.status === "completed" ? "bg-emerald-100 text-emerald-700"
+                  : step.status === "running" ? "bg-emerald-600 text-white"
                   : step.status === "aborted" ? "bg-red-100 text-red-600"
                   : "bg-slate-100 text-slate-400"
               }`}>
@@ -400,7 +400,7 @@ function LiveRunner({
       </div>
 
       {r && r.status !== "running" && (
-        <div className={`mt-4 text-center text-sm font-bold ${r.status === "completed" ? "text-teal-700" : "text-red-600"}`}>
+        <div className={`mt-4 text-center text-sm font-bold ${r.status === "completed" ? "text-emerald-700" : "text-red-600"}`}>
           {r.status === "completed" ? "✓ Plan completed successfully" : "✗ Plan was stopped"}
         </div>
       )}
@@ -432,7 +432,7 @@ function PlanCard({
           )}
         </div>
         <div className="flex gap-1">
-          <button onClick={() => onEdit(plan)} className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition">
+          <button onClick={() => onEdit(plan)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition">
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => onDelete(plan.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
@@ -445,7 +445,7 @@ function PlanCard({
       <div className="flex flex-wrap gap-1.5 mb-3">
         {plan.steps.map((step, i) => (
           <span key={i} className="inline-flex items-center gap-1 text-xs bg-slate-50 border border-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
-            <Droplets className="w-2.5 h-2.5 text-teal-500" />
+            <Droplets className="w-2.5 h-2.5 text-emerald-500" />
             {step.zone_name || `Zone ${i + 1}`} · {step.duration_minutes}min
           </span>
         ))}
@@ -464,7 +464,7 @@ function PlanCard({
           </button>
           <button
             onClick={() => onRun(plan.id, "real")}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors"
           >
             <Play className="w-3.5 h-3.5" /> Run Now
           </button>
@@ -595,7 +595,7 @@ export default function FarmDetailPage() {
     return (
       <DashboardShell breadcrumb={[{ label: "Farms", href: "/farms" }, { label: "Farm" }]}>
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
       </DashboardShell>
     );
@@ -615,9 +615,9 @@ export default function FarmDetailPage() {
           {farm?.location && <p className="text-sm text-slate-500">{farm.location}</p>}
         </div>
         <div className="flex gap-4 text-center">
-          <div><p className="text-xl font-black text-teal-700">{zones.length}</p><p className="text-xs text-slate-500">Zones</p></div>
-          <div><p className="text-xl font-black text-teal-700">{plans.length}</p><p className="text-xs text-slate-500">Plans</p></div>
-          <div><p className="text-xl font-black text-teal-700">{actuators.length}</p><p className="text-xs text-slate-500">Actuators</p></div>
+          <div><p className="text-xl font-black text-emerald-700">{zones.length}</p><p className="text-xs text-slate-500">Zones</p></div>
+          <div><p className="text-xl font-black text-emerald-700">{plans.length}</p><p className="text-xs text-slate-500">Plans</p></div>
+          <div><p className="text-xl font-black text-emerald-700">{actuators.length}</p><p className="text-xs text-slate-500">Actuators</p></div>
         </div>
       </div>
 
@@ -644,7 +644,7 @@ export default function FarmDetailPage() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === t ? "bg-white text-teal-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === t ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
           >
             <Icon className="w-4 h-4" /> {label}
           </button>
@@ -658,7 +658,7 @@ export default function FarmDetailPage() {
             <p className="text-sm text-slate-500">{zones.length} zone{zones.length !== 1 ? "s" : ""} — each zone has one solenoid valve</p>
             <button
               onClick={() => setZoneModal({})}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors"
             >
               <Plus className="w-4 h-4" /> Add Zone
             </button>
@@ -668,7 +668,7 @@ export default function FarmDetailPage() {
               <Droplets className="w-10 h-10 text-slate-200 mx-auto mb-2" />
               <p className="text-slate-400 font-medium">No zones yet</p>
               <p className="text-sm text-slate-400 mt-1">Add zones to represent areas of your farm</p>
-              <button onClick={() => setZoneModal({})} className="mt-4 px-4 py-2 bg-teal-600 text-white text-sm font-bold rounded-xl hover:bg-teal-700">
+              <button onClick={() => setZoneModal({})} className="mt-4 px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700">
                 Add First Zone
               </button>
             </div>
@@ -691,7 +691,7 @@ export default function FarmDetailPage() {
               onClick={() => setPlanModal({})}
               disabled={zones.length === 0}
               title={zones.length === 0 ? "Add zones first" : ""}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors"
             >
               <Plus className="w-4 h-4" /> Create Plan
             </button>
@@ -761,7 +761,7 @@ export default function FarmDetailPage() {
 function RunHistoryCard({ run }: { run: IrrigationRun }) {
   const [open, setOpen] = useState(false);
   const statusColor: Record<string, string> = {
-    completed: "bg-teal-100 text-teal-700",
+    completed: "bg-emerald-100 text-emerald-700",
     aborted: "bg-red-100 text-red-600",
     running: "bg-amber-100 text-amber-700",
   };
@@ -784,10 +784,10 @@ function RunHistoryCard({ run }: { run: IrrigationRun }) {
         <div className="border-t border-slate-100 px-4 py-3 space-y-1.5">
           {steps.map((s) => (
             <div key={s.step_order} className="flex items-center gap-3 text-sm">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${s.status === "completed" ? "bg-teal-500" : s.status === "aborted" ? "bg-red-400" : "bg-slate-300"}`} />
+              <span className={`w-2 h-2 rounded-full shrink-0 ${s.status === "completed" ? "bg-emerald-500" : s.status === "aborted" ? "bg-red-400" : "bg-slate-300"}`} />
               <span className="text-slate-700 flex-1">{s.zone_name || `Step ${s.step_order}`}</span>
               <span className="text-slate-400 text-xs">{fmt(s.duration_minutes)}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${s.status === "completed" ? "bg-teal-50 text-teal-700" : s.status === "aborted" ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500"}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${s.status === "completed" ? "bg-emerald-50 text-emerald-700" : s.status === "aborted" ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500"}`}>
                 {s.status}
               </span>
             </div>

@@ -24,7 +24,7 @@ function PImg({ src, alt, className }: { src?: string | null; alt: string; class
   const [err, setErr] = useState(false);
   if (!src || err) {
     return (
-      <div className={`flex items-center justify-center text-4xl bg-teal-50 ${className}`}>
+      <div className={`flex items-center justify-center text-4xl bg-emerald-50 ${className}`}>
         🌿
       </div>
     );
@@ -59,28 +59,28 @@ function ProductModal({ product: p, inCart, onClose, onAdd, onRemove }: {
           <h3 className="text-xl font-bold text-slate-800 mb-1">{p.name}</h3>
           <p className="text-xs text-slate-400 mb-3">{p.unit} · {p.category}</p>
           <div className="flex items-center gap-2 mb-4">
-            <span className="flex items-center gap-0.5 bg-teal-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+            <span className="flex items-center gap-0.5 bg-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded">
               <Star className="w-2.5 h-2.5 fill-white" /> {p.rating}
             </span>
             <span className="text-xs text-slate-400">{fmtCount(p.review_count)} ratings</span>
           </div>
           <div className="flex items-baseline gap-3 mb-4">
-            <span className="text-2xl font-bold text-teal-600">₹{p.price}</span>
+            <span className="text-2xl font-bold text-emerald-600">₹{p.price}</span>
             <span className="text-base text-slate-400 line-through">₹{p.original_price}</span>
           </div>
           {p.description && <p className="text-sm text-slate-600 mb-5 leading-relaxed">{p.description}</p>}
-          <div className="flex items-center gap-2 bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 mb-4">
-            <Truck className="w-4 h-4 text-teal-600 shrink-0" />
-            <p className="text-xs text-teal-700 font-medium">Delivered by <strong>{deliveryDate()}</strong></p>
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 mb-4">
+            <Truck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <p className="text-xs text-emerald-700 font-medium">Delivered by <strong>{deliveryDate()}</strong></p>
           </div>
           {inCart > 0 ? (
-            <div className="flex items-center justify-between border-2 border-teal-500 rounded-xl px-4 py-3">
-              <button onClick={onRemove} className="text-teal-600 hover:text-teal-800 font-bold text-xl leading-none">−</button>
-              <span className="font-bold text-teal-700">{inCart} in cart</span>
-              <button onClick={onAdd} className="text-teal-600 hover:text-teal-800 font-bold text-xl leading-none">+</button>
+            <div className="flex items-center justify-between border-2 border-emerald-500 rounded-xl px-4 py-3">
+              <button onClick={onRemove} className="text-emerald-600 hover:text-emerald-800 font-bold text-xl leading-none">−</button>
+              <span className="font-bold text-emerald-700">{inCart} in cart</span>
+              <button onClick={onAdd} className="text-emerald-600 hover:text-emerald-800 font-bold text-xl leading-none">+</button>
             </div>
           ) : (
-            <button onClick={onAdd} className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+            <button onClick={onAdd} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
               <ShoppingCart className="w-4 h-4" /> Add to Cart
             </button>
           )}
@@ -116,21 +116,21 @@ function FilterSidebar({ categories, ratingOptions, priceRange, products, select
   const [ratingOpen, setRatingOpen] = useState(true);
   const catCounts = categories.reduce((acc, c) => { acc[c] = products.filter((p) => p.category === c).length; return acc; }, {} as Record<string, number>);
   const dirty = selectedCats.length > 0 || minPrice > priceRange.min || maxPrice < priceRange.max || minRating > 0;
-  const inp = "w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition";
+  const inp = "w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition";
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 sticky top-4 w-56">
       <div className="flex items-center justify-between mb-4">
         <p className="font-bold text-slate-800 flex items-center gap-2"><SlidersHorizontal className="w-4 h-4" /> Filter</p>
-        {dirty && <button onClick={onClear} className="text-xs text-teal-600 font-semibold hover:underline">Clear all</button>}
+        {dirty && <button onClick={onClear} className="text-xs text-emerald-600 font-semibold hover:underline">Clear all</button>}
       </div>
       <Section title="Category" open={catOpen} toggle={() => setCatOpen((o) => !o)}>
         <div className="space-y-2.5 mt-1">
           {categories.map((c) => (
             <label key={c} className="flex items-center justify-between cursor-pointer group">
               <div className="flex items-center gap-2.5">
-                <input type="checkbox" checked={selectedCats.includes(c)} onChange={() => onCatToggle(c)} className="accent-teal-600 w-3.5 h-3.5" />
-                <span className={`text-sm ${selectedCats.includes(c) ? "text-teal-700 font-semibold" : "text-slate-600 group-hover:text-slate-800"}`}>{c}</span>
+                <input type="checkbox" checked={selectedCats.includes(c)} onChange={() => onCatToggle(c)} className="accent-emerald-600 w-3.5 h-3.5" />
+                <span className={`text-sm ${selectedCats.includes(c) ? "text-emerald-700 font-semibold" : "text-slate-600 group-hover:text-slate-800"}`}>{c}</span>
               </div>
               <span className="text-xs text-slate-400 bg-slate-50 rounded-full px-1.5">{catCounts[c] ?? 0}</span>
             </label>
@@ -154,7 +154,7 @@ function FilterSidebar({ categories, ratingOptions, priceRange, products, select
         <div className="flex gap-1.5 mt-2 flex-wrap">
           {ratingOptions.map((r) => (
             <button key={r} onClick={() => onRatingChange(r)}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${minRating === r ? "bg-teal-600 text-white border-teal-600" : "border-slate-200 text-slate-600 hover:border-teal-300"}`}>
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${minRating === r ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-200 text-slate-600 hover:border-emerald-300"}`}>
               {r === 0 ? "All" : <><Star className="w-3 h-3 fill-current" /> {r}+</>}
             </button>
           ))}
@@ -177,8 +177,8 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
         <PImg src={p.image_url} alt={p.name} className="w-full h-full transition-transform duration-300 group-hover:scale-105" />
         <div className="absolute top-2 left-2">
           {p.is_best_seller
-            ? <span className="bg-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Best Seller</span>
-            : <span className="bg-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">New Arrival</span>}
+            ? <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Best Seller</span>
+            : <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">New Arrival</span>}
         </div>
         {disc > 0 && <span className="absolute top-2 right-9 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{disc}%</span>}
         <button onClick={onWishlist} className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-sm transition-colors ${wishlisted ? "bg-red-50" : "bg-white/80 hover:bg-white"}`}>
@@ -186,13 +186,13 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
         </button>
         <div className="absolute bottom-0 inset-x-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
           {inCart > 0 ? (
-            <div className="flex items-center justify-between bg-white/95 backdrop-blur rounded-xl px-3 py-2 shadow-lg border border-teal-100">
-              <button onClick={onRemove}><Minus className="w-3.5 h-3.5 text-teal-600" /></button>
-              <span className="text-sm font-bold text-teal-700">{inCart}</span>
-              <button onClick={onAdd}><Plus className="w-3.5 h-3.5 text-teal-600" /></button>
+            <div className="flex items-center justify-between bg-white/95 backdrop-blur rounded-xl px-3 py-2 shadow-lg border border-emerald-100">
+              <button onClick={onRemove}><Minus className="w-3.5 h-3.5 text-emerald-600" /></button>
+              <span className="text-sm font-bold text-emerald-700">{inCart}</span>
+              <button onClick={onAdd}><Plus className="w-3.5 h-3.5 text-emerald-600" /></button>
             </div>
           ) : (
-            <button onClick={onAdd} className="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-lg transition-colors">
+            <button onClick={onAdd} className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-lg transition-colors">
               + Add to Cart
             </button>
           )}
@@ -203,13 +203,13 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
         <p className="text-sm font-semibold text-slate-800 line-clamp-2 leading-snug mb-1 flex-1">{p.name}</p>
         <p className="text-[11px] text-slate-400 mb-2">{p.unit}</p>
         <div className="flex items-center gap-1 mb-2">
-          <span className="flex items-center gap-0.5 bg-teal-50 text-teal-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
-            <Star className="w-2.5 h-2.5 fill-teal-600" /> {p.rating}
+          <span className="flex items-center gap-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+            <Star className="w-2.5 h-2.5 fill-emerald-600" /> {p.rating}
           </span>
           <span className="text-[10px] text-slate-400">({fmtCount(p.review_count)})</span>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-base font-bold text-teal-600">₹{p.price.toLocaleString("en-IN")}</span>
+          <span className="text-base font-bold text-emerald-600">₹{p.price.toLocaleString("en-IN")}</span>
           <span className="text-xs text-slate-400 line-through">₹{p.original_price.toLocaleString("en-IN")}</span>
         </div>
         {p.stock_quantity <= 20 && p.stock_quantity > 0 && <p className="text-[10px] text-red-500 font-medium mt-0.5">Only {p.stock_quantity} left!</p>}
@@ -217,16 +217,16 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
       </div>
       <div className="px-3 pb-3" onClick={(e) => e.stopPropagation()}>
         {inCart > 0 ? (
-          <div className="flex items-center justify-between border-2 border-teal-500 rounded-xl px-3 py-1.5">
-            <button onClick={onRemove} className="text-teal-600">
+          <div className="flex items-center justify-between border-2 border-emerald-500 rounded-xl px-3 py-1.5">
+            <button onClick={onRemove} className="text-emerald-600">
               {inCart === 1 ? <Trash2 className="w-3.5 h-3.5 text-red-400" /> : <Minus className="w-3.5 h-3.5" />}
             </button>
-            <span className="text-sm font-bold text-teal-700">{inCart}</span>
-            <button onClick={onAdd} className="text-teal-600"><Plus className="w-3.5 h-3.5" /></button>
+            <span className="text-sm font-bold text-emerald-700">{inCart}</span>
+            <button onClick={onAdd} className="text-emerald-600"><Plus className="w-3.5 h-3.5" /></button>
           </div>
         ) : (
           <button onClick={onAdd} disabled={p.stock_quantity === 0}
-            className="w-full py-2 border-2 border-teal-500 text-teal-600 hover:bg-teal-600 hover:text-white text-xs font-bold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            className="w-full py-2 border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-600 hover:text-white text-xs font-bold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed">
             {p.stock_quantity === 0 ? "Out of Stock" : "+ Add to Cart"}
           </button>
         )}
@@ -347,11 +347,11 @@ export default function ShopPage() {
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/50 to-transparent flex items-center">
           <div className="px-8 lg:px-12 max-w-lg">
-            <p className="text-teal-400 text-xs font-bold uppercase tracking-widest mb-2">Mrunal Agro Market</p>
+            <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Mrunal Agro Market</p>
             <h1 className="text-white text-3xl lg:text-4xl font-black leading-tight mb-3">Quality Farm<br />Essentials</h1>
             <p className="text-slate-300 text-sm mb-5">{settings.categories.join(" · ")}</p>
             <button onClick={() => document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth" })}
-              className="bg-teal-500 hover:bg-teal-400 text-white font-bold px-5 py-2.5 rounded-full text-sm transition-colors">
+              className="bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-5 py-2.5 rounded-full text-sm transition-colors">
               Shop Now →
             </button>
           </div>
@@ -368,18 +368,18 @@ export default function ShopPage() {
         <div className="relative flex-1 min-w-48 max-w-lg">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search seeds, fertilizers, tools…"
-            className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-sm" />
+            className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
           {search && <button onClick={() => setSearch("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>}
         </div>
         <button onClick={() => setMobileFilterOpen(true)} className="lg:hidden flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-full text-sm font-medium bg-white text-slate-600 shadow-sm">
           <SlidersHorizontal className="w-4 h-4" /> Filter
         </button>
         <button onClick={() => router.push("/settings?tab=orders")}
-          className="flex items-center gap-2 px-4 py-2.5 border border-teal-200 bg-teal-50 text-teal-700 text-sm font-semibold rounded-full hover:bg-teal-100 transition-colors">
+          className="flex items-center gap-2 px-4 py-2.5 border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-semibold rounded-full hover:bg-emerald-100 transition-colors">
           <ClipboardList className="w-4 h-4" /> My Orders
         </button>
         <button onClick={() => router.push("/shop/checkout")}
-          className="relative flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-full transition-colors shadow-sm">
+          className="relative flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-full transition-colors shadow-sm">
           <ShoppingCart className="w-4 h-4" /> Cart
           {cartCount > 0 && <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{cartCount}</span>}
         </button>
@@ -398,7 +398,7 @@ export default function ShopPage() {
               products={products} selectedCats={selectedCats} onCatToggle={toggleCat}
               minPrice={minPrice} maxPrice={maxPrice} onPriceChange={(a, b) => { setMinPrice(a); setMaxPrice(b); }}
               minRating={minRating} onRatingChange={setMinRating} onClear={clearFilters} />
-            <button onClick={() => setMobileFilterOpen(false)} className="mt-4 w-full py-3 bg-teal-600 text-white font-bold rounded-xl">
+            <button onClick={() => setMobileFilterOpen(false)} className="mt-4 w-full py-3 bg-emerald-600 text-white font-bold rounded-xl">
               View {filtered.length} Products
             </button>
           </div>
@@ -408,7 +408,7 @@ export default function ShopPage() {
       {/* Main layout */}
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         <div className="flex gap-6">
@@ -428,7 +428,7 @@ export default function ShopPage() {
                 )}
               </div>
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-                className="border border-slate-200 rounded-full px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-700 shadow-sm">
+                className="border border-slate-200 rounded-full px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-700 shadow-sm">
                 <option value="popular">Sort by: Popular</option>
                 <option value="price_asc">Price: Low → High</option>
                 <option value="price_desc">Price: High → Low</option>
@@ -438,18 +438,18 @@ export default function ShopPage() {
             </div>
 
             {cartCount > 0 && (
-              <div className="flex items-center justify-between bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3 mb-5">
+              <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
-                    <ShoppingCart className="w-4 h-4 text-teal-600" />
+                  <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <ShoppingCart className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-teal-800">{cartCount} item{cartCount !== 1 ? "s" : ""} in cart · ₹{cartTotal.toLocaleString("en-IN")}</p>
-                    <p className="text-xs text-teal-600">Deliver by {deliveryDate()}</p>
+                    <p className="text-sm font-bold text-emerald-800">{cartCount} item{cartCount !== 1 ? "s" : ""} in cart · ₹{cartTotal.toLocaleString("en-IN")}</p>
+                    <p className="text-xs text-emerald-600">Deliver by {deliveryDate()}</p>
                   </div>
                 </div>
                 <button onClick={() => router.push("/shop/checkout")}
-                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-full transition-colors">
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-full transition-colors">
                   Checkout →
                 </button>
               </div>
@@ -465,7 +465,7 @@ export default function ShopPage() {
               <div className="text-center py-24 text-slate-400">
                 <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p className="font-semibold mb-2">No products found</p>
-                <button onClick={clearFilters} className="text-sm text-teal-600 hover:underline">Clear filters</button>
+                <button onClick={clearFilters} className="text-sm text-emerald-600 hover:underline">Clear filters</button>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">

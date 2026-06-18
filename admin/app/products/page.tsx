@@ -13,7 +13,7 @@ const EMPTY: Partial<Product> = {
   is_active: true, stock_quantity: 0,
 };
 
-const inputCls = "w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition";
+const inputCls = "w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition";
 const labelCls = "block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide";
 
 function ProductModal({ product, onClose, onSave }: {
@@ -77,7 +77,7 @@ function ProductModal({ product, onClose, onSave }: {
             </div>
             {disc > 0 && (
               <div className="col-span-2">
-                <span className="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 text-sm font-semibold px-3 py-1.5 rounded-lg border border-teal-200">
+                <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-sm font-semibold px-3 py-1.5 rounded-lg border border-emerald-200">
                   ✓ {disc}% discount preview
                 </span>
               </div>
@@ -95,18 +95,18 @@ function ProductModal({ product, onClose, onSave }: {
               <textarea rows={3} className={`${inputCls} resize-none`} value={form.description || ""} onChange={(e) => set("description", e.target.value)} placeholder="Product description…" />
             </div>
             <div className="flex items-center gap-3">
-              <input type="checkbox" id="bestseller" checked={!!form.is_best_seller} onChange={(e) => set("is_best_seller", e.target.checked)} className="w-4 h-4 rounded accent-teal-600" />
+              <input type="checkbox" id="bestseller" checked={!!form.is_best_seller} onChange={(e) => set("is_best_seller", e.target.checked)} className="w-4 h-4 rounded accent-emerald-600" />
               <label htmlFor="bestseller" className="text-sm font-medium text-slate-700">Best Seller badge</label>
             </div>
             <div className="flex items-center gap-3">
-              <input type="checkbox" id="active" checked={!!form.is_active} onChange={(e) => set("is_active", e.target.checked)} className="w-4 h-4 rounded accent-teal-600" />
+              <input type="checkbox" id="active" checked={!!form.is_active} onChange={(e) => set("is_active", e.target.checked)} className="w-4 h-4 rounded accent-emerald-600" />
               <label htmlFor="active" className="text-sm font-medium text-slate-700">Active (visible in Market)</label>
             </div>
           </div>
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold rounded-xl transition">
+            <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl transition">
               {saving ? "Saving…" : "Save Product"}
             </button>
           </div>
@@ -164,21 +164,21 @@ export default function ProductsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search products…"
-          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 w-56 transition"
+          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-56 transition"
         />
         <div className="flex gap-2 flex-wrap">
           {["All", ...CATEGORIES].map((c) => (
             <button
               key={c}
               onClick={() => setCatFilter(c)}
-              className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-colors ${catFilter === c ? "bg-teal-600 text-white border-teal-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
+              className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-colors ${catFilter === c ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
             >{c}</button>
           ))}
         </div>
         <div className="ml-auto">
           <button
             onClick={() => setModal(EMPTY)}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-xl transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors"
           >
             <Plus className="w-4 h-4" /> Add Product
           </button>
@@ -187,13 +187,13 @@ export default function ProductsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-24 text-slate-400">
           <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="font-medium">No products yet.</p>
-          <button onClick={() => setModal(EMPTY)} className="mt-3 text-teal-600 text-sm font-semibold hover:underline">Add your first product →</button>
+          <button onClick={() => setModal(EMPTY)} className="mt-3 text-emerald-600 text-sm font-semibold hover:underline">Add your first product →</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -204,8 +204,8 @@ export default function ProductsPage() {
                 {p.image_url ? (
                   <img src={p.image_url} alt={p.name} className="w-full h-36 object-cover" />
                 ) : (
-                  <div className="h-36 bg-gradient-to-br from-teal-50 to-slate-100 flex items-center justify-center">
-                    <Package className="w-12 h-12 text-teal-200" />
+                  <div className="h-36 bg-gradient-to-br from-emerald-50 to-slate-100 flex items-center justify-center">
+                    <Package className="w-12 h-12 text-emerald-200" />
                   </div>
                 )}
                 <div className="p-4">
@@ -222,7 +222,7 @@ export default function ProductsPage() {
                     <span className="font-bold text-slate-900">₹{p.price}</span>
                     {disc > 0 && <>
                       <span className="text-xs text-slate-400 line-through">₹{p.original_price}</span>
-                      <span className="text-xs font-bold text-teal-600">{disc}% off</span>
+                      <span className="text-xs font-bold text-emerald-600">{disc}% off</span>
                     </>}
                   </div>
                   <div className="flex items-center gap-3 text-xs text-slate-400 mb-4">

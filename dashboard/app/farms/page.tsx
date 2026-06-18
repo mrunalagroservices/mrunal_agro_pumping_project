@@ -452,7 +452,7 @@ export default function FarmsPage() {
                           </div>
                           <Link
                             href={`/farms/${farm.id}`}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-bold rounded-xl transition-colors shrink-0"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl transition-colors shrink-0"
                           >
                             <Droplets className="w-3.5 h-3.5" /> Zones & Plans
                           </Link>

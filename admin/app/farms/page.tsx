@@ -11,7 +11,7 @@ import { AdminFarm, AdminDevice, ApiResponse } from "@/lib/types";
 
 /* ─── Shared ───────────────────────────────────────────────────────────── */
 
-const inputCls = "w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition";
+const inputCls = "w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition";
 const labelCls = "block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide";
 
 function Badge({ children, color }: { children: React.ReactNode; color: string }) {
@@ -78,7 +78,7 @@ function EditFarmModal({ farm, onClose, onSave }: {
           </div>
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold rounded-xl transition">
+            <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl transition">
               {saving ? "Saving…" : "Save Farm"}
             </button>
           </div>
@@ -108,7 +108,7 @@ function FarmRow({ farm, onEdit, onDelete }: {
         </td>
         <td className="px-4 py-3 text-sm text-slate-600">{farm.org_name}</td>
         <td className="px-4 py-3 text-center">
-          <Badge color="bg-teal-100 text-teal-700"><Cpu className="w-3 h-3" /> {farm.device_count}</Badge>
+          <Badge color="bg-emerald-100 text-emerald-700"><Cpu className="w-3 h-3" /> {farm.device_count}</Badge>
         </td>
         <td className="px-4 py-3 text-center">
           <Badge color="bg-amber-100 text-amber-700"><Zap className="w-3 h-3" /> {farm.actuator_count}</Badge>
@@ -116,7 +116,7 @@ function FarmRow({ farm, onEdit, onDelete }: {
         <td className="px-4 py-3 text-xs text-slate-400">{new Date(farm.created_at).toLocaleDateString("en-IN")}</td>
         <td className="px-4 py-3">
           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => onEdit(farm)} className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors" title="Edit farm">
+            <button onClick={() => onEdit(farm)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Edit farm">
               <Pencil className="w-4 h-4" />
             </button>
             <button onClick={() => onDelete(farm)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete farm">
@@ -127,7 +127,7 @@ function FarmRow({ farm, onEdit, onDelete }: {
       </tr>
       {open && (
         <tr>
-          <td colSpan={6} className="bg-teal-50/40 px-8 py-3 text-xs text-slate-500">
+          <td colSpan={6} className="bg-emerald-50/40 px-8 py-3 text-xs text-slate-500">
             <span className="font-semibold">Farm ID:</span> {farm.id} &nbsp;·&nbsp;
             <span className="font-semibold">Org ID:</span> {farm.organization_id}
           </td>
@@ -183,7 +183,7 @@ function FarmsTab() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by farm or organisation…"
-          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 w-72 transition"
+          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-72 transition"
         />
         <span className="text-sm text-slate-500">{filtered.length} farm{filtered.length !== 1 ? "s" : ""}</span>
       </div>
@@ -191,7 +191,7 @@ function FarmsTab() {
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-48">
-            <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -277,7 +277,7 @@ function EditDeviceModal({ device, onClose, onSave }: {
           </div>
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold rounded-xl transition">
+            <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl transition">
               {saving ? "Saving…" : "Save Device"}
             </button>
           </div>
@@ -338,14 +338,14 @@ function DevicesTab() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by device or organisation…"
-          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 w-72 transition"
+          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-72 transition"
         />
         <div className="flex gap-2">
           {(["all", "online", "offline"] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-colors capitalize ${statusFilter === s ? "bg-teal-600 text-white border-teal-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
+              className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-colors capitalize ${statusFilter === s ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
             >{s}</button>
           ))}
         </div>
@@ -357,7 +357,7 @@ function DevicesTab() {
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-48">
-            <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -401,7 +401,7 @@ function DevicesTab() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => setEditTarget(d)} className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors" title="Edit device">
+                        <button onClick={() => setEditTarget(d)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Edit device">
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button onClick={() => setDeleteTarget(d)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete device">
@@ -444,13 +444,13 @@ export default function FarmsPage() {
       <div className="flex gap-1 mb-6 bg-slate-100 rounded-2xl p-1 w-fit">
         <button
           onClick={() => setTab("farms")}
-          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "farms" ? "bg-white text-teal-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "farms" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
         >
           <Warehouse className="w-4 h-4" /> Farms
         </button>
         <button
           onClick={() => setTab("devices")}
-          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "devices" ? "bg-white text-teal-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "devices" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
         >
           <Cpu className="w-4 h-4" /> Devices
         </button>

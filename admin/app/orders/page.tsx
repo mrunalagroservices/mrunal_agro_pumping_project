@@ -10,7 +10,7 @@ const STATUS_COLORS: Record<string, string> = {
   placed:    "bg-amber-100 text-amber-700",
   confirmed: "bg-blue-100 text-blue-700",
   shipped:   "bg-purple-100 text-purple-700",
-  delivered: "bg-teal-100 text-teal-700",
+  delivered: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-red-100 text-red-600",
 };
 
@@ -57,7 +57,7 @@ function OrderRow({ order, onStatusChange }: {
             value={order.status}
             onChange={(e) => changeStatus(e.target.value)}
             disabled={updating}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-60 transition"
+            className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-60 transition"
           >
             {ALL_STATUSES.map((s) => <option key={s} value={s} className="capitalize">{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
           </select>
@@ -66,7 +66,7 @@ function OrderRow({ order, onStatusChange }: {
 
       {open && (
         <tr>
-          <td colSpan={7} className="bg-teal-50/40 px-8 pb-5 pt-3">
+          <td colSpan={7} className="bg-emerald-50/40 px-8 pb-5 pt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Items */}
               <div>
@@ -76,7 +76,7 @@ function OrderRow({ order, onStatusChange }: {
                 <div className="space-y-2">
                   {order.items.map((item) => (
                     <div key={item.id} className="flex items-center gap-3 bg-white border border-slate-100 rounded-lg px-3 py-2">
-                      <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center shrink-0 text-lg overflow-hidden">
+                      <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 text-lg overflow-hidden">
                         {item.product_image
                           ? <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover rounded-lg" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                           : "🌿"}
@@ -105,7 +105,7 @@ function OrderRow({ order, onStatusChange }: {
                 </div>
                 <div className="bg-white border border-slate-100 rounded-lg px-3 py-2 text-xs space-y-1">
                   <div className="flex justify-between text-slate-500"><span>Subtotal</span><span>₹{Number(order.subtotal).toLocaleString("en-IN")}</span></div>
-                  {Number(order.discount) > 0 && <div className="flex justify-between text-teal-600 font-medium"><span>Discount {order.coupon_code && `(${order.coupon_code})`}</span><span>−₹{Number(order.discount)}</span></div>}
+                  {Number(order.discount) > 0 && <div className="flex justify-between text-emerald-600 font-medium"><span>Discount {order.coupon_code && `(${order.coupon_code})`}</span><span>−₹{Number(order.discount)}</span></div>}
                   <div className="flex justify-between text-slate-500"><span>Delivery</span><span>{Number(order.delivery_charge) === 0 ? "Free" : `₹${order.delivery_charge}`}</span></div>
                   <div className="flex justify-between font-bold text-slate-800 border-t border-slate-100 pt-1 mt-1"><span>Total</span><span>₹{Number(order.total).toLocaleString("en-IN")}</span></div>
                 </div>
@@ -155,12 +155,12 @@ export default function OrdersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, email or order #…"
-          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 w-64 transition"
+          className="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-64 transition"
         />
         <div className="flex gap-2">
           {["all", ...ALL_STATUSES].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors capitalize ${statusFilter === s ? "bg-teal-600 text-white border-teal-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors capitalize ${statusFilter === s ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
               {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
@@ -171,7 +171,7 @@ export default function OrdersPage() {
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-48">
-            <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <table className="w-full text-sm">

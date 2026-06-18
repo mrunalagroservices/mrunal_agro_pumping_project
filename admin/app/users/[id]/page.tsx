@@ -14,7 +14,7 @@ const STATUS_COLORS: Record<string, string> = {
   placed:    "bg-amber-100 text-amber-700",
   confirmed: "bg-blue-100 text-blue-700",
   shipped:   "bg-purple-100 text-purple-700",
-  delivered: "bg-teal-100 text-teal-700",
+  delivered: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-red-100 text-red-600",
 };
 
@@ -24,10 +24,10 @@ function Section({ title, icon: Icon, children, count }: {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5">
       <h2 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
-        <Icon className="w-4 h-4 text-teal-600" />
+        <Icon className="w-4 h-4 text-emerald-600" />
         {title}
         {count !== undefined && (
-          <span className="ml-auto text-xs font-semibold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full border border-teal-100">
+          <span className="ml-auto text-xs font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100">
             {count}
           </span>
         )}
@@ -58,12 +58,12 @@ function OrderCard({ order }: { order: UserProfile["orders"][number] }) {
       </button>
 
       {open && (
-        <div className="border-t border-slate-100 bg-teal-50/30 px-4 py-3 space-y-3">
+        <div className="border-t border-slate-100 bg-emerald-50/30 px-4 py-3 space-y-3">
           {/* Items */}
           <div className="space-y-2">
             {order.items.map((item) => (
               <div key={item.id} className="flex items-center gap-3 bg-white border border-slate-100 rounded-lg px-3 py-2">
-                <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center shrink-0 text-base overflow-hidden">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 text-base overflow-hidden">
                   {item.product_image
                     ? <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover rounded-lg" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                     : "🌿"}
@@ -87,7 +87,7 @@ function OrderCard({ order }: { order: UserProfile["orders"][number] }) {
             <div className="bg-white border border-slate-100 rounded-lg px-3 py-2 text-xs space-y-1">
               <p className="font-bold text-slate-500 uppercase text-[10px] mb-1">Summary</p>
               <div className="flex justify-between text-slate-500"><span>Subtotal</span><span>₹{Number(order.subtotal).toLocaleString("en-IN")}</span></div>
-              {Number(order.discount) > 0 && <div className="flex justify-between text-teal-600 font-medium"><span>Discount {order.coupon_code && `(${order.coupon_code})`}</span><span>−₹{Number(order.discount)}</span></div>}
+              {Number(order.discount) > 0 && <div className="flex justify-between text-emerald-600 font-medium"><span>Discount {order.coupon_code && `(${order.coupon_code})`}</span><span>−₹{Number(order.discount)}</span></div>}
               <div className="flex justify-between text-slate-500"><span>Delivery</span><span>{Number(order.delivery_charge) === 0 ? "Free" : `₹${order.delivery_charge}`}</span></div>
               <div className="flex justify-between font-bold text-slate-800 border-t border-slate-100 pt-1 mt-1"><span>Total</span><span>₹{Number(order.total).toLocaleString("en-IN")}</span></div>
             </div>
@@ -119,7 +119,7 @@ export default function UserProfilePage() {
     return (
       <AdminShell title="User Profile">
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
       </AdminShell>
     );
@@ -164,7 +164,7 @@ export default function UserProfilePage() {
       <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-5">
         <div className="flex items-start gap-5">
           {/* Avatar */}
-          <div className="w-16 h-16 rounded-2xl bg-teal-600 flex items-center justify-center shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center shrink-0">
             <span className="text-2xl font-black text-white">{user.name.charAt(0).toUpperCase()}</span>
           </div>
           {/* Info */}
@@ -182,9 +182,9 @@ export default function UserProfilePage() {
           </div>
           {/* Stat pills */}
           <div className="flex flex-col gap-2 shrink-0 text-right">
-            <div className="bg-teal-50 border border-teal-100 rounded-xl px-4 py-2 text-center">
-              <p className="text-xl font-black text-teal-700">{orders.length}</p>
-              <p className="text-xs text-teal-600 font-medium">Orders</p>
+            <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2 text-center">
+              <p className="text-xl font-black text-emerald-700">{orders.length}</p>
+              <p className="text-xs text-emerald-600 font-medium">Orders</p>
             </div>
             <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-center">
               <p className="text-xl font-black text-slate-800">₹{totalSpent.toLocaleString("en-IN")}</p>
@@ -207,7 +207,7 @@ export default function UserProfilePage() {
               <div className="space-y-2">
                 {cart.map((item, i) => (
                   <div key={i} className="flex items-center gap-3 bg-slate-50 rounded-xl px-3 py-2">
-                    <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center shrink-0 text-base overflow-hidden">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 text-base overflow-hidden">
                       {item.product?.image_url
                         ? <img src={item.product.image_url} alt={item.product.name} className="w-full h-full object-cover rounded-lg" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                         : "🌿"}
@@ -216,7 +216,7 @@ export default function UserProfilePage() {
                       <p className="text-xs font-semibold text-slate-800 truncate">{item.product?.name}</p>
                       <p className="text-[10px] text-slate-400">{item.product?.unit} · Qty {item.qty}</p>
                     </div>
-                    <p className="text-xs font-bold text-teal-700 shrink-0">
+                    <p className="text-xs font-bold text-emerald-700 shrink-0">
                       ₹{(Number(item.product?.price ?? 0) * item.qty).toLocaleString("en-IN")}
                     </p>
                   </div>
@@ -238,7 +238,7 @@ export default function UserProfilePage() {
                   <div key={s.query} className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-400 w-4">{i + 1}</span>
                     <span className="flex-1 text-sm text-slate-700 font-medium truncate">"{s.query}"</span>
-                    <span className="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full shrink-0">{s.count}×</span>
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">{s.count}×</span>
                   </div>
                 ))}
               </div>
@@ -255,7 +255,7 @@ export default function UserProfilePage() {
                   <div key={p.payment_method} className="flex items-center gap-3">
                     <div className={`flex-1 h-2 rounded-full bg-slate-100 overflow-hidden`}>
                       <div
-                        className="h-2 rounded-full bg-teal-500 transition-all"
+                        className="h-2 rounded-full bg-emerald-500 transition-all"
                         style={{ width: `${(Number(p.count) / Number(payment_methods[0].count)) * 100}%` }}
                       />
                     </div>
@@ -265,7 +265,7 @@ export default function UserProfilePage() {
                 ))}
                 {topPayment && (
                   <p className="text-xs text-slate-400 pt-1">
-                    Prefers <span className="font-semibold text-teal-700 capitalize">{topPayment.payment_method}</span>
+                    Prefers <span className="font-semibold text-emerald-700 capitalize">{topPayment.payment_method}</span>
                   </p>
                 )}
               </div>
