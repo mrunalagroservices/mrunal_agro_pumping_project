@@ -564,7 +564,8 @@ export default function FarmDetailPage() {
   }
 
   // ── Plan actions ──
-  async function savePlan(data: Parameters<typeof httpClient.post>[1]) {
+  type PlanFormData = { name: string; motor_actuator_id: number | null; steps: { zone_id: number | null; zone_name: string; duration_minutes: number }[] };
+  async function savePlan(data: PlanFormData) {
     if (planModal && (planModal as IrrigationPlan).id) {
       await httpClient.put<ApiResponse<IrrigationPlan>>(`/irrigation/plans/${(planModal as IrrigationPlan).id}`, data);
     } else {
@@ -747,7 +748,7 @@ export default function FarmDetailPage() {
           plan={planModal}
           zones={zones}
           actuators={actuators}
-          onSave={savePlan as never}
+          onSave={savePlan}
           onClose={() => setPlanModal(false)}
         />
       )}
