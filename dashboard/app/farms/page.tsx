@@ -2,7 +2,6 @@
 
 import { useEffect, useState, FormEvent } from "react";
 import Link from "next/link";
-import Link from "next/link";
 import {
   Plus,
   MapPin,
