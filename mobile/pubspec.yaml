@@ -50,7 +50,6 @@ dependencies:
 
   # Realtime updates (actuator/device status) shared with the web dashboard
   socket_io_client: ^2.0.3+1
-  google_fonts: ^8.1.0
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +76,18 @@ flutter:
   assets:
     - assets/images/icon.png
     - assets/images/logo.png
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+/// Bundled font family (see assets/fonts + pubspec.yaml). Applied app-wide.
+const String kFontFamily = 'Inter';
 
 /// Matches the web dashboard's Tailwind palette: "primary" green +
 /// "slate" grays for text/borders/background.
@@ -34,20 +36,23 @@ ThemeData buildAppTheme() {
 
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.background,
+    primaryTextTheme: base.primaryTextTheme.apply(fontFamily: kFontFamily),
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary600,
       primary: AppColors.primary600,
     ),
-    textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
+    textTheme: base.textTheme.apply(
+      fontFamily: kFontFamily,
       bodyColor: AppColors.textPrimary,
       displayColor: AppColors.textPrimary,
     ),
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.background,
       foregroundColor: AppColors.textPrimary,
       elevation: 0,
       centerTitle: false,
-      titleTextStyle: GoogleFonts.inter(
+      titleTextStyle: TextStyle(
+        fontFamily: kFontFamily,
         color: AppColors.textPrimary,
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -68,7 +73,7 @@ ThemeData buildAppTheme() {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontFamily: kFontFamily, fontSize: 16, fontWeight: FontWeight.w600),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
