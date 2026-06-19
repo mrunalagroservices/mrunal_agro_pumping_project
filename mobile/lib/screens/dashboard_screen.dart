@@ -12,6 +12,10 @@ import 'schedules_screen.dart';
 // Default map center: Pune, Maharashtra (used when no farm has GPS coordinates yet).
 const _defaultCenter = LatLng(18.5204, 73.8567);
 
+// Typography palette — matches the Profile screen.
+const _kText = Color(0xFF222222);
+const _kSub = Color(0xFF717171);
+
 class DashboardScreen extends StatelessWidget {
   final VoidCallback? onViewMap;
 
@@ -39,10 +43,10 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('Mrunal Agro',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18, color: _kText, letterSpacing: -0.2)),
                 Text(
                   state.user != null ? 'Hi, ${state.user!.name}' : 'Pumping Control',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _kSub),
                 ),
               ],
             ),
@@ -157,7 +161,7 @@ class DashboardScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     const Text('Overview',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _kText, letterSpacing: -0.3)),
                     const Spacer(),
                     if (state.isLoadingDashboard)
                       const SizedBox(
@@ -301,8 +305,8 @@ class DashboardScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              Text('History & Analytics', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                              Text('Runtime, water, electricity, cost', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                              Text('History & Analytics', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: _kText)),
+                              Text('Runtime, water, electricity, cost', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _kSub)),
                             ],
                           ),
                         ),
@@ -362,8 +366,8 @@ class _QuickLinkCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                  Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: _kText)),
+                  Text(subtitle, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _kSub)),
                 ],
               ),
             ),
@@ -409,12 +413,12 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               value,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _kText),
             ),
             const SizedBox(height: 1),
             Text(
               label,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+              style: const TextStyle(color: _kSub, fontSize: 12, fontWeight: FontWeight.w400),
             ),
           ],
         ),
