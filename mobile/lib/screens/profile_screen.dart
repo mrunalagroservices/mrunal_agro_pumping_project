@@ -156,10 +156,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // ── Wide promo card ──────────────────────────────────────────
             _WideCard(
-              emoji: '🚜',
-              title: 'Add a farm',
-              subtitle: "It's easy to add a farm and start monitoring your pumps.",
-              onTap: () => _comingSoon('Add a farm'),
+              emoji: '🤝',
+              title: 'Be a Dealer',
+              subtitle: "Partner with Mrunal Agro and start selling pumps and farm equipment in your area.",
+              onTap: () => _comingSoon('Be a Dealer'),
             ),
             const SizedBox(height: 18),
 
