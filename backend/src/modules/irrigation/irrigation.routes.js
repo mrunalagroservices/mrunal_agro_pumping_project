@@ -162,7 +162,7 @@ router.post('/plans', async (req, res) => {
       return res.status(400).json({ success: false, message: 'farm_id, name, and steps[] required' });
     }
 
-    client = await db.connect();
+    client = await db.pool.connect();
     await client.query('BEGIN');
 
     const planRes = await client.query(
@@ -203,7 +203,7 @@ router.put('/plans/:id', async (req, res) => {
   try {
     const { name, motor_actuator_id, steps, is_active } = req.body;
 
-    client = await db.connect();
+    client = await db.pool.connect();
     await client.query('BEGIN');
 
     const planRes = await client.query(
@@ -272,7 +272,7 @@ router.post('/plans/:id/run', async (req, res) => {
     const { mode } = req.body; // 'real' | 'simulation'
     const isSimulation = mode === 'simulation';
 
-    client = await db.connect();
+    client = await db.pool.connect();
 
     // Fetch plan
     const planRes = await client.query(

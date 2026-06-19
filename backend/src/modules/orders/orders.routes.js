@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ success: false, message: 'items, delivery_address and payment_method are required' });
   }
 
-  const client = await db.connect();
+  const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
 
