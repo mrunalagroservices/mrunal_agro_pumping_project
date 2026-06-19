@@ -86,7 +86,7 @@ router.get('/mine', async (req, res) => {
     res.json({ success: true, data: orders.map((o) => ({ ...o, items: itemsByOrder[o.id] || [] })) });
   } catch (err) {
     console.error('[Orders GET mine]', err.message);
-    res.status(500).json({ success: false, message: 'Failed to fetch orders' });
+    res.status(500).json({ success: false, message: err.message || 'Failed to fetch orders' });
   }
 });
 
