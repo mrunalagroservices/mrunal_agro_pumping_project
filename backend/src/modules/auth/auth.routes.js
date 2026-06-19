@@ -85,7 +85,10 @@ router.post('/login', async (req, res) => {
 
 const ME_COLUMNS = `id, organization_id, name, email, phone, role, is_admin,
   preferred_first_name, residential_address, postal_address, emergency_contact,
-  analytics_opt_in, deletion_requested_at, notification_preferences, created_at`;
+  analytics_opt_in, deletion_requested_at, notification_preferences,
+  preferred_payment_method, created_at`;
+
+const VALID_PAYMENT_METHODS = ['cod', 'card', 'upi'];
 
 // GET /api/v1/auth/me
 router.get('/me', requireAuth, async (req, res) => {
@@ -107,7 +110,7 @@ router.put('/me', requireAuth, async (req, res) => {
     const {
       name, phone, email, preferred_first_name,
       residential_address, postal_address, emergency_contact,
-      analytics_opt_in, notification_preferences,
+      analytics_opt_in, notification_preferences, preferred_payment_method,
     } = req.body;
 
     if (email) {
@@ -118,6 +121,10 @@ router.put('/me', requireAuth, async (req, res) => {
       if (existing.rows.length) {
         return res.status(409).json({ success: false, message: 'Email already in use' });
       }
+    }
+
+    if (preferred_payment_method && !VALID_PAYMENT_METHODS.includes(preferred_payment_method)) {
+      return res.status(400).json({ success: false, message: 'Invalid payment method' });
     }
 
     const result = await db.query(
@@ -131,8 +138,9 @@ router.put('/me', requireAuth, async (req, res) => {
          emergency_contact        = COALESCE($7::jsonb, emergency_contact),
          analytics_opt_in         = COALESCE($8, analytics_opt_in),
          notification_preferences = COALESCE($9::jsonb, notification_preferences),
+         preferred_payment_method = COALESCE($10, preferred_payment_method),
          updated_at               = NOW()
-       WHERE id = $10
+       WHERE id = $11
        RETURNING ${ME_COLUMNS}`,
       [
         name || null,
@@ -144,6 +152,7 @@ router.put('/me', requireAuth, async (req, res) => {
         emergency_contact ? JSON.stringify(emergency_contact) : null,
         typeof analytics_opt_in === 'boolean' ? analytics_opt_in : null,
         notification_preferences ? JSON.stringify(notification_preferences) : null,
+        preferred_payment_method || null,
         req.user.id,
       ]
     );

@@ -119,6 +119,7 @@ class AppUser {
   final bool analyticsOptIn;
   final DateTime? deletionRequestedAt;
   final Map<String, ChannelPrefs> notificationPreferences;
+  final String preferredPaymentMethod;
 
   AppUser({
     required this.id,
@@ -135,6 +136,7 @@ class AppUser {
     this.analyticsOptIn = true,
     this.deletionRequestedAt,
     this.notificationPreferences = const {},
+    this.preferredPaymentMethod = 'cod',
   });
 
   bool get deletionPending => deletionRequestedAt != null;
@@ -165,6 +167,7 @@ class AppUser {
           ? DateTime.tryParse(json['deletion_requested_at'] as String)
           : null,
       notificationPreferences: _parseNotificationPrefs(json['notification_preferences'] as Map<String, dynamic>?),
+      preferredPaymentMethod: json['preferred_payment_method'] as String? ?? 'cod',
     );
   }
 }

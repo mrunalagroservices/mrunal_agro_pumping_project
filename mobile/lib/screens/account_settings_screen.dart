@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 import 'notifications_screen.dart';
+import 'payments_screen.dart';
 import 'personal_info_screen.dart';
 import 'privacy_screen.dart';
 
@@ -32,6 +34,7 @@ class AccountSettingsScreen extends StatefulWidget {
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   late final List<_BannerData> _banners;
   final _pageController = PageController(viewportFraction: 0.9);
+  String? _versionLabel;
 
   @override
   void initState() {
@@ -42,6 +45,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       _BannerData(icon: Icons.mail_outline, title: 'Confirm your email address',
           subtitle: "We'll send a code to your inbox.", action: 'Confirm email'),
     ];
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() => _versionLabel = 'Version ${info.version} (${info.buildNumber})');
   }
 
   @override
@@ -121,11 +131,22 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
             }),
             const _Div(),
-            _Row(icon: Icons.payments_outlined, label: 'Payments', onTap: () => _comingSoon('Payments')),
+            _Row(icon: Icons.payments_outlined, label: 'Payments', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentsScreen()));
+            }),
             const _Div(),
             _Row(icon: Icons.calculate_outlined, label: 'Taxes (GST)', onTap: () => _comingSoon('Taxes')),
             const _Div(),
             _Row(icon: Icons.language_outlined, label: 'Translation', onTap: () => _comingSoon('Translation')),
+            const _Div(),
+            _Row(icon: Icons.accessibility_new_outlined, label: 'Accessibility', onTap: () => _comingSoon('Accessibility')),
+
+            if (_versionLabel != null) ...[
+              const SizedBox(height: 16),
+              const Divider(height: 1, thickness: 1, color: _P.divider),
+              const SizedBox(height: 16),
+              Text(_versionLabel!, style: const TextStyle(fontSize: 13, color: _P.subtext)),
+            ],
           ],
         ),
       ),

@@ -261,6 +261,7 @@ class AppState extends ChangeNotifier {
     EmergencyContact? emergencyContact,
     bool? analyticsOptIn,
     Map<String, ChannelPrefs>? notificationPreferences,
+    String? preferredPaymentMethod,
   }) async {
     try {
       final data = await _api.put('/auth/me', {
@@ -274,6 +275,7 @@ class AppState extends ChangeNotifier {
         if (analyticsOptIn != null) 'analytics_opt_in': analyticsOptIn,
         if (notificationPreferences != null)
           'notification_preferences': notificationPreferences.map((k, v) => MapEntry(k, v.toJson())),
+        if (preferredPaymentMethod != null) 'preferred_payment_method': preferredPaymentMethod,
       });
       user = AppUser.fromJson(data as Map<String, dynamic>);
       notifyListeners();
@@ -447,6 +449,18 @@ class AppState extends ChangeNotifier {
     } catch (_) {
       return 'Could not resolve alert.';
     }
+  }
+
+  // ── Coupons (admin-managed; saved per-user via user_saved_coupons) ───────────
+  Future<List<Map<String, dynamic>>> fetchMyCoupons() async {
+    final data = await _api.get('/shop-settings/my-coupons');
+    return (data as List).cast<Map<String, dynamic>>();
+  }
+
+  /// Throws ApiException (with a user-facing message) if the code is invalid/expired.
+  Future<Map<String, dynamic>> saveCoupon(String code) async {
+    final data = await _api.post('/shop-settings/my-coupons', {'code': code});
+    return data as Map<String, dynamic>;
   }
 
   // ── Orders ─────────────────────────────────────────────────────────────────

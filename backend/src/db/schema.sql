@@ -26,6 +26,7 @@ CREATE TABLE users (
   emergency_contact    JSONB, -- { name, phone, relationship }
   analytics_opt_in     BOOLEAN NOT NULL DEFAULT true,
   deletion_requested_at TIMESTAMPTZ,
+  preferred_payment_method VARCHAR(20) NOT NULL DEFAULT 'cod', -- cod, card, upi
   notification_preferences JSONB NOT NULL DEFAULT '{
     "promo_offers":        {"email": false, "push": false, "sms": true},
     "farming_tips":        {"email": false, "push": false, "sms": true},
@@ -50,6 +51,16 @@ CREATE TABLE data_export_requests (
   requested_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_data_export_requests_user ON data_export_requests(user_id, requested_at DESC);
+
+-- ─── User saved coupons (Credits & coupons → "Add coupon") ────────────────────
+CREATE TABLE user_saved_coupons (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  code       VARCHAR(50) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, code)
+);
+CREATE INDEX idx_user_saved_coupons_user ON user_saved_coupons(user_id);
 
 -- ─── Farms ────────────────────────────────────────────────────────────────
 CREATE TABLE farms (
