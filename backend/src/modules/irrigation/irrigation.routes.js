@@ -155,13 +155,14 @@ router.get('/plans', async (req, res) => {
 
 // POST /irrigation-plans — create plan + steps
 router.post('/plans', async (req, res) => {
-  const client = await db.connect();
+  let client;
   try {
     const { farm_id, name, motor_actuator_id, steps } = req.body;
     if (!farm_id || !name || !Array.isArray(steps) || !steps.length) {
       return res.status(400).json({ success: false, message: 'farm_id, name, and steps[] required' });
     }
 
+    client = await db.connect();
     await client.query('BEGIN');
 
     const planRes = await client.query(
@@ -173,7 +174,6 @@ router.post('/plans', async (req, res) => {
 
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
-      // Fetch zone name snapshot
       const zoneRes = step.zone_id
         ? await client.query('SELECT name FROM zones WHERE id = $1', [step.zone_id])
         : { rows: [] };
@@ -189,20 +189,21 @@ router.post('/plans', async (req, res) => {
     await client.query('COMMIT');
     res.status(201).json({ success: true, data: plan });
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) await client.query('ROLLBACK').catch(() => {});
     console.error('[IrrigationPlans POST]', err.message);
-    res.status(500).json({ success: false, message: 'Failed to create plan' });
+    res.status(500).json({ success: false, message: err.message || 'Failed to create plan' });
   } finally {
-    client.release();
+    if (client) client.release();
   }
 });
 
 // PUT /irrigation-plans/:id — update plan + replace steps
 router.put('/plans/:id', async (req, res) => {
-  const client = await db.connect();
+  let client;
   try {
     const { name, motor_actuator_id, steps, is_active } = req.body;
 
+    client = await db.connect();
     await client.query('BEGIN');
 
     const planRes = await client.query(
@@ -216,7 +217,7 @@ router.put('/plans/:id', async (req, res) => {
       [name || null, motor_actuator_id || null, is_active ?? null, req.params.id, req.user.organization_id]
     );
     if (!planRes.rows.length) {
-      await client.query('ROLLBACK');
+      await client.query('ROLLBACK').catch(() => {});
       return res.status(404).json({ success: false, message: 'Plan not found' });
     }
 
@@ -239,11 +240,11 @@ router.put('/plans/:id', async (req, res) => {
     await client.query('COMMIT');
     res.json({ success: true, data: planRes.rows[0] });
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) await client.query('ROLLBACK').catch(() => {});
     console.error('[IrrigationPlans PUT]', err.message);
-    res.status(500).json({ success: false, message: 'Failed to update plan' });
+    res.status(500).json({ success: false, message: err.message || 'Failed to update plan' });
   } finally {
-    client.release();
+    if (client) client.release();
   }
 });
 
@@ -266,10 +267,12 @@ router.delete('/plans/:id', async (req, res) => {
 
 // POST /irrigation-plans/:id/run — start a plan (real or simulation)
 router.post('/plans/:id/run', async (req, res) => {
-  const client = await db.connect();
+  let client;
   try {
     const { mode } = req.body; // 'real' | 'simulation'
     const isSimulation = mode === 'simulation';
+
+    client = await db.connect();
 
     // Fetch plan
     const planRes = await client.query(
@@ -334,11 +337,11 @@ router.post('/plans/:id/run', async (req, res) => {
 
     res.status(201).json({ success: true, data: { run_id: run.id, is_simulation: isSimulation } });
   } catch (err) {
-    await client.query('ROLLBACK').catch(() => {});
+    if (client) await client.query('ROLLBACK').catch(() => {});
     console.error('[IrrigationRun START]', err.message);
-    res.status(500).json({ success: false, message: 'Failed to start plan' });
+    res.status(500).json({ success: false, message: err.message || 'Failed to start plan' });
   } finally {
-    client.release();
+    if (client) client.release();
   }
 });
 
