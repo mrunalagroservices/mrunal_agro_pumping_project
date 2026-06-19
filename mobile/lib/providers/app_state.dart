@@ -250,6 +250,27 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // ── Profile ────────────────────────────────────────────────────────────────
+  Future<String?> updateProfile({String? name, String? phone, String? email}) async {
+    try {
+      final data = await _api.put('/auth/me', {
+        if (name != null) 'name': name,
+        if (phone != null) 'phone': phone,
+        if (email != null) 'email': email,
+      });
+      user = AppUser.fromJson(data as Map<String, dynamic>);
+      notifyListeners();
+      return null;
+    } on UnauthorizedException {
+      await logout();
+      return 'Session expired, please log in again';
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not reach the server.';
+    }
+  }
+
   // ── Schedules ──────────────────────────────────────────────────────────────
   Future<void> loadSchedules() async {
     isLoadingSchedules = true;

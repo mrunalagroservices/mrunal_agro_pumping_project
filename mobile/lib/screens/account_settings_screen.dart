@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
+import 'personal_info_screen.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -101,7 +102,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             ),
 
             // ── Settings list ────────────────────────────────────────────
-            _Row(icon: Icons.person_outline, label: 'Personal information', onTap: () => _comingSoon('Personal information')),
+            _Row(icon: Icons.person_outline, label: 'Personal information', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const PersonalInfoScreen()));
+            }),
             const _Div(),
             _Row(icon: Icons.shield_outlined, label: 'Login & security', onTap: () => _comingSoon('Login & security')),
             const _Div(),

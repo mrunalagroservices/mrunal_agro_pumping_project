@@ -97,4 +97,37 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
+// PUT /auth/me — update own profile (name, phone, email)
+router.put('/me', requireAuth, async (req, res) => {
+  try {
+    const { name, phone, email } = req.body;
+
+    if (email) {
+      const existing = await db.query(
+        `SELECT id FROM users WHERE email = $1 AND id != $2`,
+        [email, req.user.id]
+      );
+      if (existing.rows.length) {
+        return res.status(409).json({ success: false, message: 'Email already in use' });
+      }
+    }
+
+    const result = await db.query(
+      `UPDATE users SET
+         name       = COALESCE($1, name),
+         phone      = COALESCE($2, phone),
+         email      = COALESCE($3, email),
+         updated_at = NOW()
+       WHERE id = $4
+       RETURNING id, organization_id, name, email, phone, role, is_admin, created_at`,
+      [name || null, phone || null, email || null, req.user.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Auth/me PUT]', err.message);
+    res.status(500).json({ success: false, message: err.message || 'Failed to update profile' });
+  }
+});
+
 module.exports = router;
