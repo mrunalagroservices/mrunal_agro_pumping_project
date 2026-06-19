@@ -49,9 +49,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
 
   Future<void> _loadVersion() async {
-    final info = await PackageInfo.fromPlatform();
-    if (!mounted) return;
-    setState(() => _versionLabel = 'Version ${info.version} (${info.buildNumber})');
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
+      setState(() => _versionLabel = 'Version ${info.version} (${info.buildNumber})');
+    } catch (_) {
+      // Plugin channel not registered yet (e.g. mid hot-restart) — just omit the footer.
+    }
   }
 
   @override
