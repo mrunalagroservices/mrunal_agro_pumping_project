@@ -115,7 +115,7 @@ class _ShopScreenState extends State<ShopScreen> {
         backgroundColor: const Color(0xFF15803D),
         foregroundColor: Colors.white,
         title: const Text('Agro Shop',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
         actions: [
           GestureDetector(
             onTap: _showCart,
@@ -144,7 +144,7 @@ class _ShopScreenState extends State<ShopScreen> {
                           style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
-                              fontWeight: FontWeight.bold),
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -266,7 +266,7 @@ class _ShopScreenState extends State<ShopScreen> {
                         const Text('FREE 1-Day Delivery',
                             style: TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 13)),
                         Text(
                           'Delivery by $_deliveryDate on all orders above ₹499',
@@ -287,7 +287,7 @@ class _ShopScreenState extends State<ShopScreen> {
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 11,
-                            fontWeight: FontWeight.bold)),
+                            fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -374,21 +374,21 @@ class _ShopScreenState extends State<ShopScreen> {
                           style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
-                              fontWeight: FontWeight.bold)),
+                              fontWeight: FontWeight.w600)),
                     ),
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Text('View Cart',
                           style: TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               fontSize: 15)),
                     ),
                     Text(
                       '₹${_cartTotal.toStringAsFixed(0)}',
                       style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontSize: 15),
                     ),
                     const SizedBox(width: 6),
@@ -469,7 +469,7 @@ class _ProductCard extends StatelessWidget {
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
-                          fontWeight: FontWeight.bold),
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -490,7 +490,7 @@ class _ProductCard extends StatelessWidget {
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 9,
-                            fontWeight: FontWeight.bold),
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -538,7 +538,7 @@ class _ProductCard extends StatelessWidget {
                                   style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
-                                      fontWeight: FontWeight.bold)),
+                                      fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
@@ -559,7 +559,7 @@ class _ProductCard extends StatelessWidget {
                           '₹${p.price.toStringAsFixed(0)}',
                           style: const TextStyle(
                               fontSize: 15,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               color: Color(0xFF0F172A)),
                         ),
                         const SizedBox(width: 4),
@@ -617,7 +617,7 @@ class _ProductCard extends StatelessWidget {
                                     style: const TextStyle(
                                         fontSize: 11,
                                         color: Color(0xFF15803D),
-                                        fontWeight: FontWeight.bold),
+                                        fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
@@ -635,7 +635,7 @@ class _ProductCard extends StatelessWidget {
                               child: const Text('Add to Cart',
                                   style: TextStyle(
                                       fontSize: 11,
-                                      fontWeight: FontWeight.bold)),
+                                      fontWeight: FontWeight.w600)),
                             ),
                     ),
                   ],
@@ -716,7 +716,7 @@ class _ProductDetailSheet extends StatelessWidget {
                     style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.w600)),
               ),
               if (p.isBestSeller) ...[
                 const SizedBox(width: 6),
@@ -730,7 +730,7 @@ class _ProductDetailSheet extends StatelessWidget {
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 11,
-                          fontWeight: FontWeight.bold)),
+                          fontWeight: FontWeight.w600)),
                 ),
               ],
             ],
@@ -739,7 +739,7 @@ class _ProductDetailSheet extends StatelessWidget {
           Text(p.name,
               style: const TextStyle(
                   fontSize: 17,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   color: Color(0xFF0F172A))),
           const SizedBox(height: 4),
           Text(p.unit,
@@ -752,7 +752,7 @@ class _ProductDetailSheet extends StatelessWidget {
               Text('₹${p.price.toStringAsFixed(0)}',
                   style: const TextStyle(
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       color: Color(0xFF0F172A))),
               const SizedBox(width: 8),
               Text('₹${p.originalPrice.toStringAsFixed(0)}',
@@ -765,7 +765,7 @@ class _ProductDetailSheet extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 13,
                       color: Color(0xFF15803D),
-                      fontWeight: FontWeight.bold)),
+                      fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 12),
@@ -787,7 +787,7 @@ class _ProductDetailSheet extends StatelessWidget {
                   children: [
                     const Text('FREE 1-Day Delivery',
                         style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             color: Color(0xFF15803D),
                             fontSize: 13)),
                     Text('Delivered by $deliveryDate',
@@ -824,7 +824,7 @@ class _ProductDetailSheet extends StatelessWidget {
                         style: const TextStyle(
                             color: Colors.white,
                             fontSize: 13,
-                            fontWeight: FontWeight.bold)),
+                            fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -847,7 +847,7 @@ class _ProductDetailSheet extends StatelessWidget {
               label: Text(
                 qty > 0 ? 'Add More to Cart' : 'Add to Cart',
                 style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.bold),
+                    fontSize: 15, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF15803D),
@@ -933,7 +933,7 @@ class _CartSheetState extends State<_CartSheet> {
             children: [
               const Text('Your Cart',
                   style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(width: 8),
               Container(
                 padding:
@@ -945,7 +945,7 @@ class _CartSheetState extends State<_CartSheet> {
                     style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.w600)),
               ),
             ],
           ),
@@ -1014,7 +1014,7 @@ class _CartSheetState extends State<_CartSheet> {
                                   const EdgeInsets.symmetric(horizontal: 10),
                               child: Text('${entry.value}',
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w600,
                                       fontSize: 14)),
                             ),
                             _QtyBtn(
@@ -1026,7 +1026,7 @@ class _CartSheetState extends State<_CartSheet> {
                         Text(
                           '₹${(p.price * entry.value).toStringAsFixed(0)}',
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 14),
+                              fontWeight: FontWeight.w600, fontSize: 14),
                         ),
                       ],
                     ),
@@ -1068,7 +1068,7 @@ class _CartSheetState extends State<_CartSheet> {
                 const Spacer(),
                 Text('₹${_total.toStringAsFixed(0)}',
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold)),
+                        fontSize: 20, fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 14),
@@ -1099,7 +1099,7 @@ class _CartSheetState extends State<_CartSheet> {
                 ),
                 child: const Text('Place Order',
                     style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
+                        fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
           ],

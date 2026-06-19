@@ -45,7 +45,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(widget.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
             if (unresolvedCount > 0) ...[
               const SizedBox(width: 8),
               Container(
@@ -56,7 +56,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 ),
                 child: Text(
                   '$unresolvedCount',
-                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -193,7 +193,7 @@ class _AlertCard extends StatelessWidget {
                           alert.severity.toUpperCase(),
                           style: TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             color: alert.isResolved ? AppColors.textMuted : alert.severityColor,
                           ),
                         ),
