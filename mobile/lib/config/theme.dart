@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Matches the web dashboard's Tailwind palette: "primary" green +
 /// "slate" grays for text/borders/background.
@@ -37,19 +38,19 @@ ThemeData buildAppTheme() {
       seedColor: AppColors.primary600,
       primary: AppColors.primary600,
     ),
-    textTheme: base.textTheme.apply(
+    textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
       bodyColor: AppColors.textPrimary,
       displayColor: AppColors.textPrimary,
     ),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: AppColors.background,
       foregroundColor: AppColors.textPrimary,
       elevation: 0,
       centerTitle: false,
-      titleTextStyle: TextStyle(
+      titleTextStyle: GoogleFonts.inter(
         color: AppColors.textPrimary,
         fontSize: 18,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
     ),
     cardTheme: CardThemeData(
@@ -67,7 +68,7 @@ ThemeData buildAppTheme() {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(

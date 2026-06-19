@@ -50,6 +50,7 @@ dependencies:
 
   # Realtime updates (actuator/device status) shared with the web dashboard
   socket_io_client: ^2.0.3+1
+  google_fonts: ^8.1.0
 
 dev_dependencies:
   flutter_test:
