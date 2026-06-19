@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../providers/app_state.dart';
 import '../widgets/top_bar_actions.dart';
+import 'farms_screen.dart';
 import 'history_screen.dart';
+import 'schedules_screen.dart';
 
 // Default map center: Pune, Maharashtra (used when no farm has GPS coordinates yet).
 const _defaultCenter = LatLng(18.5204, 73.8567);
@@ -221,6 +223,51 @@ class DashboardScreen extends StatelessWidget {
                 ],
               ),
             ),
+            // Quick links: Farms & Devices / Schedules
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _QuickLinkCard(
+                        icon: Icons.agriculture_outlined,
+                        iconBg: const Color(0xFFDCFCE7),
+                        iconColor: AppColors.primary700,
+                        title: 'Farms & Devices',
+                        subtitle: 'Manage zones, electricity, anti-theft',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const FarmsScreen()),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _QuickLinkCard(
+                        icon: Icons.schedule_outlined,
+                        iconBg: const Color(0xFFFFF7ED),
+                        iconColor: const Color(0xFFD97706),
+                        title: 'Schedules',
+                        subtitle: 'Automatic on/off timers',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SchedulesScreen()),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             // History shortcut
             SliverToBoxAdapter(
               child: Padding(
@@ -266,6 +313,61 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickLinkCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _QuickLinkCard({
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 2))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(12)),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_outlined, color: Color(0xFF94A3B8)),
           ],
         ),
       ),

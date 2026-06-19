@@ -4,9 +4,9 @@ import '../config/theme.dart';
 import '../providers/app_state.dart';
 import 'alerts_screen.dart';
 import 'dashboard_screen.dart';
-import 'farms_screen.dart';
 import 'map_screen.dart';
-import 'schedules_screen.dart';
+import 'orders_screen.dart';
+import 'profile_screen.dart';
 import 'shop_screen.dart';
 
 class MainShell extends StatefulWidget {
@@ -27,6 +27,8 @@ class _MainShellState extends State<MainShell> {
     });
   }
 
+  void _goTo(int index) => setState(() => _selectedIndex = index);
+
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
@@ -39,10 +41,13 @@ class _MainShellState extends State<MainShell> {
           MaterialPageRoute(builder: (_) => const MapScreen()),
         ),
       ),
-      const FarmsScreen(),
-      const AlertsScreen(),
-      const SchedulesScreen(),
       const ShopScreen(),
+      const OrdersScreen(),
+      const AlertsScreen(title: 'Messages'),
+      ProfileScreen(
+        onViewOrders: () => _goTo(2),
+        onViewMessages: () => _goTo(3),
+      ),
     ];
 
     return Scaffold(
@@ -52,42 +57,42 @@ class _MainShellState extends State<MainShell> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+        onDestinationSelected: _goTo,
         backgroundColor: Colors.white,
         indicatorColor: AppColors.primary100,
         destinations: [
           const NavigationDestination(
-            icon: Icon(Icons.space_dashboard_outlined),
-            selectedIcon: Icon(Icons.space_dashboard, color: AppColors.primary700),
-            label: 'Dashboard',
-          ),
-          const NavigationDestination(
             icon: Icon(Icons.agriculture_outlined),
             selectedIcon: Icon(Icons.agriculture, color: AppColors.primary700),
-            label: 'Farms',
+            label: 'Farm',
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.storefront_outlined),
+            selectedIcon: Icon(Icons.storefront, color: AppColors.primary700),
+            label: 'Market',
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.shopping_bag_outlined),
+            selectedIcon: Icon(Icons.shopping_bag, color: AppColors.primary700),
+            label: 'Orders',
           ),
           NavigationDestination(
             icon: Badge(
               isLabelVisible: unresolvedAlerts > 0,
               label: Text('$unresolvedAlerts'),
-              child: const Icon(Icons.notifications_outlined),
+              child: const Icon(Icons.chat_bubble_outline),
             ),
             selectedIcon: Badge(
               isLabelVisible: unresolvedAlerts > 0,
               label: Text('$unresolvedAlerts'),
-              child: const Icon(Icons.notifications, color: AppColors.primary700),
+              child: const Icon(Icons.chat_bubble, color: AppColors.primary700),
             ),
-            label: 'Alerts',
+            label: 'Messages',
           ),
           const NavigationDestination(
-            icon: Icon(Icons.schedule_outlined),
-            selectedIcon: Icon(Icons.schedule, color: AppColors.primary700),
-            label: 'Schedules',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(Icons.storefront, color: AppColors.primary700),
-            label: 'Shop',
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: AppColors.primary700),
+            label: 'Profile',
           ),
         ],
       ),

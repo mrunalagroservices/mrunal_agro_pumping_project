@@ -3,6 +3,7 @@ import '../models/actuator.dart';
 import '../models/alert_model.dart';
 import '../models/device.dart';
 import '../models/farm.dart';
+import '../models/order.dart';
 import '../models/power_event.dart';
 import '../models/schedule.dart';
 import '../models/user.dart';
@@ -23,14 +24,17 @@ class AppState extends ChangeNotifier {
   List<Actuator> actuators = [];
   List<Schedule> schedules = [];
   List<AlertModel> alerts = [];
+  List<OrderModel> orders = [];
   Map<int, List<PowerEvent>> powerEvents = {}; // deviceId → events
 
   bool isLoadingDashboard = false;
   bool isLoadingSchedules = false;
   bool isLoadingAlerts = false;
+  bool isLoadingOrders = false;
   String? dashboardError;
   String? schedulesError;
   String? alertsError;
+  String? ordersError;
 
   Future<void> bootstrap() async {
     await _api.loadToken();
@@ -107,6 +111,7 @@ class AppState extends ChangeNotifier {
     actuators = [];
     schedules = [];
     alerts = [];
+    orders = [];
     powerEvents = {};
     authStatus = AuthStatus.loggedOut;
     notifyListeners();
@@ -349,6 +354,26 @@ class AppState extends ChangeNotifier {
       return e.message;
     } catch (_) {
       return 'Could not resolve alert.';
+    }
+  }
+
+  // ── Orders ─────────────────────────────────────────────────────────────────
+  Future<void> loadOrders() async {
+    isLoadingOrders = true;
+    ordersError = null;
+    notifyListeners();
+    try {
+      final data = await _api.get('/orders/mine');
+      orders = (data as List).map((j) => OrderModel.fromJson(j as Map<String, dynamic>)).toList();
+    } on UnauthorizedException {
+      await logout();
+    } on ApiException catch (e) {
+      ordersError = e.message;
+    } catch (_) {
+      ordersError = 'Could not load orders.';
+    } finally {
+      isLoadingOrders = false;
+      notifyListeners();
     }
   }
 

@@ -5,6 +5,7 @@ class AppUser {
   final String email;
   final String? phone;
   final String role;
+  final DateTime? createdAt;
 
   AppUser({
     required this.id,
@@ -13,6 +14,7 @@ class AppUser {
     required this.email,
     this.phone,
     required this.role,
+    this.createdAt,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,9 @@ class AppUser {
       email: json['email'] as String,
       phone: json['phone'] as String?,
       role: json['role'] as String? ?? 'user',
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'] as String)
+          : null,
     );
   }
 }

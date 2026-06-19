@@ -5,7 +5,9 @@ import '../models/alert_model.dart';
 import '../providers/app_state.dart';
 
 class AlertsScreen extends StatefulWidget {
-  const AlertsScreen({super.key});
+  final String title;
+
+  const AlertsScreen({super.key, this.title = 'Alerts'});
 
   @override
   State<AlertsScreen> createState() => _AlertsScreenState();
@@ -43,7 +45,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Text('Alerts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             if (unresolvedCount > 0) ...[
               const SizedBox(width: 8),
               Container(
