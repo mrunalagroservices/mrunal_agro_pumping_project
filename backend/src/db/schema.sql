@@ -12,16 +12,20 @@ CREATE TABLE organizations (
 );
 
 CREATE TABLE users (
-  id              SERIAL PRIMARY KEY,
-  organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-  name            VARCHAR(150) NOT NULL,
-  email           VARCHAR(150) UNIQUE NOT NULL,
-  password_hash   VARCHAR(255) NOT NULL,
-  phone           VARCHAR(20),
-  role            VARCHAR(20) NOT NULL DEFAULT 'owner', -- owner, operator, viewer
-  is_admin        BOOLEAN NOT NULL DEFAULT false,       -- platform-wide admin flag
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                   SERIAL PRIMARY KEY,
+  organization_id      INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name                 VARCHAR(150) NOT NULL,
+  email                VARCHAR(150) UNIQUE NOT NULL,
+  password_hash        VARCHAR(255) NOT NULL,
+  phone                VARCHAR(20),
+  role                 VARCHAR(20) NOT NULL DEFAULT 'owner', -- owner, operator, viewer
+  is_admin             BOOLEAN NOT NULL DEFAULT false,       -- platform-wide admin flag
+  preferred_first_name VARCHAR(100),
+  residential_address  JSONB, -- { line1, line2, city, state, pincode }
+  postal_address       JSONB, -- { line1, line2, city, state, pincode }
+  emergency_contact    JSONB, -- { name, phone, relationship }
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_users_org ON users(organization_id);
 

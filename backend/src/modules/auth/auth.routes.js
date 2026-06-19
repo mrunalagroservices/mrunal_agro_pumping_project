@@ -83,11 +83,14 @@ router.post('/login', async (req, res) => {
   }
 });
 
+const ME_COLUMNS = `id, organization_id, name, email, phone, role, is_admin,
+  preferred_first_name, residential_address, postal_address, emergency_contact, created_at`;
+
 // GET /api/v1/auth/me
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT id, organization_id, name, email, phone, role, is_admin, created_at FROM users WHERE id = $1`,
+      `SELECT ${ME_COLUMNS} FROM users WHERE id = $1`,
       [req.user.id]
     );
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'User not found' });
@@ -97,10 +100,13 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
-// PUT /auth/me — update own profile (name, phone, email)
+// PUT /auth/me — update own profile
 router.put('/me', requireAuth, async (req, res) => {
   try {
-    const { name, phone, email } = req.body;
+    const {
+      name, phone, email, preferred_first_name,
+      residential_address, postal_address, emergency_contact,
+    } = req.body;
 
     if (email) {
       const existing = await db.query(
@@ -114,13 +120,26 @@ router.put('/me', requireAuth, async (req, res) => {
 
     const result = await db.query(
       `UPDATE users SET
-         name       = COALESCE($1, name),
-         phone      = COALESCE($2, phone),
-         email      = COALESCE($3, email),
-         updated_at = NOW()
-       WHERE id = $4
-       RETURNING id, organization_id, name, email, phone, role, is_admin, created_at`,
-      [name || null, phone || null, email || null, req.user.id]
+         name                 = COALESCE($1, name),
+         phone                = COALESCE($2, phone),
+         email                = COALESCE($3, email),
+         preferred_first_name = COALESCE($4, preferred_first_name),
+         residential_address  = COALESCE($5::jsonb, residential_address),
+         postal_address       = COALESCE($6::jsonb, postal_address),
+         emergency_contact    = COALESCE($7::jsonb, emergency_contact),
+         updated_at           = NOW()
+       WHERE id = $8
+       RETURNING ${ME_COLUMNS}`,
+      [
+        name || null,
+        phone || null,
+        email || null,
+        preferred_first_name || null,
+        residential_address ? JSON.stringify(residential_address) : null,
+        postal_address ? JSON.stringify(postal_address) : null,
+        emergency_contact ? JSON.stringify(emergency_contact) : null,
+        req.user.id,
+      ]
     );
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'User not found' });
     res.json({ success: true, data: result.rows[0] });

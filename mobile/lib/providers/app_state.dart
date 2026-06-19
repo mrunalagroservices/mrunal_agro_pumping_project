@@ -251,12 +251,24 @@ class AppState extends ChangeNotifier {
   }
 
   // ── Profile ────────────────────────────────────────────────────────────────
-  Future<String?> updateProfile({String? name, String? phone, String? email}) async {
+  Future<String?> updateProfile({
+    String? name,
+    String? phone,
+    String? email,
+    String? preferredFirstName,
+    PostalLikeAddress? residentialAddress,
+    PostalLikeAddress? postalAddress,
+    EmergencyContact? emergencyContact,
+  }) async {
     try {
       final data = await _api.put('/auth/me', {
         if (name != null) 'name': name,
         if (phone != null) 'phone': phone,
         if (email != null) 'email': email,
+        if (preferredFirstName != null) 'preferred_first_name': preferredFirstName,
+        if (residentialAddress != null) 'residential_address': residentialAddress.toJson(),
+        if (postalAddress != null) 'postal_address': postalAddress.toJson(),
+        if (emergencyContact != null) 'emergency_contact': emergencyContact.toJson(),
       });
       user = AppUser.fromJson(data as Map<String, dynamic>);
       notifyListeners();
