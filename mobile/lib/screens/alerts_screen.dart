@@ -25,7 +25,7 @@ class AlertsScreen extends StatefulWidget {
 }
 
 class _AlertsScreenState extends State<AlertsScreen> {
-  String _filter = 'all'; // all | unresolved | critical
+  String _filter = 'all'; // all | farm | market
   bool _searching = false;
   final _searchController = TextEditingController();
 
@@ -46,11 +46,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
   List<NotificationItem> _filtered(List<NotificationItem> all) {
     Iterable<NotificationItem> result = all;
     switch (_filter) {
-      case 'unresolved':
-        result = result.where((n) => n.isUnresolvedAlert);
+      case 'farm':
+        result = result.where((n) => n.isAlert || n.isIrrigation);
         break;
-      case 'critical':
-        result = result.where((n) => n.isCriticalAlert);
+      case 'market':
+        result = result.where((n) => n.isOrder);
         break;
     }
     final query = _searchController.text.trim().toLowerCase();
@@ -147,9 +147,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 children: [
                   _Pill(label: 'All', value: 'all', current: _filter, onTap: (v) => setState(() => _filter = v)),
                   const SizedBox(width: 8),
-                  _Pill(label: 'Unresolved', value: 'unresolved', current: _filter, onTap: (v) => setState(() => _filter = v)),
+                  _Pill(label: 'Farm', value: 'farm', current: _filter, onTap: (v) => setState(() => _filter = v)),
                   const SizedBox(width: 8),
-                  _Pill(label: 'Critical', value: 'critical', current: _filter, onTap: (v) => setState(() => _filter = v)),
+                  _Pill(label: 'Market', value: 'market', current: _filter, onTap: (v) => setState(() => _filter = v)),
                 ],
               ),
             ),
