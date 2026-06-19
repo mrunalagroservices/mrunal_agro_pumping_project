@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../config/theme.dart';
 import '../providers/app_state.dart';
 import 'alerts_screen.dart';
 import 'dashboard_screen.dart';
@@ -55,47 +54,130 @@ class _MainShellState extends State<MainShell> {
         index: _selectedIndex,
         children: screens,
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: _BottomBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: _goTo,
-        backgroundColor: Colors.white,
-        indicatorColor: AppColors.primary100,
-        destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.agriculture_outlined),
-            selectedIcon: Icon(Icons.agriculture, color: AppColors.primary700),
-            label: 'Farm',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(Icons.storefront, color: AppColors.primary700),
-            label: 'Market',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.shopping_bag_outlined),
-            selectedIcon: Icon(Icons.shopping_bag, color: AppColors.primary700),
-            label: 'Orders',
-          ),
-          NavigationDestination(
-            icon: Badge(
-              isLabelVisible: unresolvedAlerts > 0,
-              label: Text('$unresolvedAlerts'),
-              child: const Icon(Icons.chat_bubble_outline),
-            ),
-            selectedIcon: Badge(
-              isLabelVisible: unresolvedAlerts > 0,
-              label: Text('$unresolvedAlerts'),
-              child: const Icon(Icons.chat_bubble, color: AppColors.primary700),
-            ),
-            label: 'Messages',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person, color: AppColors.primary700),
-            label: 'Profile',
-          ),
-        ],
+        onSelect: _goTo,
+        messagesBadge: unresolvedAlerts,
       ),
+    );
+  }
+}
+
+/// Clean bottom nav: outline icons + label, no pill indicator, selected
+/// tab tinted. Matches the flat reference style.
+class _BottomBar extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onSelect;
+  final int messagesBadge;
+
+  const _BottomBar({
+    required this.selectedIndex,
+    required this.onSelect,
+    required this.messagesBadge,
+  });
+
+  static const _selected = Color(0xFFFF385C);
+  static const _unselected = Color(0xFF717171);
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <_NavItem>[
+      _NavItem(Icons.agriculture_outlined, Icons.agriculture, 'Farm'),
+      _NavItem(Icons.storefront_outlined, Icons.storefront, 'Market'),
+      _NavItem(Icons.shopping_bag_outlined, Icons.shopping_bag, 'Orders'),
+      _NavItem(Icons.chat_bubble_outline, Icons.chat_bubble, 'Messages', badge: messagesBadge),
+      _NavItem(Icons.person_outline, Icons.person, 'Profile'),
+    ];
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFEBEBEB), width: 1)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 62,
+          child: Row(
+            children: List.generate(items.length, (i) {
+              final item = items[i];
+              final active = i == selectedIndex;
+              final color = active ? _selected : _unselected;
+              return Expanded(
+                child: InkWell(
+                  onTap: () => onSelect(i),
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _IconWithBadge(
+                        icon: active ? item.activeIcon : item.icon,
+                        color: color,
+                        badge: item.badge,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.label,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                          color: color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final int badge;
+  _NavItem(this.icon, this.activeIcon, this.label, {this.badge = 0});
+}
+
+class _IconWithBadge extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final int badge;
+  const _IconWithBadge({required this.icon, required this.color, this.badge = 0});
+
+  @override
+  Widget build(BuildContext context) {
+    final iconWidget = Icon(icon, size: 24, color: color);
+    if (badge <= 0) return iconWidget;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        iconWidget,
+        Positioned(
+          top: -5,
+          right: -7,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF385C),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
+            constraints: const BoxConstraints(minWidth: 18),
+            child: Text(
+              '$badge',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
