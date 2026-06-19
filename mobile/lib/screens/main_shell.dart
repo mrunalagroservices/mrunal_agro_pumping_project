@@ -23,6 +23,7 @@ class _MainShellState extends State<MainShell> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().loadDashboard();
+      context.read<AppState>().loadNotifications();
     });
   }
 
@@ -31,7 +32,7 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final unresolvedAlerts = state.alerts.where((a) => !a.isResolved).length;
+    final unresolvedAlerts = state.notifications.where((n) => n.isUnresolvedAlert).length;
 
     final screens = [
       DashboardScreen(

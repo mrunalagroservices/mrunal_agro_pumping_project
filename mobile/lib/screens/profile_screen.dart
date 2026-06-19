@@ -45,7 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final user = state.user;
-    final unresolved = state.alerts.where((a) => !a.isResolved).length;
+    final unresolved = state.notifications.where((n) => n.isUnresolvedAlert).length;
 
     final yearsOnApp = user?.createdAt != null
         ? (DateTime.now().difference(user!.createdAt!).inDays / 365).floor()

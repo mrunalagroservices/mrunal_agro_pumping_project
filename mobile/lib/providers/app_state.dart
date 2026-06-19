@@ -3,6 +3,7 @@ import '../models/actuator.dart';
 import '../models/alert_model.dart';
 import '../models/device.dart';
 import '../models/farm.dart';
+import '../models/notification_item.dart';
 import '../models/order.dart';
 import '../models/power_event.dart';
 import '../models/schedule.dart';
@@ -25,16 +26,19 @@ class AppState extends ChangeNotifier {
   List<Schedule> schedules = [];
   List<AlertModel> alerts = [];
   List<OrderModel> orders = [];
+  List<NotificationItem> notifications = [];
   Map<int, List<PowerEvent>> powerEvents = {}; // deviceId → events
 
   bool isLoadingDashboard = false;
   bool isLoadingSchedules = false;
   bool isLoadingAlerts = false;
   bool isLoadingOrders = false;
+  bool isLoadingNotifications = false;
   String? dashboardError;
   String? schedulesError;
   String? alertsError;
   String? ordersError;
+  String? notificationsError;
 
   Future<void> bootstrap() async {
     await _api.loadToken();
@@ -112,6 +116,7 @@ class AppState extends ChangeNotifier {
     schedules = [];
     alerts = [];
     orders = [];
+    notifications = [];
     powerEvents = {};
     authStatus = AuthStatus.loggedOut;
     notifyListeners();
@@ -442,12 +447,41 @@ class AppState extends ChangeNotifier {
       await _api.put('/alerts/$id/resolve', {});
       final i = alerts.indexWhere((a) => a.id == id);
       if (i != -1) alerts[i].isResolved = true;
+
+      final ni = notifications.indexWhere((n) => n.isAlert && n.refId == id);
+      if (ni != -1) {
+        final n = notifications[ni];
+        notifications[ni] = NotificationItem(
+          id: n.id, type: n.type, refId: n.refId, title: n.title, message: n.message,
+          severity: n.severity, status: 'resolved', createdAt: n.createdAt,
+        );
+      }
       notifyListeners();
       return null;
     } on ApiException catch (e) {
       return e.message;
     } catch (_) {
       return 'Could not resolve alert.';
+    }
+  }
+
+  // ── Notifications (unified feed: alerts + order updates + irrigation runs) ──
+  Future<void> loadNotifications() async {
+    isLoadingNotifications = true;
+    notificationsError = null;
+    notifyListeners();
+    try {
+      final data = await _api.get('/notifications');
+      notifications = (data as List).map((j) => NotificationItem.fromJson(j as Map<String, dynamic>)).toList();
+    } on UnauthorizedException {
+      await logout();
+    } on ApiException catch (e) {
+      notificationsError = e.message;
+    } catch (_) {
+      notificationsError = 'Could not load notifications.';
+    } finally {
+      isLoadingNotifications = false;
+      notifyListeners();
     }
   }
 

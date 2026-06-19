@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/alert_model.dart';
+import '../models/notification_item.dart';
 import '../providers/app_state.dart';
 import 'account_settings_screen.dart';
 import 'notifications_screen.dart';
+import 'orders_screen.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -32,7 +33,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadAlerts();
+      context.read<AppState>().loadNotifications();
     });
   }
 
@@ -42,39 +43,42 @@ class _AlertsScreenState extends State<AlertsScreen> {
     super.dispose();
   }
 
-  List<AlertModel> _filtered(List<AlertModel> all) {
-    Iterable<AlertModel> result = all;
+  List<NotificationItem> _filtered(List<NotificationItem> all) {
+    Iterable<NotificationItem> result = all;
     switch (_filter) {
       case 'unresolved':
-        result = result.where((a) => !a.isResolved);
+        result = result.where((n) => n.isUnresolvedAlert);
         break;
       case 'critical':
-        result = result.where((a) => a.severity == 'critical');
+        result = result.where((n) => n.isCriticalAlert);
         break;
     }
     final query = _searchController.text.trim().toLowerCase();
     if (query.isNotEmpty) {
-      result = result.where((a) =>
-          a.message.toLowerCase().contains(query) ||
-          (a.deviceName?.toLowerCase().contains(query) ?? false));
+      result = result.where((n) =>
+          n.title.toLowerCase().contains(query) || n.message.toLowerCase().contains(query));
     }
     return result.toList();
   }
 
-  Future<void> _openAlert(AlertModel alert) async {
+  Future<void> _openItem(NotificationItem item) async {
+    if (item.isOrder) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen()));
+      return;
+    }
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => _AlertDetailSheet(alert: alert),
+      builder: (ctx) => _DetailSheet(item: item),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final filtered = _filtered(state.alerts);
+    final filtered = _filtered(state.notifications);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -154,11 +158,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => context.read<AppState>().loadAlerts(),
-                child: state.isLoadingAlerts
+                onRefresh: () => context.read<AppState>().loadNotifications(),
+                child: state.isLoadingNotifications
                     ? const Center(child: CircularProgressIndicator())
-                    : state.alertsError != null
-                        ? _ErrorView(message: state.alertsError!, onRetry: () => context.read<AppState>().loadAlerts())
+                    : state.notificationsError != null
+                        ? _ErrorView(message: state.notificationsError!, onRetry: () => context.read<AppState>().loadNotifications())
                         : filtered.isEmpty
                             ? const _EmptyView()
                             : ListView.separated(
@@ -166,8 +170,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                 itemCount: filtered.length,
                                 separatorBuilder: (_, __) => const Divider(height: 1, thickness: 1, color: _P.divider),
                                 itemBuilder: (context, i) => _MessageRow(
-                                  alert: filtered[i],
-                                  onTap: () => _openAlert(filtered[i]),
+                                  item: filtered[i],
+                                  onTap: () => _openItem(filtered[i]),
                                 ),
                               ),
               ),
@@ -208,10 +212,22 @@ class _Pill extends StatelessWidget {
   }
 }
 
+IconData _iconFor(NotificationItem item) {
+  if (item.isOrder) return Icons.shopping_bag_outlined;
+  if (item.isIrrigation) return Icons.water_drop_outlined;
+  return Icons.water_drop;
+}
+
+String _statusLabel(NotificationItem item) {
+  if (item.isAlert) return item.status == 'resolved' ? 'Resolved' : 'Ongoing';
+  final s = item.status;
+  return s.isEmpty ? '' : s[0].toUpperCase() + s.substring(1);
+}
+
 class _MessageRow extends StatelessWidget {
-  final AlertModel alert;
+  final NotificationItem item;
   final VoidCallback onTap;
-  const _MessageRow({required this.alert, required this.onTap});
+  const _MessageRow({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +243,7 @@ class _MessageRow extends StatelessWidget {
               height: 56,
               decoration: const BoxDecoration(color: _P.text, shape: BoxShape.circle),
               alignment: Alignment.center,
-              child: const Icon(Icons.water_drop, color: Colors.white, size: 26),
+              child: Icon(_iconFor(item), color: Colors.white, size: 24),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -238,26 +254,26 @@ class _MessageRow extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          alert.deviceName ?? 'Mrunal Agro',
+                          item.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(_dayLabel(alert.createdAt), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.subtext)),
+                      Text(_dayLabel(item.createdAt), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.subtext)),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    alert.message,
+                    item.message,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    alert.isResolved ? 'Resolved' : 'Ongoing',
+                    _statusLabel(item),
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext),
                   ),
                 ],
@@ -285,20 +301,20 @@ class _MessageRow extends StatelessWidget {
   }
 }
 
-class _AlertDetailSheet extends StatefulWidget {
-  final AlertModel alert;
-  const _AlertDetailSheet({required this.alert});
+class _DetailSheet extends StatefulWidget {
+  final NotificationItem item;
+  const _DetailSheet({required this.item});
 
   @override
-  State<_AlertDetailSheet> createState() => _AlertDetailSheetState();
+  State<_DetailSheet> createState() => _DetailSheetState();
 }
 
-class _AlertDetailSheetState extends State<_AlertDetailSheet> {
+class _DetailSheetState extends State<_DetailSheet> {
   bool _resolving = false;
 
   Future<void> _resolve() async {
     setState(() => _resolving = true);
-    final err = await context.read<AppState>().resolveAlert(widget.alert.id);
+    final err = await context.read<AppState>().resolveAlert(widget.item.refId);
     if (!mounted) return;
     if (err != null) {
       setState(() => _resolving = false);
@@ -310,7 +326,7 @@ class _AlertDetailSheetState extends State<_AlertDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final alert = widget.alert;
+    final item = widget.item;
     return SafeArea(
       top: false,
       child: Padding(
@@ -326,17 +342,18 @@ class _AlertDetailSheetState extends State<_AlertDetailSheet> {
                   height: 44,
                   decoration: const BoxDecoration(color: _P.text, shape: BoxShape.circle),
                   alignment: Alignment.center,
-                  child: const Icon(Icons.water_drop, color: Colors.white, size: 20),
+                  child: Icon(_iconFor(item), color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(alert.deviceName ?? 'Mrunal Agro',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text)),
-                      Text(alert.severity.toUpperCase(),
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext)),
+                      Text(item.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text)),
+                      Text(
+                        item.isAlert ? (item.severity ?? '').toUpperCase() : _statusLabel(item),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext),
+                      ),
                     ],
                   ),
                 ),
@@ -348,9 +365,9 @@ class _AlertDetailSheetState extends State<_AlertDetailSheet> {
               ],
             ),
             const SizedBox(height: 18),
-            Text(alert.message, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text, height: 1.4)),
+            Text(item.message, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text, height: 1.4)),
             const SizedBox(height: 20),
-            if (!alert.isResolved)
+            if (item.isAlert && item.status != 'resolved')
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -366,7 +383,7 @@ class _AlertDetailSheetState extends State<_AlertDetailSheet> {
                       : const Text('Mark as resolved', style: TextStyle(fontWeight: FontWeight.w400, fontSize: 16)),
                 ),
               )
-            else
+            else if (item.isAlert)
               const Text('This was marked resolved.', style: TextStyle(fontSize: 14, color: _P.subtext)),
           ],
         ),
@@ -411,7 +428,7 @@ class _EmptyView extends StatelessWidget {
               const Text('No messages', style: TextStyle(color: _P.text, fontSize: 17, fontWeight: FontWeight.w400)),
               const SizedBox(height: 4),
               const Text(
-                'All clear — your farm is running smoothly.',
+                'Alerts, order updates, and irrigation activity will show up here.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: _P.subtext, fontSize: 14),
               ),
