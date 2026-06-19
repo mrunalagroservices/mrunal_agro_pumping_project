@@ -422,7 +422,7 @@ class _EditableSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Text(label, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+              child: Text(label, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: _P.text)),
             ),
             _LinkButton(
               label: editing ? 'Cancel' : (actionLabelWhenCollapsed ?? 'Edit'),
@@ -492,7 +492,7 @@ class _LinkButton extends StatelessWidget {
         label,
         style: const TextStyle(
           fontSize: 16,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w400,
           color: _P.text,
           decoration: TextDecoration.underline,
         ),
