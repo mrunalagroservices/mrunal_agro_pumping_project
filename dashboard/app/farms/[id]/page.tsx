@@ -294,14 +294,27 @@ function PlanModal({
           {/* Preview timeline */}
           <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
             <p className="text-xs font-bold text-emerald-700 mb-2">Execution Order</p>
-            <div className="flex flex-wrap gap-1.5 items-center">
-              {motorId && <span className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full">Motor ON</span>}
-              {steps.map((s, i) => (
-                <span key={i} className="flex items-center gap-1 text-xs bg-white border border-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">
-                  {s.zone_name || `Zone ${i + 1}`} · {s.duration_minutes}min
-                </span>
-              ))}
-              {motorId && <span className="text-xs bg-slate-600 text-white px-2 py-0.5 rounded-full">Motor OFF</span>}
+            <div className="flex flex-wrap gap-0 items-center">
+              {(() => {
+                const pills: React.ReactNode[] = [];
+                if (motorId) pills.push(
+                  <span key="on" className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full leading-5 shrink-0">Motor ON</span>
+                );
+                steps.forEach((s, i) => pills.push(
+                  <span key={`step-${i}`} className="flex items-center gap-1 text-xs bg-white border border-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full leading-5 shrink-0">
+                    {s.zone_name || `Zone ${i + 1}`} · {s.duration_minutes}min
+                  </span>
+                ));
+                if (motorId) pills.push(
+                  <span key="off" className="text-xs bg-slate-600 text-white px-2 py-0.5 rounded-full leading-5 shrink-0">Motor OFF</span>
+                );
+                return pills.map((pill, i) => (
+                  <span key={i} className="flex items-center">
+                    {i > 0 && <span className="text-emerald-400 text-xs px-1 leading-5 shrink-0">→</span>}
+                    {pill}
+                  </span>
+                ));
+              })()}
             </div>
           </div>
 
