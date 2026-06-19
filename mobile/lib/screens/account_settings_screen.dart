@@ -65,7 +65,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            _CircleBack(onTap: () => Navigator.pop(context)),
+            Align(
+              alignment: Alignment.topLeft,
+              child: _CircleBack(onTap: () => Navigator.pop(context)),
+            ),
             const SizedBox(height: 18),
             const Text('Account settings',
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),

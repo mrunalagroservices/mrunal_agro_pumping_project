@@ -173,7 +173,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            _CircleBack(onTap: () => Navigator.pop(context)),
+            Align(
+              alignment: Alignment.topLeft,
+              child: _CircleBack(onTap: () => Navigator.pop(context)),
+            ),
             const SizedBox(height: 18),
             const Text('Personal info',
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
@@ -431,7 +434,30 @@ class _EditableSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        if (!editing) collapsed else Padding(padding: const EdgeInsets.only(top: 12), child: expanded),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topLeft,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: SizeTransition(
+                sizeFactor: animation,
+                axisAlignment: -1,
+                child: child,
+              ),
+            ),
+            child: !editing
+                ? KeyedSubtree(key: const ValueKey('collapsed'), child: collapsed)
+                : KeyedSubtree(
+                    key: const ValueKey('expanded'),
+                    child: Padding(padding: const EdgeInsets.only(top: 12), child: expanded),
+                  ),
+          ),
+        ),
       ],
     );
   }
@@ -479,22 +505,43 @@ class _AddressFields extends StatelessWidget {
   }
 }
 
-class _LinkButton extends StatelessWidget {
+class _LinkButton extends StatefulWidget {
   final String label;
   final VoidCallback onTap;
   const _LinkButton({required this.label, required this.onTap});
 
   @override
+  State<_LinkButton> createState() => _LinkButtonState();
+}
+
+class _LinkButtonState extends State<_LinkButton> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) => setState(() => _pressed = value);
+
+  @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: _P.text,
-          decoration: TextDecoration.underline,
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.92 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        child: AnimatedOpacity(
+          opacity: _pressed ? 0.55 : 1.0,
+          duration: const Duration(milliseconds: 120),
+          child: Text(
+            widget.label,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: _P.text,
+              decoration: TextDecoration.underline,
+            ),
+          ),
         ),
       ),
     );

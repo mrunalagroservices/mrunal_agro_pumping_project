@@ -55,7 +55,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             // ── Back button ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              child: _CircleBack(onTap: () => Navigator.pop(context)),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: _CircleBack(onTap: () => Navigator.pop(context)),
+              ),
             ),
             const SizedBox(height: 16),
 
