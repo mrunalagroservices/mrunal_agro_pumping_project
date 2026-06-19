@@ -60,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Row(
               children: [
                 const Text('Profile',
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: _P.text, letterSpacing: -0.5)),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
                 const Spacer(),
                 _CircleIcon(
                   icon: Icons.notifications_none_rounded,
@@ -95,15 +95,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           alignment: Alignment.center,
                           child: Text(
                             (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : '?',
-                            style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w800, color: _P.avatarFg),
+                            style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w600, color: _P.avatarFg),
                           ),
                         ),
                         const SizedBox(height: 14),
                         Text(user?.name ?? '',
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _P.text)),
+                            style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w600, color: _P.text)),
                         const SizedBox(height: 2),
                         Text(_roleLabel(user?.role),
-                            style: const TextStyle(fontSize: 14, color: _P.subtext)),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
                       ],
                     ),
                   ),
@@ -211,8 +211,8 @@ class _Stat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _P.text)),
-        Text(label, style: const TextStyle(fontSize: 14, color: _P.text)),
+        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _P.text)),
+        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
       ],
     );
   }
@@ -264,7 +264,7 @@ class _PromoCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                   decoration: BoxDecoration(color: _P.newBadge, borderRadius: BorderRadius.circular(20)),
                   child: const Text('NEW',
-                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.3)),
+                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.3)),
                 ),
               ),
               const SizedBox(height: 8),
@@ -278,7 +278,7 @@ class _PromoCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: _P.text)),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: _P.text)),
             ],
           ),
         ),
@@ -326,9 +326,9 @@ class _WideCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: _P.text)),
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17, color: _P.text)),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: const TextStyle(color: _P.subtext, fontSize: 14, height: 1.3)),
+                    Text(subtitle, style: const TextStyle(color: _P.subtext, fontWeight: FontWeight.w400, fontSize: 14, height: 1.3)),
                   ],
                 ),
               ),
@@ -385,7 +385,7 @@ class _MenuRow extends StatelessWidget {
             ),
             const SizedBox(width: 18),
             Expanded(
-              child: Text(label, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: _P.text)),
+              child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text)),
             ),
             if (showChevron) const Icon(Icons.chevron_right, color: Color(0xFF717171), size: 24),
           ],

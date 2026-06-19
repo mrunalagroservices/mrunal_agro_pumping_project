@@ -67,7 +67,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             _CircleBack(onTap: () => Navigator.pop(context)),
             const SizedBox(height: 18),
             const Text('Account settings',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: _P.text, letterSpacing: -0.5)),
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
             const SizedBox(height: 20),
 
             // ── Dismissible banner carousel ──────────────────────────────
@@ -151,9 +151,9 @@ class _BannerCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(data.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17, color: _P.text)),
+                    Text(data.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: _P.text)),
                     const SizedBox(height: 3),
-                    Text(data.subtitle, style: const TextStyle(color: _P.subtext, fontSize: 14, height: 1.3)),
+                    Text(data.subtitle, style: const TextStyle(color: _P.subtext, fontWeight: FontWeight.w400, fontSize: 14, height: 1.3)),
                   ],
                 ),
               ),
@@ -175,7 +175,7 @@ class _BannerCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text(data.action, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+              child: Text(data.action, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
             ),
           ),
         ],
@@ -200,7 +200,7 @@ class _Row extends StatelessWidget {
           children: [
             Icon(icon, color: _P.text, size: 26),
             const SizedBox(width: 18),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: _P.text))),
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text))),
             const Icon(Icons.chevron_right, color: Color(0xFF717171), size: 24),
           ],
         ),
