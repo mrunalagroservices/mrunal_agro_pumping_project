@@ -84,7 +84,8 @@ router.post('/login', async (req, res) => {
 });
 
 const ME_COLUMNS = `id, organization_id, name, email, phone, role, is_admin,
-  preferred_first_name, residential_address, postal_address, emergency_contact, created_at`;
+  preferred_first_name, residential_address, postal_address, emergency_contact,
+  analytics_opt_in, deletion_requested_at, notification_preferences, created_at`;
 
 // GET /api/v1/auth/me
 router.get('/me', requireAuth, async (req, res) => {
@@ -106,6 +107,7 @@ router.put('/me', requireAuth, async (req, res) => {
     const {
       name, phone, email, preferred_first_name,
       residential_address, postal_address, emergency_contact,
+      analytics_opt_in, notification_preferences,
     } = req.body;
 
     if (email) {
@@ -120,15 +122,17 @@ router.put('/me', requireAuth, async (req, res) => {
 
     const result = await db.query(
       `UPDATE users SET
-         name                 = COALESCE($1, name),
-         phone                = COALESCE($2, phone),
-         email                = COALESCE($3, email),
-         preferred_first_name = COALESCE($4, preferred_first_name),
-         residential_address  = COALESCE($5::jsonb, residential_address),
-         postal_address       = COALESCE($6::jsonb, postal_address),
-         emergency_contact    = COALESCE($7::jsonb, emergency_contact),
-         updated_at           = NOW()
-       WHERE id = $8
+         name                     = COALESCE($1, name),
+         phone                    = COALESCE($2, phone),
+         email                    = COALESCE($3, email),
+         preferred_first_name     = COALESCE($4, preferred_first_name),
+         residential_address      = COALESCE($5::jsonb, residential_address),
+         postal_address           = COALESCE($6::jsonb, postal_address),
+         emergency_contact        = COALESCE($7::jsonb, emergency_contact),
+         analytics_opt_in         = COALESCE($8, analytics_opt_in),
+         notification_preferences = COALESCE($9::jsonb, notification_preferences),
+         updated_at               = NOW()
+       WHERE id = $10
        RETURNING ${ME_COLUMNS}`,
       [
         name || null,
@@ -138,6 +142,8 @@ router.put('/me', requireAuth, async (req, res) => {
         residential_address ? JSON.stringify(residential_address) : null,
         postal_address ? JSON.stringify(postal_address) : null,
         emergency_contact ? JSON.stringify(emergency_contact) : null,
+        typeof analytics_opt_in === 'boolean' ? analytics_opt_in : null,
+        notification_preferences ? JSON.stringify(notification_preferences) : null,
         req.user.id,
       ]
     );
@@ -146,6 +152,51 @@ router.put('/me', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('[Auth/me PUT]', err.message);
     res.status(500).json({ success: false, message: err.message || 'Failed to update profile' });
+  }
+});
+
+// POST /auth/me/request-data-export — Privacy → "Request my personal data"
+router.post('/me/request-data-export', requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      `INSERT INTO data_export_requests (user_id) VALUES ($1) RETURNING id, status, requested_at`,
+      [req.user.id]
+    );
+    res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Auth/me request-data-export]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to submit request' });
+  }
+});
+
+// POST /auth/me/request-deletion — Privacy → "Delete my account"
+// Soft delete: marks the account for deletion rather than wiping data immediately.
+router.post('/me/request-deletion', requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      `UPDATE users SET deletion_requested_at = NOW(), updated_at = NOW()
+       WHERE id = $1 RETURNING ${ME_COLUMNS}`,
+      [req.user.id]
+    );
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Auth/me request-deletion]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to request deletion' });
+  }
+});
+
+// POST /auth/me/cancel-deletion — undo a pending deletion request
+router.post('/me/cancel-deletion', requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      `UPDATE users SET deletion_requested_at = NULL, updated_at = NOW()
+       WHERE id = $1 RETURNING ${ME_COLUMNS}`,
+      [req.user.id]
+    );
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Auth/me cancel-deletion]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to cancel deletion' });
   }
 });
 

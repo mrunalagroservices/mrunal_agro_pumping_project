@@ -259,6 +259,8 @@ class AppState extends ChangeNotifier {
     PostalLikeAddress? residentialAddress,
     PostalLikeAddress? postalAddress,
     EmergencyContact? emergencyContact,
+    bool? analyticsOptIn,
+    Map<String, ChannelPrefs>? notificationPreferences,
   }) async {
     try {
       final data = await _api.put('/auth/me', {
@@ -269,7 +271,64 @@ class AppState extends ChangeNotifier {
         if (residentialAddress != null) 'residential_address': residentialAddress.toJson(),
         if (postalAddress != null) 'postal_address': postalAddress.toJson(),
         if (emergencyContact != null) 'emergency_contact': emergencyContact.toJson(),
+        if (analyticsOptIn != null) 'analytics_opt_in': analyticsOptIn,
+        if (notificationPreferences != null)
+          'notification_preferences': notificationPreferences.map((k, v) => MapEntry(k, v.toJson())),
       });
+      user = AppUser.fromJson(data as Map<String, dynamic>);
+      notifyListeners();
+      return null;
+    } on UnauthorizedException {
+      await logout();
+      return 'Session expired, please log in again';
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not reach the server.';
+    }
+  }
+
+  /// Updates a single notification category's channel toggles, merging with
+  /// whatever preferences already exist locally.
+  Future<String?> updateNotificationPref(String key, ChannelPrefs prefs) async {
+    final merged = Map<String, ChannelPrefs>.from(user?.notificationPreferences ?? {});
+    merged[key] = prefs;
+    return updateProfile(notificationPreferences: merged);
+  }
+
+  Future<String?> requestDataExport() async {
+    try {
+      await _api.post('/auth/me/request-data-export');
+      return null;
+    } on UnauthorizedException {
+      await logout();
+      return 'Session expired, please log in again';
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not reach the server.';
+    }
+  }
+
+  Future<String?> requestAccountDeletion() async {
+    try {
+      final data = await _api.post('/auth/me/request-deletion');
+      user = AppUser.fromJson(data as Map<String, dynamic>);
+      notifyListeners();
+      return null;
+    } on UnauthorizedException {
+      await logout();
+      return 'Session expired, please log in again';
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not reach the server.';
+    }
+  }
+
+  Future<String?> cancelAccountDeletion() async {
+    try {
+      final data = await _api.post('/auth/me/cancel-deletion');
       user = AppUser.fromJson(data as Map<String, dynamic>);
       notifyListeners();
       return null;

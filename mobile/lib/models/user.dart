@@ -61,6 +61,49 @@ class EmergencyContact {
   bool get isEmpty => name.isEmpty && phone.isEmpty;
 }
 
+/// Email / push / SMS toggle for a single notification category.
+class ChannelPrefs {
+  final bool email;
+  final bool push;
+  final bool sms;
+
+  const ChannelPrefs({this.email = false, this.push = false, this.sms = false});
+
+  factory ChannelPrefs.fromJson(Map<String, dynamic> json) {
+    return ChannelPrefs(
+      email: json['email'] as bool? ?? false,
+      push: json['push'] as bool? ?? false,
+      sms: json['sms'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {'email': email, 'push': push, 'sms': sms};
+
+  ChannelPrefs copyWith({bool? email, bool? push, bool? sms}) => ChannelPrefs(
+        email: email ?? this.email,
+        push: push ?? this.push,
+        sms: sms ?? this.sms,
+      );
+
+  bool get anyOn => email || push || sms;
+
+  /// Short status text like the reference app: "On: Email and Push", "Off", "On: SMS".
+  String get statusLabel {
+    final on = <String>[
+      if (email) 'Email',
+      if (push) 'Push',
+      if (sms) 'SMS',
+    ];
+    if (on.isEmpty) return 'Off';
+    return 'On: ${on.join(' and ')}';
+  }
+}
+
+Map<String, ChannelPrefs> _parseNotificationPrefs(Map<String, dynamic>? json) {
+  if (json == null) return {};
+  return json.map((key, value) => MapEntry(key, ChannelPrefs.fromJson(value as Map<String, dynamic>)));
+}
+
 class AppUser {
   final int id;
   final int organizationId;
@@ -73,6 +116,9 @@ class AppUser {
   final PostalLikeAddress? residentialAddress;
   final PostalLikeAddress? postalAddress;
   final EmergencyContact? emergencyContact;
+  final bool analyticsOptIn;
+  final DateTime? deletionRequestedAt;
+  final Map<String, ChannelPrefs> notificationPreferences;
 
   AppUser({
     required this.id,
@@ -86,7 +132,12 @@ class AppUser {
     this.residentialAddress,
     this.postalAddress,
     this.emergencyContact,
+    this.analyticsOptIn = true,
+    this.deletionRequestedAt,
+    this.notificationPreferences = const {},
   });
+
+  bool get deletionPending => deletionRequestedAt != null;
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
@@ -109,6 +160,11 @@ class AppUser {
       emergencyContact: json['emergency_contact'] != null
           ? EmergencyContact.fromJson(json['emergency_contact'] as Map<String, dynamic>)
           : null,
+      analyticsOptIn: json['analytics_opt_in'] as bool? ?? true,
+      deletionRequestedAt: json['deletion_requested_at'] != null
+          ? DateTime.tryParse(json['deletion_requested_at'] as String)
+          : null,
+      notificationPreferences: _parseNotificationPrefs(json['notification_preferences'] as Map<String, dynamic>?),
     );
   }
 }

@@ -24,10 +24,32 @@ CREATE TABLE users (
   residential_address  JSONB, -- { line1, line2, city, state, pincode }
   postal_address       JSONB, -- { line1, line2, city, state, pincode }
   emergency_contact    JSONB, -- { name, phone, relationship }
+  analytics_opt_in     BOOLEAN NOT NULL DEFAULT true,
+  deletion_requested_at TIMESTAMPTZ,
+  notification_preferences JSONB NOT NULL DEFAULT '{
+    "promo_offers":        {"email": false, "push": false, "sms": true},
+    "farming_tips":        {"email": false, "push": false, "sms": true},
+    "news_updates":        {"email": false, "push": false, "sms": true},
+    "feedback_requests":   {"email": false, "push": false, "sms": true},
+    "service_alerts":      {"email": false, "push": false, "sms": false},
+    "account_activity":    {"email": true,  "push": true,  "sms": false},
+    "order_policies":      {"email": true,  "push": true,  "sms": false},
+    "schedule_reminders":  {"email": true,  "push": true,  "sms": false},
+    "support_messages":    {"email": true,  "push": true,  "sms": false}
+  }'::jsonb,
   created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_users_org ON users(organization_id);
+
+-- ─── Data export requests (Privacy → "Request my personal data") ─────────────
+CREATE TABLE data_export_requests (
+  id           SERIAL PRIMARY KEY,
+  user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status       VARCHAR(20) NOT NULL DEFAULT 'pending', -- pending, completed
+  requested_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_data_export_requests_user ON data_export_requests(user_id, requested_at DESC);
 
 -- ─── Farms ────────────────────────────────────────────────────────────────
 CREATE TABLE farms (

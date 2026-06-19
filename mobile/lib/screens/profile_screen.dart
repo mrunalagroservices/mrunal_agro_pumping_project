@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 import 'account_settings_screen.dart';
+import 'privacy_screen.dart';
 
 /// Palette tuned to match the reference profile design.
 class _P {
@@ -171,7 +172,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const _MenuDivider(),
             _MenuRow(icon: Icons.person_outline, label: 'View profile', onTap: () => _comingSoon('View profile')),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.front_hand_outlined, label: 'Privacy', onTap: () => _comingSoon('Privacy')),
+            _MenuRow(icon: Icons.front_hand_outlined, label: 'Privacy', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyScreen()));
+            }),
 
             const SizedBox(height: 14),
             const Divider(height: 1, thickness: 1, color: _P.divider),

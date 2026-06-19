@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
+import 'notifications_screen.dart';
 import 'personal_info_screen.dart';
+import 'privacy_screen.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -111,9 +113,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             const _Div(),
             _Row(icon: Icons.shield_outlined, label: 'Login & security', onTap: () => _comingSoon('Login & security')),
             const _Div(),
-            _Row(icon: Icons.front_hand_outlined, label: 'Privacy', onTap: () => _comingSoon('Privacy')),
+            _Row(icon: Icons.front_hand_outlined, label: 'Privacy', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyScreen()));
+            }),
             const _Div(),
-            _Row(icon: Icons.notifications_outlined, label: 'Notifications', onTap: () => _comingSoon('Notifications')),
+            _Row(icon: Icons.notifications_outlined, label: 'Notifications', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+            }),
             const _Div(),
             _Row(icon: Icons.payments_outlined, label: 'Payments', onTap: () => _comingSoon('Payments')),
             const _Div(),
