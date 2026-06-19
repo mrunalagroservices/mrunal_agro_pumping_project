@@ -25,6 +25,8 @@ interface FarmsMapProps {
   activeFarmIds: Set<number>;
   selectedFarmId?: number | null;
   onSelectFarm?: (farmId: number) => void;
+  // pin mode — clicking the map fires onMapClick even outside edit mode
+  pinMode?: boolean;
   // diagram
   diagram?: FarmDiagram | null;
   editMode?: boolean;
@@ -41,6 +43,7 @@ export default function FarmsMap({
   activeFarmIds,
   selectedFarmId,
   onSelectFarm,
+  pinMode,
   diagram,
   editMode,
   activeTool,
@@ -69,6 +72,8 @@ export default function FarmsMap({
   activeToolRef.current = activeTool;
   const editModeRef = useRef(editMode);
   editModeRef.current = editMode;
+  const pinModeRef = useRef(pinMode);
+  pinModeRef.current = pinMode;
 
   // ── Map initialisation ────────────────────────────────────────────────────
   useEffect(() => {
@@ -120,8 +125,12 @@ export default function FarmsMap({
       connSourceReadyRef.current = true;
     });
 
-    // Map click: place an element when an element tool is active.
+    // Map click: fire in pin mode (GPS setting) or when an element tool is active.
     map.on("click", (e) => {
+      if (pinModeRef.current) {
+        onMapClickRef.current?.(e.lngLat.lat, e.lngLat.lng);
+        return;
+      }
       if (!editModeRef.current) return;
       const tool = activeToolRef.current;
       if (tool && ELEMENT_TOOLS.includes(tool as DiagramElementType)) {
@@ -143,17 +152,17 @@ export default function FarmsMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Map cursor based on active tool ──────────────────────────────────────
+  // ── Map cursor based on active tool or pin mode ───────────────────────────
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     const canvas = map.getCanvas();
-    if (editMode && activeTool && activeTool !== "select") {
+    if (pinMode || (editMode && activeTool && activeTool !== "select")) {
       canvas.style.cursor = "crosshair";
     } else {
       canvas.style.cursor = "";
     }
-  }, [editMode, activeTool]);
+  }, [editMode, activeTool, pinMode]);
 
   // ── Farm location markers ─────────────────────────────────────────────────
   useEffect(() => {

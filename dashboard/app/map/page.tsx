@@ -1,27 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
-  MapPin,
-  Cpu,
-  Pencil,
-  X,
-  Save,
-  Trash2,
-  MousePointer2,
+  MapPin, MapPinOff, Cpu, Pencil, X, Save, Trash2, MousePointer2,
+  Navigation, CheckCircle2,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import FarmsMap from "@/components/FarmsMap";
 import { httpClient } from "@/lib/api";
 import {
-  ApiResponse,
-  Farm,
-  Actuator,
-  FarmDiagram,
-  DiagramElement,
-  DiagramElementType,
-  DiagramConnectionType,
-  DiagramTool,
+  ApiResponse, Farm, Actuator, FarmDiagram, DiagramElement,
+  DiagramElementType, DiagramConnectionType, DiagramTool,
 } from "@/lib/types";
 import { ELEMENT_CFG, CONN_CFG } from "@/lib/diagramConfig";
 
@@ -36,7 +25,11 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [selectedFarmId, setSelectedFarmId] = useState<number | null>(null);
 
-  // ── editor state ──────────────────────────────────────────────────────────
+  // ── pin mode ─────────────────────────────────────────────────────────────
+  const [pinningFarmId, setPinningFarmId] = useState<number | null>(null);
+  const [pinSaving, setPinSaving] = useState(false);
+
+  // ── diagram editor ────────────────────────────────────────────────────────
   const [editMode, setEditMode] = useState(false);
   const [editingFarmId, setEditingFarmId] = useState<number | null>(null);
   const [activeTool, setActiveTool] = useState<DiagramTool>("select");
@@ -46,7 +39,7 @@ export default function MapPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     Promise.all([
       httpClient.get<ApiResponse<Farm[]>>("/farms"),
       httpClient.get<ApiResponse<Actuator[]>>("/actuators"),
@@ -58,14 +51,31 @@ export default function MapPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => { load(); }, [load]);
+
   const activeFarmIds = new Set(
     actuators.filter((a) => a.current_state === "on").map((a) => a.farm_id)
   );
   const farmsWithLocation = farms.filter((f) => f.latitude != null && f.longitude != null);
+  const farmsNoLocation = farms.filter((f) => f.latitude == null || f.longitude == null);
   const editingFarm = farms.find((f) => f.id === editingFarmId) ?? null;
+  const pinningFarm = farms.find((f) => f.id === pinningFarmId) ?? null;
 
-  // ── editor helpers ────────────────────────────────────────────────────────
+  // ── pin mode handlers ─────────────────────────────────────────────────────
+  function startPin(farm: Farm) {
+    // cancel any diagram edit first
+    if (editMode) cancelEdit();
+    setPinningFarmId(farm.id);
+    setSelectedFarmId(farm.id);
+  }
+
+  function cancelPin() {
+    setPinningFarmId(null);
+  }
+
+  // ── diagram editor helpers ─────────────────────────────────────────────────
   const enterEditMode = async (farm: Farm) => {
+    if (pinningFarmId) cancelPin();
     try {
       const res = await httpClient.get<ApiResponse<FarmDiagram>>(`/farms/${farm.id}/diagram`);
       setDiagram(res.data ?? { elements: [], connections: [] });
@@ -96,14 +106,12 @@ export default function MapPage() {
     setSaveError(null);
     try {
       await httpClient.put(`/farms/${editingFarmId}/diagram`, diagram);
-      // success — exit edit mode
       setEditMode(false);
       setDiagram(null);
       setEditingFarmId(null);
       setActiveTool("select");
       setConnectingFromId(null);
       setSelectedElementId(null);
-      setSaveError(null);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Failed to save. Please try again.");
     } finally {
@@ -117,11 +125,37 @@ export default function MapPage() {
     setSelectedElementId(null);
   };
 
-  // Called by FarmsMap when user clicks on the map canvas.
-  const handleMapClick = (lat: number, lng: number) => {
+  const deleteSelectedElement = () => {
+    if (!diagram || !selectedElementId) return;
+    setDiagram({
+      elements: diagram.elements.filter((e) => e.id !== selectedElementId),
+      connections: diagram.connections.filter(
+        (c) => c.from !== selectedElementId && c.to !== selectedElementId
+      ),
+    });
+    setSelectedElementId(null);
+  };
+
+  // ── unified map click handler ─────────────────────────────────────────────
+  const handleMapClick = async (lat: number, lng: number) => {
+    // Pin mode: save GPS for the selected farm
+    if (pinningFarmId !== null) {
+      setPinSaving(true);
+      try {
+        await httpClient.put<ApiResponse<Farm>>(`/farms/${pinningFarmId}`, { latitude: lat, longitude: lng });
+        setFarms((prev) =>
+          prev.map((f) => f.id === pinningFarmId ? { ...f, latitude: lat, longitude: lng } : f)
+        );
+        setSelectedFarmId(pinningFarmId);
+        setPinningFarmId(null);
+      } catch { /* ignore */ }
+      finally { setPinSaving(false); }
+      return;
+    }
+
+    // Diagram edit mode: place element
     if (!editMode || !diagram) return;
-    const elTypes = ELEMENT_TOOL_TYPES as string[];
-    if (!elTypes.includes(activeTool)) return;
+    if (!ELEMENT_TOOL_TYPES.includes(activeTool as DiagramElementType)) return;
     const newEl: DiagramElement = {
       id: crypto.randomUUID(),
       type: activeTool as DiagramElementType,
@@ -132,7 +166,6 @@ export default function MapPage() {
     setActiveTool("select");
   };
 
-  // Called by FarmsMap when user clicks a diagram element marker.
   const handleElementClick = (elementId: string) => {
     if (!editMode || !diagram) return;
     if (activeTool === "pipe" || activeTool === "wire") {
@@ -150,7 +183,6 @@ export default function MapPage() {
         setActiveTool("select");
       }
     } else {
-      // Select tool: toggle selection.
       setSelectedElementId((prev) => (prev === elementId ? null : elementId));
     }
   };
@@ -159,24 +191,10 @@ export default function MapPage() {
     if (!diagram) return;
     setDiagram({
       ...diagram,
-      elements: diagram.elements.map((e) =>
-        e.id === elementId ? { ...e, lat, lng } : e
-      ),
+      elements: diagram.elements.map((e) => e.id === elementId ? { ...e, lat, lng } : e),
     });
   };
 
-  const deleteSelectedElement = () => {
-    if (!diagram || !selectedElementId) return;
-    setDiagram({
-      elements: diagram.elements.filter((e) => e.id !== selectedElementId),
-      connections: diagram.connections.filter(
-        (c) => c.from !== selectedElementId && c.to !== selectedElementId
-      ),
-    });
-    setSelectedElementId(null);
-  };
-
-  // ── instruction text shown at bottom of palette ───────────────────────────
   const instruction = (() => {
     if (activeTool === "select") return selectedElementId ? "Drag to move · Delete to remove" : "Click an element to select it";
     if (activeTool === "pipe" || activeTool === "wire") {
@@ -187,48 +205,52 @@ export default function MapPage() {
 
   return (
     <DashboardShell breadcrumb={[{ label: "Map" }]}>
-      <div className="flex flex-col gap-3 mb-4">
-        <p className="text-sm text-slate-500">
-          {editMode
-            ? `Editing layout for "${editingFarm?.name ?? ""}"`
-            : "Live locations of your farms — pumps currently running are highlighted with a pulse."}
-        </p>
-      </div>
+      {/* Pin mode banner */}
+      {pinningFarmId !== null && (
+        <div className="mb-3 flex items-center gap-3 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md">
+          <Navigation className="w-4 h-4 shrink-0 animate-pulse" />
+          <span className="flex-1">
+            {pinSaving
+              ? "Saving location…"
+              : `Click anywhere on the map to pin "${pinningFarm?.name ?? ""}" — crosshair is active`}
+          </span>
+          <button onClick={cancelPin} className="p-1 hover:bg-white/20 rounded-lg transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
-      <div className="flex flex-col lg:flex-row gap-4 h-[70vh] lg:h-[calc(100vh-11rem)]">
+      <div className="flex flex-col lg:flex-row gap-4 h-[72vh] lg:h-[calc(100vh-11rem)]">
         {/* ── Left panel ─────────────────────────────────────────────────── */}
         <div className="lg:w-72 shrink-0 bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
           {editMode ? (
             /* ── Editor palette ─────────────────────────────────────────── */
             <>
-              {/* Header */}
               <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2 shrink-0">
-                <Pencil className="w-4 h-4 text-primary-600 shrink-0" />
+                <Pencil className="w-4 h-4 text-emerald-600 shrink-0" />
                 <p className="text-sm font-semibold text-slate-800 truncate">
                   {editingFarm?.name ?? "Edit Layout"}
                 </p>
               </div>
 
-              {/* Save / Cancel — always visible, never scrolled away */}
               <div className="px-3 pt-3 pb-2 shrink-0 flex gap-2">
                 <button
                   onClick={cancelEdit}
                   disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
                 >
                   <X className="w-4 h-4" /> Cancel
                 </button>
                 <button
                   onClick={saveDiagram}
                   disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors disabled:opacity-60 shadow-sm"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors disabled:opacity-60"
                 >
                   <Save className="w-4 h-4" />
                   {saving ? "Saving…" : "Save"}
                 </button>
               </div>
 
-              {/* Error message */}
               {saveError && (
                 <div className="mx-3 mb-1 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 shrink-0">
                   {saveError}
@@ -236,29 +258,20 @@ export default function MapPage() {
               )}
 
               <div className="overflow-y-auto flex-1 px-3 pb-3 space-y-4">
-                {/* Select / Move */}
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">
-                    Mode
-                  </p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">Mode</p>
                   <button
                     onClick={() => selectTool("select")}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                      activeTool === "select"
-                        ? "bg-slate-800 text-white border-slate-800"
-                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                      activeTool === "select" ? "bg-slate-800 text-white border-slate-800" : "border-slate-200 text-slate-600 hover:bg-slate-50"
                     }`}
                   >
-                    <MousePointer2 className="w-4 h-4" />
-                    Select / Move
+                    <MousePointer2 className="w-4 h-4" /> Select / Move
                   </button>
                 </div>
 
-                {/* Elements */}
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">
-                    Place element
-                  </p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">Place element</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {ELEMENT_TOOL_TYPES.map((type) => {
                       const cfg = ELEMENT_CFG[type];
@@ -268,29 +281,23 @@ export default function MapPage() {
                           key={type}
                           onClick={() => selectTool(type)}
                           className={`flex flex-col items-center gap-1.5 px-2 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${
-                            isActive
-                              ? "border-transparent shadow-md scale-105"
-                              : "border-slate-200 text-slate-700 hover:border-slate-300 hover:shadow-sm"
+                            isActive ? "border-transparent shadow-md scale-105" : "border-slate-200 text-slate-700 hover:border-slate-300"
                           }`}
-                          style={isActive ? { background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", borderColor: "transparent" } : {}}
                         >
                           <span
                             className="w-10 h-10 rounded-full flex items-center justify-center shadow-md"
-                            style={{ background: cfg.gradient, boxShadow: isActive ? "0 0 0 3px rgba(99,102,241,0.35), 0 3px 8px rgba(0,0,0,0.2)" : undefined }}
+                            style={{ background: cfg.gradient }}
                             dangerouslySetInnerHTML={{ __html: cfg.svg }}
                           />
-                          <span className={isActive ? "text-slate-800" : "text-slate-600"}>{cfg.label}</span>
+                          <span>{cfg.label}</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Connections */}
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">
-                    Draw connection
-                  </p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">Draw connection</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {CONN_TOOL_TYPES.map((type) => {
                       const cfg = CONN_CFG[type];
@@ -300,110 +307,147 @@ export default function MapPage() {
                           key={type}
                           onClick={() => selectTool(type)}
                           className={`flex flex-col items-center gap-1.5 px-2 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${
-                            isActive
-                              ? "border-transparent shadow-md scale-105"
-                              : "border-slate-200 text-slate-700 hover:border-slate-300 hover:shadow-sm"
+                            isActive ? "border-transparent shadow-md scale-105" : "border-slate-200 text-slate-700 hover:border-slate-300"
                           }`}
                         >
                           <span
                             className="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-md"
-                            style={{
-                              background: cfg.color,
-                              boxShadow: isActive ? `0 0 0 3px ${cfg.color}55, 0 3px 8px rgba(0,0,0,0.2)` : undefined,
-                            }}
+                            style={{ background: cfg.color }}
                           >
                             {cfg.symbol}
                           </span>
-                          <span className={isActive ? "text-slate-800" : "text-slate-600"}>{cfg.label}</span>
+                          <span>{cfg.label}</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Delete selected */}
                 {selectedElementId && (
                   <button
                     onClick={deleteSelectedElement}
                     className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    Delete selected
+                    <Trash2 className="w-4 h-4" /> Delete selected
                   </button>
                 )}
 
-                {/* Instruction hint */}
                 <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 leading-relaxed">
                   {instruction}
                 </p>
               </div>
-
             </>
           ) : (
             /* ── Farm list ──────────────────────────────────────────────── */
             <>
-              <div className="px-4 py-3 border-b border-slate-100">
-                <p className="text-sm font-medium text-slate-800">Farms</p>
-                <p className="text-xs text-slate-500">{farmsWithLocation.length} on map</p>
+              <div className="px-4 py-3 border-b border-slate-100 shrink-0">
+                <p className="text-sm font-semibold text-slate-800">Farms</p>
+                <p className="text-xs text-slate-500">{farmsWithLocation.length} pinned · {farmsNoLocation.length} unpinned</p>
               </div>
+
               <div className="overflow-y-auto flex-1">
                 {loading ? (
-                  <p className="text-sm text-slate-500 px-4 py-6">Loading…</p>
-                ) : farmsWithLocation.length === 0 ? (
-                  <p className="text-sm text-slate-500 px-4 py-6">
-                    No farms have GPS coordinates yet. Edit a farm from the Farms page to add a
-                    location.
-                  </p>
+                  <div className="flex items-center justify-center py-12">
+                    <div className="w-6 h-6 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : farms.length === 0 ? (
+                  <p className="text-sm text-slate-400 italic px-4 py-8 text-center">No farms yet</p>
                 ) : (
-                  farmsWithLocation.map((farm) => {
-                    const isActive = activeFarmIds.has(farm.id);
-                    const isSelected = selectedFarmId === farm.id;
-                    return (
-                      <div
-                        key={farm.id}
-                        className={`border-b border-slate-50 ${isSelected ? "bg-primary-50" : ""}`}
-                      >
-                        <button
-                          onClick={() => setSelectedFarmId(farm.id)}
-                          className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`w-2 h-2 rounded-full shrink-0 ${
-                                isActive ? "bg-primary-500" : "bg-slate-300"
-                              }`}
-                            />
-                            <span className="font-medium text-slate-800 text-sm truncate">
-                              {farm.name}
-                            </span>
-                          </div>
-                          {farm.location && (
-                            <p className="flex items-center gap-1 text-xs text-slate-500 mt-1 ml-4 truncate">
-                              <MapPin className="w-3 h-3 shrink-0" />
-                              {farm.location}
-                            </p>
-                          )}
-                          <p className="flex items-center gap-1 text-xs text-slate-400 mt-1 ml-4">
-                            <Cpu className="w-3 h-3 shrink-0" />
-                            {isActive ? "Pump running" : "Idle"} · {farm.device_count ?? 0}{" "}
-                            device(s)
-                          </p>
-                        </button>
-                        {isSelected && (
-                          <div className="px-4 pb-3">
-                            <button
-                              onClick={() => enterEditMode(farm)}
-                              className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 bg-primary-50 border border-primary-200 hover:bg-primary-100 transition-colors px-3 py-1.5 rounded-lg w-full justify-center"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                              Edit Layout
-                            </button>
-                          </div>
-                        )}
+                  <>
+                    {/* Pinned farms */}
+                    {farmsWithLocation.length > 0 && (
+                      <div>
+                        <p className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border-b border-slate-100">
+                          On Map
+                        </p>
+                        {farmsWithLocation.map((farm) => {
+                          const isActive = activeFarmIds.has(farm.id);
+                          const isSelected = selectedFarmId === farm.id;
+                          return (
+                            <div key={farm.id} className={`border-b border-slate-50 ${isSelected ? "bg-emerald-50/60" : ""}`}>
+                              <button
+                                onClick={() => { setSelectedFarmId(farm.id); if (pinningFarmId) cancelPin(); }}
+                                className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? "bg-emerald-500" : "bg-slate-300"}`} />
+                                  <span className="font-medium text-slate-800 text-sm truncate">{farm.name}</span>
+                                </div>
+                                {farm.location && (
+                                  <p className="flex items-center gap-1 text-xs text-slate-500 mt-1 ml-4 truncate">
+                                    <MapPin className="w-3 h-3 shrink-0" /> {farm.location}
+                                  </p>
+                                )}
+                                <p className="flex items-center gap-1 text-xs text-slate-400 mt-0.5 ml-4">
+                                  <Cpu className="w-3 h-3 shrink-0" />
+                                  {isActive ? "Pump running" : "Idle"} · {farm.device_count ?? 0} device(s)
+                                </p>
+                              </button>
+                              {isSelected && (
+                                <div className="px-4 pb-3 flex gap-2">
+                                  <button
+                                    onClick={() => startPin(farm)}
+                                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors px-3 py-1.5 rounded-lg"
+                                  >
+                                    <MapPin className="w-3.5 h-3.5" /> Repin
+                                  </button>
+                                  <button
+                                    onClick={() => enterEditMode(farm)}
+                                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors px-3 py-1.5 rounded-lg"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" /> Layout
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })
+                    )}
+
+                    {/* Unpinned farms */}
+                    {farmsNoLocation.length > 0 && (
+                      <div>
+                        <p className="px-4 py-2 text-[10px] font-bold text-amber-500 uppercase tracking-wider bg-amber-50 border-b border-amber-100">
+                          Not Pinned
+                        </p>
+                        {farmsNoLocation.map((farm) => {
+                          const isPinning = pinningFarmId === farm.id;
+                          return (
+                            <div key={farm.id} className={`border-b border-slate-50 ${isPinning ? "bg-emerald-50/60" : ""}`}>
+                              <div className="px-4 py-3 flex items-center gap-3">
+                                <MapPinOff className="w-4 h-4 text-slate-300 shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-slate-700 text-sm truncate">{farm.name}</p>
+                                  <p className="text-xs text-slate-400">{farm.device_count ?? 0} device(s)</p>
+                                </div>
+                                {isPinning ? (
+                                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg animate-pulse">
+                                    <Navigation className="w-3 h-3" /> Pinning…
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => startPin(farm)}
+                                    className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors px-2 py-1.5 rounded-lg shrink-0"
+                                  >
+                                    <MapPin className="w-3 h-3" /> Pin
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
                 )}
+              </div>
+
+              {/* Legend */}
+              <div className="px-4 py-3 border-t border-slate-100 shrink-0 flex items-center gap-4 text-xs text-slate-500">
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> Running</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-300 inline-block" /> Idle</span>
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 ml-auto" />
               </div>
             </>
           )}
@@ -415,7 +459,8 @@ export default function MapPage() {
             farms={farms}
             activeFarmIds={activeFarmIds}
             selectedFarmId={selectedFarmId}
-            onSelectFarm={setSelectedFarmId}
+            onSelectFarm={(id) => { setSelectedFarmId(id); if (pinningFarmId) cancelPin(); }}
+            pinMode={pinningFarmId !== null}
             diagram={editMode ? diagram ?? undefined : undefined}
             editMode={editMode}
             activeTool={activeTool}
