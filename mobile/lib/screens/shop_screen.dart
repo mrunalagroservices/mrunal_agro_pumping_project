@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
-import '../config/theme.dart';
 import '../models/product.dart';
 import 'cart_screen.dart';
+
+class _P {
+  static const text = Color(0xFF222222);
+  static const subtext = Color(0xFF717171);
+  static const divider = Color(0xFFEBEBEB);
+  static const circleBtn = Color(0xFFF2F2F2);
+  static const pillActive = Color(0xFF222222);
+  static const pillInactive = Color(0xFFF2F2F2);
+}
 
 class ShopScreen extends StatefulWidget {
   const ShopScreen({super.key});
@@ -46,15 +54,18 @@ class _ShopScreenState extends State<ShopScreen> {
 
   void _addToCart(Product p) {
     setState(() => _cart[p.id] = (_cart[p.id] ?? 0) + 1);
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${p.name} added to cart'),
         duration: const Duration(seconds: 1),
         behavior: SnackBarBehavior.floating,
+        backgroundColor: _P.text,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         action: SnackBarAction(
           label: 'View Cart',
+          textColor: Colors.white,
           onPressed: _showCart,
         ),
       ),
@@ -112,243 +123,164 @@ class _ShopScreenState extends State<ShopScreen> {
     final filtered = _filtered;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF15803D),
-        foregroundColor: Colors.white,
-        title: const Text('Agro Shop',
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-        actions: [
-          GestureDetector(
-            onTap: _showCart,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  const Icon(Icons.shopping_cart_outlined,
-                      color: Colors.white, size: 26),
-                  if (_cartCount > 0)
-                    Positioned(
-                      top: -4,
-                      right: -6,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEF4444),
-                          shape: BoxShape.circle,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // ── Header: title + cart ─────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text('Market',
+                          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                    ),
+                    _CartIcon(count: _cartCount, onTap: _showCart),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Search bar ─────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: TextField(
+                  controller: _searchCtrl,
+                  onChanged: (v) => setState(() => _searchQuery = v),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text),
+                  decoration: InputDecoration(
+                    hintText: 'Search seeds, fertilizers, tools…',
+                    hintStyle: const TextStyle(fontSize: 14, color: _P.subtext),
+                    prefixIcon: const Icon(Icons.search, color: _P.subtext, size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close, size: 18, color: _P.subtext),
+                            onPressed: () {
+                              _searchCtrl.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: _P.pillInactive,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Category pills ──────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 56,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  itemCount: kCategories.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, i) {
+                    final cat = kCategories[i];
+                    final active = cat == _selectedCategory;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedCategory = cat),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                        decoration: BoxDecoration(
+                          color: active ? _P.pillActive : _P.pillInactive,
+                          borderRadius: BorderRadius.circular(24),
                         ),
-                        constraints:
-                            const BoxConstraints(minWidth: 18, minHeight: 18),
+                        alignment: Alignment.center,
                         child: Text(
-                          '$_cartCount',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600),
+                          cat,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: active ? Colors.white : _P.text,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(52),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-            child: TextField(
-              controller: _searchCtrl,
-              onChanged: (v) => setState(() => _searchQuery = v),
-              decoration: InputDecoration(
-                hintText: 'Search seeds, fertilizers, tools…',
-                hintStyle:
-                    const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-                prefixIcon: const Icon(Icons.search,
-                    color: Color(0xFF64748B), size: 20),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.close,
-                            size: 18, color: Color(0xFF64748B)),
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
+                    );
+                  },
                 ),
               ),
             ),
-          ),
+
+            // ── Delivery info banner ─────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(color: _P.pillInactive, borderRadius: BorderRadius.circular(14)),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.local_shipping_outlined, color: _P.text, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Free delivery by $_deliveryDate on orders above ₹499',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Results count ────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Text(
+                  '${filtered.length} product${filtered.length == 1 ? '' : 's'}',
+                  style: const TextStyle(fontSize: 13, color: _P.subtext, fontWeight: FontWeight.w400),
+                ),
+              ),
+            ),
+
+            // ── Product grid ─────────────────────────────────────────────────
+            filtered.isEmpty
+                ? SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.search_off_outlined, size: 44, color: _P.subtext),
+                          const SizedBox(height: 12),
+                          const Text('No products found', style: TextStyle(color: _P.text, fontSize: 15, fontWeight: FontWeight.w400)),
+                        ],
+                      ),
+                    ),
+                  )
+                : SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                    sliver: SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.64,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (ctx, i) => _ProductCard(
+                          product: filtered[i],
+                          qty: _cart[filtered[i].id] ?? 0,
+                          deliveryDate: _deliveryDate,
+                          onTap: () => _showProductDetail(filtered[i]),
+                          onAdd: () => _addToCart(filtered[i]),
+                        ),
+                        childCount: filtered.length,
+                      ),
+                    ),
+                  ),
+          ],
         ),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          // Category chips
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 48,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                itemCount: kCategories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, i) {
-                  final cat = kCategories[i];
-                  final active = cat == _selectedCategory;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedCategory = cat),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: active
-                            ? const Color(0xFF15803D)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: active
-                              ? const Color(0xFF15803D)
-                              : const Color(0xFFE2E8F0),
-                        ),
-                        boxShadow: active
-                            ? [
-                                BoxShadow(
-                                    color: const Color(0xFF15803D)
-                                        .withValues(alpha: 0.25),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2))
-                              ]
-                            : [],
-                      ),
-                      child: Text(
-                        cat,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: active ? Colors.white : const Color(0xFF64748B),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // 1-day delivery banner
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF15803D), Color(0xFF16A34A)],
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.local_shipping_outlined,
-                      color: Colors.white, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('FREE 1-Day Delivery',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13)),
-                        Text(
-                          'Delivery by $_deliveryDate on all orders above ₹499',
-                          style: const TextStyle(
-                              color: Color(0xFFBBF7D0), fontSize: 11),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text('Shop Now',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Results count
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
-              child: Text(
-                '${filtered.length} products',
-                style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF64748B),
-                    fontWeight: FontWeight.w500),
-              ),
-            ),
-          ),
-
-          // Product grid
-          filtered.isEmpty
-              ? SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.search_off_outlined,
-                            size: 48, color: AppColors.textMuted),
-                        const SizedBox(height: 12),
-                        Text('No products found',
-                            style: TextStyle(color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  ),
-                )
-              : SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 100),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: 0.62,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (ctx, i) => _ProductCard(
-                        product: filtered[i],
-                        qty: _cart[filtered[i].id] ?? 0,
-                        deliveryDate: _deliveryDate,
-                        onTap: () => _showProductDetail(filtered[i]),
-                        onAdd: () => _addToCart(filtered[i]),
-                      ),
-                      childCount: filtered.length,
-                    ),
-                  ),
-                ),
-        ],
       ),
 
       // Floating cart bar
@@ -356,51 +288,82 @@ class _ShopScreenState extends State<ShopScreen> {
           ? GestureDetector(
               onTap: _showCart,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF15803D),
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(16)),
+                  color: _P.text,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(8),
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text('$_cartCount item${_cartCount > 1 ? 's' : ''}',
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                       ),
-                      child: Text('$_cartCount item${_cartCount > 1 ? 's' : ''}',
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600)),
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text('View Cart',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15)),
-                    ),
-                    Text(
-                      '₹${_cartTotal.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15),
-                    ),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.arrow_forward_ios_rounded,
-                        color: Colors.white, size: 14),
-                  ],
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text('View Cart',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 15)),
+                      ),
+                      Text(
+                        '₹${_cartTotal.toStringAsFixed(0)}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+                    ],
+                  ),
                 ),
               ),
             )
           : null,
+    );
+  }
+}
+
+class _CartIcon extends StatelessWidget {
+  final int count;
+  final VoidCallback onTap;
+  const _CartIcon({required this.count, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            const Icon(Icons.shopping_cart_outlined, color: _P.text, size: 22),
+            if (count > 0)
+              Positioned(
+                top: 1,
+                right: 3,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: const BoxDecoration(color: Color(0xFFE61E4D), shape: BoxShape.circle),
+                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                  child: Text(
+                    '$count',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -429,13 +392,8 @@ class _ProductCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2)),
-          ],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _P.divider),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -444,15 +402,14 @@ class _ProductCard extends StatelessWidget {
             Stack(
               children: [
                 Container(
-                  height: 120,
+                  height: 116,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: p.iconBg,
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(14)),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   child: Center(
-                    child: Icon(p.icon, size: 56, color: p.iconColor),
+                    child: Icon(p.icon, size: 52, color: p.iconColor),
                   ),
                 ),
                 // Discount badge
@@ -460,18 +417,11 @@ class _ProductCard extends StatelessWidget {
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDC2626),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(color: _P.text, borderRadius: BorderRadius.circular(20)),
                     child: Text(
                       '${p.discountPercent}% off',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600),
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -481,18 +431,15 @@ class _ProductCard extends StatelessWidget {
                     top: 8,
                     right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B),
-                        borderRadius: BorderRadius.circular(6),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: _P.divider),
                       ),
                       child: const Text(
                         '★ Best',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600),
+                        style: TextStyle(color: _P.text, fontSize: 9, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -510,46 +457,20 @@ class _ProductCard extends StatelessWidget {
                       p.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          height: 1.3),
+                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w400, color: _P.text, height: 1.3),
                     ),
                     const SizedBox(height: 2),
-                    Text(p.unit,
-                        style: TextStyle(
-                            fontSize: 10, color: AppColors.textMuted)),
+                    Text(p.unit, style: const TextStyle(fontSize: 10, color: _P.subtext)),
                     const SizedBox(height: 4),
                     // Rating
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF15803D),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.star_rounded,
-                                  size: 10, color: Colors.white),
-                              const SizedBox(width: 2),
-                              Text(p.rating.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        ),
+                        const Icon(Icons.star_rounded, size: 13, color: _P.text),
+                        const SizedBox(width: 2),
+                        Text(p.rating.toStringAsFixed(1),
+                            style: const TextStyle(color: _P.text, fontSize: 11, fontWeight: FontWeight.w600)),
                         const SizedBox(width: 4),
-                        Text(
-                          '(${_fmtCount(p.reviewCount)})',
-                          style: TextStyle(
-                              fontSize: 10, color: AppColors.textMuted),
-                        ),
+                        Text('(${_fmtCount(p.reviewCount)})', style: const TextStyle(fontSize: 10, color: _P.subtext)),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -559,40 +480,20 @@ class _ProductCard extends StatelessWidget {
                       children: [
                         Text(
                           '₹${p.price.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF0F172A)),
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _P.text),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 5),
                         Text(
                           '₹${p.originalPrice.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF94A3B8),
-                            decoration: TextDecoration.lineThrough,
-                          ),
+                          style: const TextStyle(fontSize: 11, color: Color(0xFFB0B0B0), decoration: TextDecoration.lineThrough),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    // Delivery
-                    Row(
-                      children: [
-                        const Icon(Icons.local_shipping_outlined,
-                            size: 11, color: Color(0xFF15803D)),
-                        const SizedBox(width: 3),
-                        Expanded(
-                          child: Text(
-                            'By $deliveryDate',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 10,
-                                color: Color(0xFF15803D),
-                                fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'By $deliveryDate',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 10, color: _P.subtext, fontWeight: FontWeight.w400),
                     ),
                     const Spacer(),
                     // Add to cart
@@ -602,24 +503,17 @@ class _ProductCard extends StatelessWidget {
                       child: qty > 0
                           ? Container(
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: const Color(0xFF15803D)),
+                                color: _P.pillInactive,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.check_circle_rounded,
-                                      size: 14,
-                                      color: Color(0xFF15803D)),
+                                  const Icon(Icons.check_circle, size: 14, color: _P.text),
                                   const SizedBox(width: 4),
                                   Text(
                                     '$qty in cart',
-                                    style: const TextStyle(
-                                        fontSize: 11,
-                                        color: Color(0xFF15803D),
-                                        fontWeight: FontWeight.w600),
+                                    style: const TextStyle(fontSize: 11, color: _P.text, fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
@@ -627,17 +521,13 @@ class _ProductCard extends StatelessWidget {
                           : ElevatedButton(
                               onPressed: onAdd,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF15803D),
+                                backgroundColor: _P.text,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 padding: EdgeInsets.zero,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
-                              child: const Text('Add to Cart',
-                                  style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600)),
+                              child: const Text('Add to Cart', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
                             ),
                     ),
                   ],
@@ -684,162 +574,85 @@ class _ProductDetailSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
-            child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(2))),
+            child: Container(width: 36, height: 4, decoration: BoxDecoration(color: _P.divider, borderRadius: BorderRadius.circular(2))),
           ),
           const SizedBox(height: 16),
-          // Image
           Center(
             child: Container(
               width: 120,
               height: 120,
-              decoration: BoxDecoration(
-                color: p.iconBg,
-                borderRadius: BorderRadius.circular(16),
-              ),
+              decoration: BoxDecoration(color: p.iconBg, borderRadius: BorderRadius.circular(16)),
               child: Icon(p.icon, size: 64, color: p.iconColor),
             ),
           ),
           const SizedBox(height: 16),
-          // Badges
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                    color: const Color(0xFFDC2626),
-                    borderRadius: BorderRadius.circular(6)),
-                child: Text('${p.discountPercent}% off',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600)),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(color: _P.text, borderRadius: BorderRadius.circular(20)),
+                child: Text('${p.discountPercent}% off', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
               ),
               if (p.isBestSeller) ...[
                 const SizedBox(width: 6),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B),
-                      borderRadius: BorderRadius.circular(6)),
-                  child: const Text('★ Best Seller',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600)),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: _P.divider)),
+                  child: const Text('★ Best Seller', style: TextStyle(color: _P.text, fontSize: 11, fontWeight: FontWeight.w600)),
                 ),
               ],
             ],
           ),
           const SizedBox(height: 10),
-          Text(p.name,
-              style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF0F172A))),
+          Text(p.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
           const SizedBox(height: 4),
-          Text(p.unit,
-              style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-          const SizedBox(height: 10),
-          // Price row
+          Text(p.unit, style: const TextStyle(fontSize: 13, color: _P.subtext)),
+          const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('₹${p.price.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF0F172A))),
+              Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _P.text)),
               const SizedBox(width: 8),
               Text('₹${p.originalPrice.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF94A3B8),
-                      decoration: TextDecoration.lineThrough)),
+                  style: const TextStyle(fontSize: 14, color: Color(0xFFB0B0B0), decoration: TextDecoration.lineThrough)),
               const SizedBox(width: 8),
-              Text('${p.discountPercent}% off',
-                  style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF15803D),
-                      fontWeight: FontWeight.w600)),
+              Text('${p.discountPercent}% off', style: const TextStyle(fontSize: 13, color: _P.text, fontWeight: FontWeight.w600)),
             ],
           ),
-          const SizedBox(height: 12),
-          // Delivery info
+          const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFBBF7D0)),
-            ),
+            decoration: BoxDecoration(color: _P.pillInactive, borderRadius: BorderRadius.circular(12)),
             child: Row(
               children: [
-                const Icon(Icons.local_shipping_outlined,
-                    size: 18, color: Color(0xFF15803D)),
+                const Icon(Icons.local_shipping_outlined, size: 18, color: _P.text),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('FREE 1-Day Delivery',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF15803D),
-                            fontSize: 13)),
-                    Text('Delivered by $deliveryDate',
-                        style: const TextStyle(
-                            fontSize: 12, color: Color(0xFF166534))),
+                    const Text('Free delivery', style: TextStyle(fontWeight: FontWeight.w600, color: _P.text, fontSize: 13)),
+                    Text('Delivered by $deliveryDate', style: const TextStyle(fontSize: 12, color: _P.subtext)),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          // Description
-          Text(p.description,
-              style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                  height: 1.5)),
+          const SizedBox(height: 14),
+          Text(p.description, style: const TextStyle(fontSize: 13, color: _P.subtext, height: 1.5)),
           const SizedBox(height: 20),
-          // Rating bar
           Row(
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                    color: const Color(0xFF15803D),
-                    borderRadius: BorderRadius.circular(6)),
-                child: Row(
-                  children: [
-                    const Icon(Icons.star_rounded,
-                        size: 14, color: Colors.white),
-                    const SizedBox(width: 4),
-                    Text(p.rating.toStringAsFixed(1),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
+              const Icon(Icons.star_rounded, size: 16, color: _P.text),
+              const SizedBox(width: 4),
+              Text(p.rating.toStringAsFixed(1), style: const TextStyle(color: _P.text, fontSize: 14, fontWeight: FontWeight.w600)),
               const SizedBox(width: 8),
-              Text('${p.reviewCount} ratings',
-                  style: TextStyle(
-                      fontSize: 13, color: AppColors.textSecondary)),
+              Text('${p.reviewCount} ratings', style: const TextStyle(fontSize: 13, color: _P.subtext)),
             ],
           ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 50,
             child: ElevatedButton.icon(
               onPressed: () {
                 onAddToCart();
@@ -848,15 +661,13 @@ class _ProductDetailSheet extends StatelessWidget {
               icon: const Icon(Icons.shopping_cart_outlined, size: 18),
               label: Text(
                 qty > 0 ? 'Add More to Cart' : 'Add to Cart',
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w600),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF15803D),
+                backgroundColor: _P.text,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ),
@@ -865,4 +676,3 @@ class _ProductDetailSheet extends StatelessWidget {
     );
   }
 }
-
