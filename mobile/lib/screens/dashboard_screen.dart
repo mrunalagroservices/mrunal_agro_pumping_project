@@ -194,7 +194,7 @@ class DashboardScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               sliver: SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 84,
+                  height: 96,
                   child: Row(
                   children: [
                     Expanded(
