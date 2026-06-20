@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/order.dart';
+import '../providers/app_state.dart';
+import 'product_detail_screen.dart';
+import 'write_review_sheet.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -11,6 +15,43 @@ class _P {
 }
 
 const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+IconData _statusIcon(String status) {
+  switch (status) {
+    case 'confirmed':
+      return Icons.check_circle_outline;
+    case 'shipped':
+      return Icons.local_shipping_outlined;
+    case 'delivered':
+      return Icons.inventory_2_outlined;
+    case 'cancelled':
+      return Icons.cancel_outlined;
+    default:
+      return Icons.shopping_bag_outlined;
+  }
+}
+
+const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+String _tomorrowLabel() {
+  final tomorrow = DateTime.now().add(const Duration(days: 1));
+  return '${_weekdays[tomorrow.weekday - 1]}, ${tomorrow.day} ${_months[tomorrow.month - 1]}';
+}
+
+String _statusHeadline(String status) {
+  switch (status) {
+    case 'confirmed':
+      return 'Order Confirmed';
+    case 'shipped':
+      return 'Shipped';
+    case 'delivered':
+      return 'Item Delivered';
+    case 'cancelled':
+      return 'Order Cancelled';
+    default:
+      return 'Order Placed';
+  }
+}
 
 class OrderDetailScreen extends StatefulWidget {
   final OrderModel order;
@@ -125,16 +166,35 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   const SizedBox(height: 4),
                   Text('Placed on ${o.createdAt.day} ${_months[o.createdAt.month - 1]} ${o.createdAt.year}',
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.subtext)),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(color: o.statusBg, borderRadius: BorderRadius.circular(20)),
-                    child: Text(
-                      o.status[0].toUpperCase() + o.status.substring(1),
-                      style: TextStyle(color: o.statusColor, fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
-                  ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ── Status banner ────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(color: o.statusBg, borderRadius: BorderRadius.circular(14)),
+                child: Row(
+                  children: [
+                    Icon(_statusIcon(o.status), color: o.statusColor, size: 22),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_statusHeadline(o.status), style: TextStyle(color: o.statusColor, fontWeight: FontWeight.w600, fontSize: 15)),
+                          if (o.status == 'delivered' || o.status == 'shipped' || o.status == 'cancelled') ...[
+                            const SizedBox(height: 2),
+                            Text(_date(o.updatedAt), style: TextStyle(color: o.statusColor.withValues(alpha: 0.8), fontSize: 13)),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 22),
@@ -220,36 +280,45 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
             ...o.items.map((item) => Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          width: 52,
-                          height: 52,
-                          color: _P.tile,
-                          child: item.productImage != null && item.productImage!.isNotEmpty
-                              ? Image.network(item.productImage!, fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Center(child: Text('🌿', style: TextStyle(fontSize: 22))))
-                              : const Center(child: Text('🌿', style: TextStyle(fontSize: 22))),
-                        ),
+                      Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              width: 52,
+                              height: 52,
+                              color: _P.tile,
+                              child: item.productImage != null && item.productImage!.isNotEmpty
+                                  ? Image.network(item.productImage!, fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => const Center(child: Text('🌿', style: TextStyle(fontSize: 22))))
+                                  : const Center(child: Text('🌿', style: TextStyle(fontSize: 22))),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(item.productName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                                Text('${item.unit ?? ''}  ·  Qty ${item.qty}',
+                                    style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                              ],
+                            ),
+                          ),
+                          Text('₹${(item.price * item.qty).toStringAsFixed(0)}',
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _P.text)),
+                        ],
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item.productName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
-                            Text('${item.unit ?? ''}  ·  Qty ${item.qty}',
-                                style: const TextStyle(fontSize: 13, color: _P.subtext)),
-                          ],
-                        ),
-                      ),
-                      Text('₹${(item.price * item.qty).toStringAsFixed(0)}',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _P.text)),
+                      if (o.status == 'delivered' && item.productId != null) ...[
+                        const SizedBox(height: 10),
+                        _RatingBox(productId: item.productId!, productName: item.productName),
+                      ],
                     ],
                   ),
                 )),
@@ -276,6 +345,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 24),
+            const Divider(height: 1, thickness: 1, color: _P.divider, indent: 20, endIndent: 20),
+            const SizedBox(height: 22),
+
+            // ── You may also like ────────────────────────────────────────
+            _YouMayAlsoLike(items: o.items),
             const SizedBox(height: 40),
           ],
         ),
@@ -325,6 +400,146 @@ class _CircleBack extends StatelessWidget {
         height: 44,
         decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
         child: const Icon(Icons.arrow_back, size: 22, color: _P.text),
+      ),
+    );
+  }
+}
+
+/// Quick-tap star rating + "Write Review" link for a delivered item.
+class _RatingBox extends StatefulWidget {
+  final int productId;
+  final String productName;
+  const _RatingBox({required this.productId, required this.productName});
+
+  @override
+  State<_RatingBox> createState() => _RatingBoxState();
+}
+
+class _RatingBoxState extends State<_RatingBox> {
+  int _rating = 0;
+  bool _submitting = false;
+
+  Future<void> _quickRate(int star) async {
+    if (_submitting) return;
+    setState(() { _rating = star; _submitting = true; });
+    final err = await context.read<AppState>().submitReview(widget.productId, star, null);
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    if (err != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(color: const Color(0xFFF5F3FF), borderRadius: BorderRadius.circular(10)),
+      child: Row(
+        children: [
+          ...List.generate(5, (i) {
+            final star = i + 1;
+            return InkWell(
+              onTap: () => _quickRate(star),
+              child: Icon(
+                star <= _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                size: 20,
+                color: const Color(0xFFE61E4D),
+              ),
+            );
+          }),
+          const Spacer(),
+          TextButton(
+            onPressed: () async {
+              await showWriteReviewSheet(context,
+                  productId: widget.productId, productName: widget.productName, initialRating: _rating == 0 ? 5 : _rating);
+            },
+            child: const Text('Write Review', style: TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w700, fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Real "similar category" recommendations from the actual catalog —
+/// not a fabricated cross-sell list.
+class _YouMayAlsoLike extends StatelessWidget {
+  final List<OrderItem> items;
+  const _YouMayAlsoLike({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    final allProducts = context.watch<AppState>().products;
+    final orderedIds = items.map((i) => i.productId).whereType<int>().toSet();
+    final categories = items.map((i) => i.category).whereType<String>().toSet();
+    final suggestions = allProducts
+        .where((p) => categories.contains(p.category) && !orderedIds.contains(p.id))
+        .toList();
+    if (suggestions.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('You may also like', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _P.text)),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 200,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: suggestions.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, i) {
+                final p = suggestions[i];
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProductDetailScreen(
+                        productId: p.id,
+                        deliveryDate: _tomorrowLabel(),
+                        onAddToCart: () {},
+                        cartQty: 0,
+                      ),
+                    ),
+                  ),
+                  child: Container(
+                    width: 140,
+                    decoration: BoxDecoration(border: Border.all(color: _P.divider), borderRadius: BorderRadius.circular(14)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                          child: Container(
+                            height: 100,
+                            width: double.infinity,
+                            color: p.iconBg,
+                            child: Center(child: Icon(p.icon, size: 40, color: p.iconColor)),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.text)),
+                              const SizedBox(height: 4),
+                              Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _P.text)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

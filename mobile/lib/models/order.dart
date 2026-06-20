@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class OrderItem {
   final int id;
+  final int? productId;
   final String productName;
   final String? productImage;
   final String? category;
@@ -11,6 +12,7 @@ class OrderItem {
 
   OrderItem({
     required this.id,
+    this.productId,
     required this.productName,
     this.productImage,
     this.category,
@@ -22,6 +24,7 @@ class OrderItem {
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
       id: json['id'] as int,
+      productId: json['product_id'] as int?,
       productName: json['product_name'] as String? ?? '',
       productImage: json['product_image'] as String?,
       category: json['category'] as String?,
@@ -92,6 +95,7 @@ class OrderModel {
   final double total;
   final String? couponCode;
   final DateTime createdAt;
+  final DateTime updatedAt;
   final List<OrderItem> items;
 
   OrderModel({
@@ -105,6 +109,7 @@ class OrderModel {
     required this.total,
     this.couponCode,
     required this.createdAt,
+    required this.updatedAt,
     required this.items,
   });
 
@@ -121,6 +126,8 @@ class OrderModel {
       total: double.tryParse('${json['total']}') ?? 0,
       couponCode: json['coupon_code'] as String?,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
       items: ((json['items'] as List?) ?? [])
           .map((j) => OrderItem.fromJson(j as Map<String, dynamic>))
           .toList(),

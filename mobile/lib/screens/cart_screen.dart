@@ -151,7 +151,9 @@ class _CartScreenState extends State<CartScreen> {
     final items = _entries.map((e) {
       final p = widget.products.firstWhere((p) => p.id == e.key);
       return {
+        'product_id': p.id,
         'product_name': p.name,
+        'product_image': p.imageUrl,
         'category': p.category,
         'unit': p.unit,
         'price': p.price,
