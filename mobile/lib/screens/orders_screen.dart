@@ -26,6 +26,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ScaffoldMessenger.of(context).clearSnackBars();
       context.read<AppState>().loadOrders();
     });
   }
@@ -124,19 +125,19 @@ class _OrderCard extends StatelessWidget {
                     Text(_title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
-                    const SizedBox(height: 4),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _P.text)),
+                    const SizedBox(height: 3),
                     Text(
                       '${fmtOrderDate(order.createdAt)} · ₹${order.total.toStringAsFixed(0)}',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 5),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: order.statusBg, borderRadius: BorderRadius.circular(20)),
                       child: Text(
                         order.status[0].toUpperCase() + order.status.substring(1),
-                        style: TextStyle(color: order.statusColor, fontSize: 11, fontWeight: FontWeight.w600),
+                        style: TextStyle(color: order.statusColor, fontSize: 10, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],

@@ -44,6 +44,9 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ScaffoldMessenger.of(context).clearSnackBars();
+    });
     _cart = Map.from(widget.cart);
     final user = context.read<AppState>().user;
     _name.text = user?.name ?? '';

@@ -62,6 +62,7 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   void _showCart() {
+    ScaffoldMessenger.of(context).clearSnackBars();
     if (_cart.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Your cart is empty')),

@@ -27,7 +27,10 @@ class _MainShellState extends State<MainShell> {
     });
   }
 
-  void _goTo(int index) => setState(() => _selectedIndex = index);
+  void _goTo(int index) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    setState(() => _selectedIndex = index);
+  }
 
   @override
   Widget build(BuildContext context) {

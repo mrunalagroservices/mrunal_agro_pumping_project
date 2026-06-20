@@ -47,6 +47,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ScaffoldMessenger.of(context).clearSnackBars();
+    });
+  }
+
+  @override
   void dispose() {
     _upiId.dispose();
     _cardNumber.dispose();
