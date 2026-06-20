@@ -16,10 +16,17 @@ class _P {
 
 class CartScreen extends StatefulWidget {
   final Map<int, int> cart;
+  final List<Product> products;
   final void Function(int id, int qty) onUpdate;
   final VoidCallback onOrderPlaced;
 
-  const CartScreen({super.key, required this.cart, required this.onUpdate, required this.onOrderPlaced});
+  const CartScreen({
+    super.key,
+    required this.cart,
+    required this.products,
+    required this.onUpdate,
+    required this.onOrderPlaced,
+  });
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -77,7 +84,7 @@ class _CartScreenState extends State<CartScreen> {
   List<MapEntry<int, int>> get _entries => _cart.entries.toList();
 
   double get _subtotal => _entries.fold(0, (sum, e) {
-        final p = kProducts.firstWhere((p) => p.id == e.key);
+        final p = widget.products.firstWhere((p) => p.id == e.key);
         return sum + p.price * e.value;
       });
 
@@ -142,7 +149,7 @@ class _CartScreenState extends State<CartScreen> {
       return;
     }
     final items = _entries.map((e) {
-      final p = kProducts.firstWhere((p) => p.id == e.key);
+      final p = widget.products.firstWhere((p) => p.id == e.key);
       return {
         'product_name': p.name,
         'category': p.category,
@@ -191,7 +198,7 @@ class _CartScreenState extends State<CartScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                     children: [
                       ..._entries.map((e) {
-                        final p = kProducts.firstWhere((p) => p.id == e.key);
+                        final p = widget.products.firstWhere((p) => p.id == e.key);
                         return _CartItemRow(
                           product: p,
                           qty: e.value,

@@ -1,5 +1,28 @@
 import 'package:flutter/material.dart';
 
+/// Visual fallback (icon + colors) shown when a product has no image_url,
+/// keyed by category since real products don't carry per-item icon styling.
+class _CategoryStyle {
+  final IconData icon;
+  final Color color;
+  final Color bg;
+  const _CategoryStyle(this.icon, this.color, this.bg);
+}
+
+const Map<String, _CategoryStyle> _categoryStyles = {
+  'Seeds': _CategoryStyle(Icons.eco_outlined, Color(0xFF16A34A), Color(0xFFDCFCE7)),
+  'Fertilizers': _CategoryStyle(Icons.science_outlined, Color(0xFF0EA5E9), Color(0xFFE0F2FE)),
+  'Irrigation': _CategoryStyle(Icons.water_drop_outlined, Color(0xFF0891B2), Color(0xFFCFFAFE)),
+  'Tools': _CategoryStyle(Icons.agriculture_outlined, Color(0xFF78716C), Color(0xFFF5F5F4)),
+  'Pesticides': _CategoryStyle(Icons.bug_report_outlined, Color(0xFFEA580C), Color(0xFFFFF7ED)),
+};
+const _defaultCategoryStyle = _CategoryStyle(Icons.layers_outlined, Color(0xFF374151), Color(0xFFF3F4F6));
+
+_CategoryStyle _styleFor(String category) => _categoryStyles[category] ?? _defaultCategoryStyle;
+
+/// Real product, backed by GET /api/v1/products. `rating`/`reviewCount` are
+/// computed server-side from actual product_reviews where any exist, falling
+/// back to the admin-seeded values otherwise.
 class Product {
   final int id;
   final String name;
@@ -9,11 +32,10 @@ class Product {
   final double originalPrice;
   final double rating;
   final int reviewCount;
-  final IconData icon;
-  final Color iconColor;
-  final Color iconBg;
+  final String? imageUrl;
   final String unit;
   final bool isBestSeller;
+  final int stockQuantity;
 
   const Product({
     required this.id,
@@ -24,244 +46,61 @@ class Product {
     required this.originalPrice,
     required this.rating,
     required this.reviewCount,
-    required this.icon,
-    required this.iconColor,
-    required this.iconBg,
+    this.imageUrl,
     required this.unit,
     this.isBestSeller = false,
+    this.stockQuantity = 0,
   });
 
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] as int,
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      category: json['category'] as String? ?? 'Others',
+      price: double.tryParse('${json['price']}') ?? 0,
+      originalPrice: double.tryParse('${json['original_price']}') ?? 0,
+      rating: double.tryParse('${json['rating']}') ?? 0,
+      reviewCount: (json['review_count'] as num?)?.toInt() ?? 0,
+      imageUrl: json['image_url'] as String?,
+      unit: json['unit'] as String? ?? '',
+      isBestSeller: json['is_best_seller'] as bool? ?? false,
+      stockQuantity: (json['stock_quantity'] as num?)?.toInt() ?? 0,
+    );
+  }
+
   int get discountPercent =>
-      ((originalPrice - price) / originalPrice * 100).round();
+      originalPrice > price ? ((originalPrice - price) / originalPrice * 100).round() : 0;
+
+  bool get inStock => stockQuantity > 0;
+
+  IconData get icon => _styleFor(category).icon;
+  Color get iconColor => _styleFor(category).color;
+  Color get iconBg => _styleFor(category).bg;
 }
 
-const List<Product> kProducts = [
-  Product(
-    id: 1,
-    name: 'Hybrid Tomato Seeds',
-    description: 'High-yield hybrid tomato seeds. Disease resistant, suitable for all seasons.',
-    category: 'Seeds',
-    price: 149,
-    originalPrice: 299,
-    rating: 4.4,
-    reviewCount: 2341,
-    icon: Icons.eco_outlined,
-    iconColor: Color(0xFF16A34A),
-    iconBg: Color(0xFFDCFCE7),
-    unit: '10g packet',
-    isBestSeller: true,
-  ),
-  Product(
-    id: 2,
-    name: 'Onion Seeds (Nasik Red)',
-    description: 'Premium Nasik red onion seeds. High germination rate, 90-day variety.',
-    category: 'Seeds',
-    price: 249,
-    originalPrice: 399,
-    rating: 4.2,
-    reviewCount: 1892,
-    icon: Icons.circle_outlined,
-    iconColor: Color(0xFF9333EA),
-    iconBg: Color(0xFFF3E8FF),
-    unit: '500g',
-  ),
-  Product(
-    id: 3,
-    name: 'Wheat Seeds (HD-2967)',
-    description: 'Certified HD-2967 wheat seeds, high protein content, rust resistant.',
-    category: 'Seeds',
-    price: 599,
-    originalPrice: 799,
-    rating: 4.6,
-    reviewCount: 4120,
-    icon: Icons.grass_outlined,
-    iconColor: Color(0xFFD97706),
-    iconBg: Color(0xFFFEF3C7),
-    unit: '5 kg bag',
-    isBestSeller: true,
-  ),
-  Product(
-    id: 4,
-    name: 'NPK Fertilizer 19-19-19',
-    description: 'Balanced NPK water-soluble fertilizer for all crops. Promotes root and leaf growth.',
-    category: 'Fertilizers',
-    price: 650,
-    originalPrice: 950,
-    rating: 4.5,
-    reviewCount: 3210,
-    icon: Icons.science_outlined,
-    iconColor: Color(0xFF0EA5E9),
-    iconBg: Color(0xFFE0F2FE),
-    unit: '5 kg bag',
-    isBestSeller: true,
-  ),
-  Product(
-    id: 5,
-    name: 'Organic Vermicompost',
-    description: '100% organic vermicompost. Improves soil structure and water retention.',
-    category: 'Fertilizers',
-    price: 450,
-    originalPrice: 650,
-    rating: 4.3,
-    reviewCount: 1567,
-    icon: Icons.compost_outlined,
-    iconColor: Color(0xFF65A30D),
-    iconBg: Color(0xFFECFCCB),
-    unit: '10 kg bag',
-  ),
-  Product(
-    id: 6,
-    name: 'DAP Fertilizer',
-    description: 'Di-ammonium phosphate for strong root development. Ideal for sowing time.',
-    category: 'Fertilizers',
-    price: 1350,
-    originalPrice: 1800,
-    rating: 4.7,
-    reviewCount: 5432,
-    icon: Icons.biotech_outlined,
-    iconColor: Color(0xFFDC2626),
-    iconBg: Color(0xFFFEE2E2),
-    unit: '50 kg bag',
-    isBestSeller: true,
-  ),
-  Product(
-    id: 7,
-    name: 'Drip Irrigation Kit',
-    description: 'Complete drip irrigation kit for 1 acre. Includes main pipe, drippers, connectors.',
-    category: 'Irrigation',
-    price: 2499,
-    originalPrice: 3999,
-    rating: 4.4,
-    reviewCount: 890,
-    icon: Icons.water_drop_outlined,
-    iconColor: Color(0xFF0EA5E9),
-    iconBg: Color(0xFFE0F2FE),
-    unit: '1 acre kit',
-    isBestSeller: true,
-  ),
-  Product(
-    id: 8,
-    name: 'Sprinkler Set (8 heads)',
-    description: 'Rotating sprinkler set with 8 heads and 25m pipe. Covers up to 500 sq.m.',
-    category: 'Irrigation',
-    price: 899,
-    originalPrice: 1299,
-    rating: 4.1,
-    reviewCount: 654,
-    icon: Icons.shower_outlined,
-    iconColor: Color(0xFF0891B2),
-    iconBg: Color(0xFFCFFAFE),
-    unit: 'Set of 8',
-  ),
-  Product(
-    id: 9,
-    name: 'Garden Pressure Sprayer',
-    description: '16-litre manual pressure sprayer with adjustable nozzle. Ideal for pesticide application.',
-    category: 'Tools',
-    price: 1299,
-    originalPrice: 1999,
-    rating: 4.3,
-    reviewCount: 2100,
-    icon: Icons.water_outlined,
-    iconColor: Color(0xFF0369A1),
-    iconBg: Color(0xFFE0F2FE),
-    unit: '16 litre',
-    isBestSeller: true,
-  ),
-  Product(
-    id: 10,
-    name: 'Steel Garden Hoe',
-    description: 'Heavy duty steel garden hoe with wooden handle. Perfect for weeding and soil turning.',
-    category: 'Tools',
-    price: 349,
-    originalPrice: 549,
-    rating: 4.0,
-    reviewCount: 987,
-    icon: Icons.agriculture_outlined,
-    iconColor: Color(0xFF78716C),
-    iconBg: Color(0xFFF5F5F4),
-    unit: 'Single piece',
-  ),
-  Product(
-    id: 11,
-    name: 'Sickle (Stainless Steel)',
-    description: 'Stainless steel sickle with ergonomic grip. Rust-proof, long-lasting.',
-    category: 'Tools',
-    price: 249,
-    originalPrice: 399,
-    rating: 4.2,
-    reviewCount: 1234,
-    icon: Icons.hardware_outlined,
-    iconColor: Color(0xFF374151),
-    iconBg: Color(0xFFF3F4F6),
-    unit: 'Single piece',
-  ),
-  Product(
-    id: 12,
-    name: 'Imidacloprid Insecticide',
-    description: 'Systemic insecticide effective against sucking pests. Suitable for cotton, paddy, vegetables.',
-    category: 'Pesticides',
-    price: 399,
-    originalPrice: 599,
-    rating: 4.5,
-    reviewCount: 3456,
-    icon: Icons.bug_report_outlined,
-    iconColor: Color(0xFFEA580C),
-    iconBg: Color(0xFFFFF7ED),
-    unit: '250 ml',
-    isBestSeller: true,
-  ),
-  Product(
-    id: 13,
-    name: 'Mancozeb Fungicide',
-    description: 'Broad spectrum fungicide for fruit, vegetable and field crops. Prevents blight and rust.',
-    category: 'Pesticides',
-    price: 299,
-    originalPrice: 450,
-    rating: 4.3,
-    reviewCount: 2109,
-    icon: Icons.healing_outlined,
-    iconColor: Color(0xFF7C3AED),
-    iconBg: Color(0xFFF5F3FF),
-    unit: '500g',
-  ),
-  Product(
-    id: 14,
-    name: 'HDPE Mulch Film',
-    description: '25-micron HDPE black mulch film. Controls weeds and conserves soil moisture.',
-    category: 'Others',
-    price: 1800,
-    originalPrice: 2500,
-    rating: 4.2,
-    reviewCount: 432,
-    icon: Icons.layers_outlined,
-    iconColor: Color(0xFF374151),
-    iconBg: Color(0xFFF3F4F6),
-    unit: '400m x 1.2m roll',
-  ),
-  Product(
-    id: 15,
-    name: 'pH Soil Testing Kit',
-    description: 'Quick soil pH test kit with 100 test strips. Helps optimise fertilizer use.',
-    category: 'Others',
-    price: 299,
-    originalPrice: 499,
-    rating: 4.6,
-    reviewCount: 1876,
-    icon: Icons.colorize_outlined,
-    iconColor: Color(0xFF0891B2),
-    iconBg: Color(0xFFCFFAFE),
-    unit: '100 strips',
-    isBestSeller: true,
-  ),
-];
+class ProductReview {
+  final int id;
+  final int rating;
+  final String? comment;
+  final String userName;
+  final DateTime createdAt;
 
-const List<String> kCategories = [
-  'All',
-  'Seeds',
-  'Fertilizers',
-  'Irrigation',
-  'Tools',
-  'Pesticides',
-  'Others',
-];
+  ProductReview({
+    required this.id,
+    required this.rating,
+    this.comment,
+    required this.userName,
+    required this.createdAt,
+  });
+
+  factory ProductReview.fromJson(Map<String, dynamic> json) {
+    return ProductReview(
+      id: json['id'] as int,
+      rating: (json['rating'] as num).toInt(),
+      comment: json['comment'] as String?,
+      userName: json['user_name'] as String? ?? 'Anonymous',
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
+    );
+  }
+}

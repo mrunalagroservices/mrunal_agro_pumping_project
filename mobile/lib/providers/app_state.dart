@@ -6,6 +6,7 @@ import '../models/farm.dart';
 import '../models/notification_item.dart';
 import '../models/order.dart';
 import '../models/power_event.dart';
+import '../models/product.dart';
 import '../models/schedule.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
@@ -27,6 +28,9 @@ class AppState extends ChangeNotifier {
   List<AlertModel> alerts = [];
   List<OrderModel> orders = [];
   List<NotificationItem> notifications = [];
+  List<Product> products = [];
+  List<Product> wishlist = [];
+  Set<int> wishlistIds = {};
   Map<int, List<PowerEvent>> powerEvents = {}; // deviceId → events
 
   bool isLoadingDashboard = false;
@@ -34,9 +38,11 @@ class AppState extends ChangeNotifier {
   bool isLoadingAlerts = false;
   bool isLoadingOrders = false;
   bool isLoadingNotifications = false;
+  bool isLoadingProducts = false;
   String? dashboardError;
   String? schedulesError;
   String? alertsError;
+  String? productsError;
   String? ordersError;
   String? notificationsError;
 
@@ -117,6 +123,9 @@ class AppState extends ChangeNotifier {
     alerts = [];
     orders = [];
     notifications = [];
+    products = [];
+    wishlist = [];
+    wishlistIds = {};
     powerEvents = {};
     authStatus = AuthStatus.loggedOut;
     notifyListeners();
@@ -481,6 +490,93 @@ class AppState extends ChangeNotifier {
       notificationsError = 'Could not load notifications.';
     } finally {
       isLoadingNotifications = false;
+      notifyListeners();
+    }
+  }
+
+  // ── Products (real catalog) ──────────────────────────────────────────────────
+  Future<void> loadProducts() async {
+    isLoadingProducts = true;
+    productsError = null;
+    notifyListeners();
+    try {
+      final data = await _api.get('/products');
+      products = (data as List).map((j) => Product.fromJson(j as Map<String, dynamic>)).toList();
+    } on UnauthorizedException {
+      await logout();
+    } on ApiException catch (e) {
+      productsError = e.message;
+    } catch (_) {
+      productsError = 'Could not load products.';
+    } finally {
+      isLoadingProducts = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Product> fetchProduct(int id) async {
+    final data = await _api.get('/products/$id');
+    return Product.fromJson(data as Map<String, dynamic>);
+  }
+
+  Future<List<ProductReview>> fetchReviews(int productId) async {
+    final data = await _api.get('/products/$productId/reviews');
+    return (data as List).map((j) => ProductReview.fromJson(j as Map<String, dynamic>)).toList();
+  }
+
+  Future<String?> submitReview(int productId, int rating, String? comment) async {
+    try {
+      await _api.post('/products/$productId/reviews', {'rating': rating, 'comment': comment});
+      return null;
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Could not submit review.';
+    }
+  }
+
+  Future<List<String>> fetchCategories() async {
+    final data = await _api.get('/shop-settings') as Map<String, dynamic>;
+    return ((data['categories'] as List?) ?? []).cast<String>();
+  }
+
+  // ── Wishlist ───────────────────────────────────────────────────────────────
+  Future<void> loadWishlist() async {
+    try {
+      final data = await _api.get('/products/wishlist/mine');
+      wishlist = (data as List).map((j) => Product.fromJson(j as Map<String, dynamic>)).toList();
+      wishlistIds = wishlist.map((p) => p.id).toSet();
+      notifyListeners();
+    } catch (_) {
+      // Non-fatal — wishlist hearts just won't reflect saved state until retried.
+    }
+  }
+
+  bool isWishlisted(int productId) => wishlistIds.contains(productId);
+
+  Future<void> toggleWishlist(int productId) async {
+    final wasWishlisted = wishlistIds.contains(productId);
+    if (wasWishlisted) {
+      wishlistIds.remove(productId);
+      wishlist.removeWhere((p) => p.id == productId);
+    } else {
+      wishlistIds.add(productId);
+    }
+    notifyListeners();
+    try {
+      if (wasWishlisted) {
+        await _api.delete('/products/$productId/wishlist');
+      } else {
+        await _api.post('/products/$productId/wishlist');
+        await loadWishlist();
+      }
+    } catch (_) {
+      // Revert optimistic update on failure.
+      if (wasWishlisted) {
+        wishlistIds.add(productId);
+      } else {
+        wishlistIds.remove(productId);
+      }
       notifyListeners();
     }
   }
