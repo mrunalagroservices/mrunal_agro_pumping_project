@@ -192,39 +192,51 @@ class DashboardScreen extends StatelessWidget {
               ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              sliver: SliverGrid.count(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 1.5,
-                children: [
-                  _StatCard(
-                    icon: Icons.agriculture_outlined,
-                    color: AppColors.primary600,
-                    label: 'Farms',
-                    value: '${state.farms.length}',
+              sliver: SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 84,
+                  child: Row(
+                  children: [
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.agriculture_outlined,
+                        color: AppColors.primary600,
+                        label: 'Farms',
+                        value: '${state.farms.length}',
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.developer_board_outlined,
+                        color: AppColors.primary600,
+                        label: 'Online',
+                        value: '$onlineDevices/${state.devices.length}',
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.water_drop_outlined,
+                        color: AppColors.primary600,
+                        label: 'Running',
+                        value: '$activeActuators/${state.actuators.length}',
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _StatCard(
+                        icon: Icons.bolt_outlined,
+                        color: activeActuators > 0
+                            ? AppColors.primary600
+                            : AppColors.offGray,
+                        label: 'Status',
+                        value: activeActuators > 0 ? 'Running' : 'Idle',
+                      ),
+                    ),
+                  ],
                   ),
-                  _StatCard(
-                    icon: Icons.developer_board_outlined,
-                    color: AppColors.primary600,
-                    label: 'Devices online',
-                    value: '$onlineDevices / ${state.devices.length}',
-                  ),
-                  _StatCard(
-                    icon: Icons.water_drop_outlined,
-                    color: AppColors.primary600,
-                    label: 'Pumps running',
-                    value: '$activeActuators / ${state.actuators.length}',
-                  ),
-                  _StatCard(
-                    icon: Icons.bolt_outlined,
-                    color: activeActuators > 0
-                        ? AppColors.primary600
-                        : AppColors.offGray,
-                    label: 'Status',
-                    value: activeActuators > 0 ? 'Running' : 'Idle',
-                  ),
-                ],
+                ),
               ),
             ),
             // Quick links: Farms & Devices / Schedules
@@ -396,29 +408,33 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 26,
+              height: 26,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(9),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: color, size: 16),
+              child: Icon(icon, color: color, size: 14),
             ),
             const SizedBox(height: 6),
             Text(
               value,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _kText),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _kText),
             ),
             const SizedBox(height: 1),
             Text(
               label,
-              style: const TextStyle(color: _kSub, fontSize: 12, fontWeight: FontWeight.w400),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: _kSub, fontSize: 10.5, fontWeight: FontWeight.w400),
             ),
           ],
         ),
