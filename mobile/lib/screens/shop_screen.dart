@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import '../models/product.dart';
+import 'cart_screen.dart';
 
 class ShopScreen extends StatefulWidget {
   const ShopScreen({super.key});
@@ -67,20 +68,20 @@ class _ShopScreenState extends State<ShopScreen> {
       );
       return;
     }
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _CartSheet(
-        cart: _cart,
-        deliveryDate: _deliveryDate,
-        onUpdate: (id, qty) => setState(() {
-          if (qty == 0) {
-            _cart.remove(id);
-          } else {
-            _cart[id] = qty;
-          }
-        }),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CartScreen(
+          cart: _cart,
+          onUpdate: (id, qty) => setState(() {
+            if (qty == 0) {
+              _cart.remove(id);
+            } else {
+              _cart[id] = qty;
+            }
+          }),
+          onOrderPlaced: () => setState(() => _cart.clear()),
+        ),
       ),
     );
   }
@@ -864,269 +865,3 @@ class _ProductDetailSheet extends StatelessWidget {
   }
 }
 
-// ── Cart Bottom Sheet ─────────────────────────────────────────────────────────
-class _CartSheet extends StatefulWidget {
-  final Map<int, int> cart;
-  final String deliveryDate;
-  final void Function(int id, int qty) onUpdate;
-
-  const _CartSheet(
-      {required this.cart,
-      required this.deliveryDate,
-      required this.onUpdate});
-
-  @override
-  State<_CartSheet> createState() => _CartSheetState();
-}
-
-class _CartSheetState extends State<_CartSheet> {
-  late final Map<int, int> _local;
-
-  @override
-  void initState() {
-    super.initState();
-    _local = Map.from(widget.cart);
-  }
-
-  double get _total => _local.entries.fold(0, (sum, e) {
-        final p = kProducts.firstWhere((p) => p.id == e.key);
-        return sum + p.price * e.value;
-      });
-
-  void _change(int id, int delta) {
-    setState(() {
-      final newQty = (_local[id] ?? 0) + delta;
-      if (newQty <= 0) {
-        _local.remove(id);
-      } else {
-        _local[id] = newQty;
-      }
-      widget.onUpdate(id, _local[id] ?? 0);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final items = _local.entries.toList();
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-          20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(2))),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              const Text('Your Cart',
-                  style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-              const SizedBox(width: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                    color: const Color(0xFF15803D),
-                    borderRadius: BorderRadius.circular(20)),
-                child: Text('${items.length} item${items.length > 1 ? 's' : ''}',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Text('Cart is empty',
-                    style: TextStyle(color: Color(0xFF94A3B8))),
-              ),
-            )
-          else ...[
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.4),
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: items.length,
-                separatorBuilder: (_, __) =>
-                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                itemBuilder: (ctx, i) {
-                  final entry = items[i];
-                  final p =
-                      kProducts.firstWhere((p) => p.id == entry.key);
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: p.iconBg,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child:
-                              Icon(p.icon, size: 24, color: p.iconColor),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(p.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600)),
-                              Text('₹${p.price.toStringAsFixed(0)} × ${entry.value}',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textMuted)),
-                            ],
-                          ),
-                        ),
-                        // Qty controls
-                        Row(
-                          children: [
-                            _QtyBtn(
-                                icon: Icons.remove,
-                                onTap: () => _change(p.id, -1)),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Text('${entry.value}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14)),
-                            ),
-                            _QtyBtn(
-                                icon: Icons.add,
-                                onTap: () => _change(p.id, 1)),
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          '₹${(p.price * entry.value).toStringAsFixed(0)}',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            const Divider(height: 20),
-            // Delivery info
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.local_shipping_outlined,
-                      size: 16, color: Color(0xFF15803D)),
-                  const SizedBox(width: 8),
-                  Text(
-                    _total >= 499
-                        ? 'FREE delivery by ${widget.deliveryDate}'
-                        : 'Add ₹${(499 - _total).toStringAsFixed(0)} more for FREE delivery',
-                    style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF15803D),
-                        fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                const Text('Total',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                const Spacer(),
-                Text('₹${_total.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.w600)),
-              ],
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text(
-                          '🎉 Order placed! Delivery by tomorrow.'),
-                      backgroundColor: const Color(0xFF15803D),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      margin: const EdgeInsets.all(16),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF15803D),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Place Order',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600)),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _QtyBtn extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  const _QtyBtn({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Icon(icon, size: 16, color: const Color(0xFF374151)),
-      ),
-    );
-  }
-}

@@ -497,6 +497,37 @@ class AppState extends ChangeNotifier {
     return data as Map<String, dynamic>;
   }
 
+  /// Validates a coupon against a real cart subtotal (enforces min-order),
+  /// returning { coupon, discount }. Throws ApiException if invalid.
+  Future<Map<String, dynamic>> checkCoupon(String code, double subtotal) async {
+    final data = await _api.post('/shop-settings/validate-coupon', {'code': code, 'subtotal': subtotal});
+    return data as Map<String, dynamic>;
+  }
+
+  // ── Checkout ───────────────────────────────────────────────────────────────
+  Future<OrderModel> placeOrder({
+    required List<Map<String, dynamic>> items,
+    required DeliveryAddress address,
+    required String paymentMethod,
+    required double subtotal,
+    required double deliveryCharge,
+    required double discount,
+    required double total,
+    String? couponCode,
+  }) async {
+    final data = await _api.post('/orders', {
+      'items': items,
+      'delivery_address': address.toJson(),
+      'payment_method': paymentMethod,
+      'subtotal': subtotal,
+      'delivery_charge': deliveryCharge,
+      'discount': discount,
+      'total': total,
+      if (couponCode != null) 'coupon_code': couponCode,
+    });
+    return OrderModel.fromJson({...data as Map<String, dynamic>, 'items': const []});
+  }
+
   // ── Orders ─────────────────────────────────────────────────────────────────
   Future<void> loadOrders() async {
     isLoadingOrders = true;

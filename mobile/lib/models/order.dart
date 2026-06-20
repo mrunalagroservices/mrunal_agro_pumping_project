@@ -65,6 +65,20 @@ class DeliveryAddress {
 
   String get oneLine =>
       '$line1${line2 != null && line2!.isNotEmpty ? ', $line2' : ''}, $city, $state – $pincode';
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'phone': phone,
+        'line1': line1,
+        if (line2 != null && line2!.isNotEmpty) 'line2': line2,
+        'city': city,
+        'state': state,
+        'pincode': pincode,
+      };
+
+  bool get isComplete =>
+      name.isNotEmpty && phone.replaceAll(RegExp(r'\D'), '').length >= 7 &&
+      line1.isNotEmpty && city.isNotEmpty && state.isNotEmpty && pincode.length == 6;
 }
 
 class OrderModel {
