@@ -9,7 +9,6 @@ import 'wishlist_screen.dart';
 class _P {
   static const text = Color(0xFF222222);
   static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
   static const circleBtn = Color(0xFFF2F2F2);
   static const pillActive = Color(0xFF222222);
   static const pillInactive = Color(0xFFF2F2F2);
@@ -287,18 +286,15 @@ class _ShopScreenState extends State<ShopScreen> {
                                 sliver: SliverGrid(
                                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
-                                    childAspectRatio: 0.64,
+                                    crossAxisSpacing: 14,
+                                    mainAxisSpacing: 18,
+                                    childAspectRatio: 0.74,
                                   ),
                                   delegate: SliverChildBuilderDelegate(
                                     (ctx, i) => _ProductCard(
                                       product: filtered[i],
-                                      qty: _cart[filtered[i].id] ?? 0,
-                                      deliveryDate: _deliveryDate,
                                       wishlisted: state.isWishlisted(filtered[i].id),
                                       onTap: () => _openProduct(filtered[i]),
-                                      onAdd: () => _addToCart(filtered[i]),
                                       onToggleWishlist: () => state.toggleWishlist(filtered[i].id),
                                     ),
                                     childCount: filtered.length,
@@ -403,23 +399,17 @@ class _CartIcon extends StatelessWidget {
   }
 }
 
-// ── Product Card ──────────────────────────────────────────────────────────────
+// ── Product Card (matches the Myntra grid reference exactly) ──────────────────
 class _ProductCard extends StatelessWidget {
   final Product product;
-  final int qty;
-  final String deliveryDate;
   final bool wishlisted;
   final VoidCallback onTap;
-  final VoidCallback onAdd;
   final VoidCallback onToggleWishlist;
 
   const _ProductCard({
     required this.product,
-    required this.qty,
-    required this.deliveryDate,
     required this.wishlisted,
     required this.onTap,
-    required this.onAdd,
     required this.onToggleWishlist,
   });
 
@@ -428,135 +418,76 @@ class _ProductCard extends StatelessWidget {
     final p = product;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _P.divider),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Image with floating wishlist heart ──────────────────────────
+          AspectRatio(
+            aspectRatio: 1,
+            child: Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius: BorderRadius.circular(10),
                   child: Container(
-                    height: 116,
                     width: double.infinity,
                     color: p.iconBg,
                     child: p.imageUrl != null
                         ? Image.network(p.imageUrl!, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Center(child: Icon(p.icon, size: 52, color: p.iconColor)))
-                        : Center(child: Icon(p.icon, size: 52, color: p.iconColor)),
+                            errorBuilder: (_, __, ___) => Center(child: Icon(p.icon, size: 48, color: p.iconColor)))
+                        : Center(child: Icon(p.icon, size: 48, color: p.iconColor)),
                   ),
                 ),
-                if (p.discountPercent > 0)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(color: _P.text, borderRadius: BorderRadius.circular(20)),
-                      child: Text('${p.discountPercent}% off',
-                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
-                    ),
-                  ),
                 Positioned(
-                  top: 4,
-                  right: 4,
+                  top: 6,
+                  right: 6,
                   child: InkWell(
                     onTap: onToggleWishlist,
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(5),
                       decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                       child: Icon(wishlisted ? Icons.favorite : Icons.favorite_border,
                           size: 16, color: wishlisted ? const Color(0xFFE61E4D) : _P.subtext),
                     ),
                   ),
                 ),
-                if (p.isBestSeller)
-                  Positioned(
-                    bottom: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: _P.divider)),
-                      child: const Text('★ Best', style: TextStyle(color: _P.text, fontSize: 9, fontWeight: FontWeight.w600)),
-                    ),
-                  ),
               ],
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w400, color: _P.text, height: 1.3)),
-                    const SizedBox(height: 2),
-                    Text(p.unit, style: const TextStyle(fontSize: 10, color: _P.subtext)),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.star_rounded, size: 13, color: _P.text),
-                        const SizedBox(width: 2),
-                        Text(p.rating.toStringAsFixed(1), style: const TextStyle(color: _P.text, fontSize: 11, fontWeight: FontWeight.w600)),
-                        const SizedBox(width: 4),
-                        Text('(${_fmtCount(p.reviewCount)})', style: const TextStyle(fontSize: 10, color: _P.subtext)),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _P.text)),
-                        if (p.discountPercent > 0) ...[
-                          const SizedBox(width: 5),
-                          Text('₹${p.originalPrice.toStringAsFixed(0)}',
-                              style: const TextStyle(fontSize: 11, color: Color(0xFFB0B0B0), decoration: TextDecoration.lineThrough)),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text('By $deliveryDate', overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 10, color: _P.subtext, fontWeight: FontWeight.w400)),
-                    const Spacer(),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 32,
-                      child: qty > 0
-                          ? Container(
-                              decoration: BoxDecoration(color: _P.pillInactive, borderRadius: BorderRadius.circular(8)),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.check_circle, size: 14, color: _P.text),
-                                  const SizedBox(width: 4),
-                                  Text('$qty in cart', style: const TextStyle(fontSize: 11, color: _P.text, fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                            )
-                          : ElevatedButton(
-                              onPressed: onAdd,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: _P.text,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: EdgeInsets.zero,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                              child: const Text('Add to Cart', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                            ),
-                    ),
-                  ],
-                ),
-              ),
+          ),
+          const SizedBox(height: 6),
+
+          // ── Rating row ───────────────────────────────────────────────────
+          if (p.reviewCount > 0)
+            Row(
+              children: [
+                Text(p.rating.toStringAsFixed(1), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _P.text)),
+                const SizedBox(width: 3),
+                const Icon(Icons.star_rounded, size: 13, color: Color(0xFF15803D)),
+                const SizedBox(width: 6),
+                Text(_fmtCount(p.reviewCount), style: const TextStyle(fontSize: 12, color: _P.subtext)),
+              ],
             ),
-          ],
-        ),
+          const SizedBox(height: 3),
+
+          // ── Name ─────────────────────────────────────────────────────────
+          Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text, height: 1.3)),
+          const SizedBox(height: 4),
+
+          // ── Price row ────────────────────────────────────────────────────
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 6,
+            children: [
+              if (p.discountPercent > 0)
+                Text('₹${p.originalPrice.toStringAsFixed(0)}',
+                    style: const TextStyle(fontSize: 12, color: _P.subtext, decoration: TextDecoration.lineThrough)),
+              Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _P.text)),
+              if (p.discountPercent > 0)
+                Text('${p.discountPercent}% OFF', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFEA580C))),
+            ],
+          ),
+        ],
       ),
     );
   }
