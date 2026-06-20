@@ -179,7 +179,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             ),
             const SizedBox(height: 18),
             const Text('Personal info',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
             const SizedBox(height: 24),
 
             if (_error != null)
@@ -188,7 +188,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(12)),
-                  child: Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13)),
+                  child: Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
                 ),
               ),
 
@@ -205,12 +205,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 _editingName = !_editingName;
               }),
               collapsed: Text(user?.name.isNotEmpty == true ? user!.name : 'Not provided',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.subtext)),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text("Make sure this matches the name on your government ID.",
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
                   const SizedBox(height: 16),
                   _OutlinedField(label: 'First name on ID', controller: _firstName),
                   const SizedBox(height: 12),
@@ -233,7 +233,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               actionLabelWhenCollapsed: (user?.preferredFirstName?.isNotEmpty ?? false) ? 'Edit' : 'Add',
               collapsed: Text(
                 (user?.preferredFirstName?.isNotEmpty ?? false) ? user!.preferredFirstName! : 'Not provided',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.subtext),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext),
               ),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,7 +254,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 if (_editingPhone) _phone.text = user?.phone ?? '';
                 _editingPhone = !_editingPhone;
               }),
-              collapsed: Text(_maskPhone(user?.phone), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.subtext)),
+              collapsed: Text(_maskPhone(user?.phone), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -277,7 +277,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               collapsed: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user != null ? _maskEmail(user.email) : '', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.subtext)),
+                  Text(user != null ? _maskEmail(user.email) : '', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
                   const SizedBox(height: 12),
                   OutlinedButton(
                     onPressed: () => _comingSoon('Email confirmation'),
@@ -287,7 +287,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: const Text('Confirm', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    child: const Text('Confirm', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
                   ),
                 ],
               ),
@@ -320,7 +320,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               actionLabelWhenCollapsed: (user?.residentialAddress?.isEmpty ?? true) ? 'Add' : 'Edit',
               collapsed: Text(
                 (user?.residentialAddress?.isEmpty ?? true) ? 'Not provided' : user!.residentialAddress!.oneLine,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3),
               ),
               expanded: _AddressFields(
                 line1: _resLine1, line2: _resLine2, city: _resCity, state: _resState, pincode: _resPincode,
@@ -347,7 +347,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               actionLabelWhenCollapsed: (user?.postalAddress?.isEmpty ?? true) ? 'Add' : 'Edit',
               collapsed: Text(
                 (user?.postalAddress?.isEmpty ?? true) ? 'Not provided' : user!.postalAddress!.oneLine,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3),
               ),
               expanded: _AddressFields(
                 line1: _postLine1, line2: _postLine2, city: _postCity, state: _postState, pincode: _postPincode,
@@ -375,7 +375,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                     ? 'Not provided'
                     : '${user!.emergencyContact!.name} · ${user.emergencyContact!.phone}'
                         '${(user.emergencyContact!.relationship?.isNotEmpty ?? false) ? ' (${user.emergencyContact!.relationship})' : ''}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3),
               ),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,7 +425,7 @@ class _EditableSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Text(label, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: _P.text)),
+              child: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
             ),
             _LinkButton(
               label: editing ? 'Cancel' : (actionLabelWhenCollapsed ?? 'Edit'),
@@ -536,7 +536,7 @@ class _LinkButtonState extends State<_LinkButton> {
           child: Text(
             widget.label,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.w400,
               color: _P.text,
               decoration: TextDecoration.underline,
@@ -559,10 +559,10 @@ class _OutlinedField extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text),
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 14, color: _P.subtext),
+        labelStyle: const TextStyle(fontSize: 12, color: _P.subtext),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
@@ -591,7 +591,7 @@ class _SaveButton extends StatelessWidget {
         ),
         child: loading
             ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-            : const Text('Save', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            : const Text('Save', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
       ),
     );
   }

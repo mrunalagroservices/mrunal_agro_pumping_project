@@ -150,11 +150,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text(p.rating.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.w600, color: _P.text)),
+                                          Text(p.rating.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.w500, color: _P.text)),
                                           const SizedBox(width: 4),
                                           const Icon(Icons.star_rounded, size: 16, color: Color(0xFF15803D)),
                                           const SizedBox(width: 6),
-                                          Text('${p.reviewCount}', style: const TextStyle(color: _P.subtext, fontSize: 13)),
+                                          Text('${p.reviewCount}', style: const TextStyle(color: _P.subtext, fontSize: 11)),
                                         ],
                                       ),
                                     ),
@@ -164,20 +164,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(height: 18),
 
                             // ── Name + price ─────────────────────────────────
-                            Text(p.name, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: _P.text)),
+                            Text(p.name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: _P.text)),
                             const SizedBox(height: 2),
-                            Text(p.unit, style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                            Text(p.unit, style: const TextStyle(fontSize: 11, color: _P.subtext)),
                             const SizedBox(height: 10),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: _P.text)),
+                                Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500, color: _P.text)),
                                 if (p.discountPercent > 0) ...[
                                   const SizedBox(width: 8),
                                   Text('₹${p.originalPrice.toStringAsFixed(0)}',
-                                      style: const TextStyle(fontSize: 14, color: Color(0xFFB0B0B0), decoration: TextDecoration.lineThrough)),
+                                      style: const TextStyle(fontSize: 12, color: Color(0xFFB0B0B0), decoration: TextDecoration.lineThrough)),
                                   const SizedBox(width: 8),
-                                  Text('${p.discountPercent}% off', style: const TextStyle(fontSize: 13, color: Color(0xFFEA580C), fontWeight: FontWeight.w600)),
+                                  Text('${p.discountPercent}% off', style: const TextStyle(fontSize: 11, color: Color(0xFFEA580C), fontWeight: FontWeight.w500)),
                                 ],
                               ],
                             ),
@@ -186,7 +186,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(height: 18),
 
                             // ── Delivery & services ──────────────────────────
-                            const Text('Delivery & Services', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+                            const Text('Delivery & Services', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                             const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.all(14),
@@ -200,8 +200,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(p.inStock ? 'Free delivery by ${widget.deliveryDate}' : 'Out of stock',
-                                            style: const TextStyle(fontWeight: FontWeight.w600, color: _P.text, fontSize: 13)),
-                                        const Text('On orders above ₹499', style: TextStyle(fontSize: 12, color: _P.subtext)),
+                                            style: const TextStyle(fontWeight: FontWeight.w500, color: _P.text, fontSize: 11)),
+                                        const Text('On orders above ₹499', style: TextStyle(fontSize: 10, color: _P.subtext)),
                                       ],
                                     ),
                                   ),
@@ -218,11 +218,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(height: 18),
 
                             // ── Product details (real description) ──────────
-                            const Text('Product Details', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+                            const Text('Product Details', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                             const SizedBox(height: 8),
                             Text(
                               p.description.isNotEmpty ? p.description : 'No description provided yet.',
-                              style: const TextStyle(fontSize: 14, color: _P.subtext, height: 1.5),
+                              style: const TextStyle(fontSize: 12, color: _P.subtext, height: 1.5),
                             ),
 
                             const SizedBox(height: 18),
@@ -233,11 +233,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Row(
                               children: [
                                 const Expanded(
-                                  child: Text('Ratings & Reviews', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+                                  child: Text('Ratings & Reviews', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                                 ),
                                 TextButton(
                                   onPressed: _writeReview,
-                                  child: const Text('Write a review', style: TextStyle(fontWeight: FontWeight.w600, color: _P.text)),
+                                  child: const Text('Write a review', style: TextStyle(fontWeight: FontWeight.w500, color: _P.text)),
                                 ),
                               ],
                             ),
@@ -249,7 +249,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(p.rating.toStringAsFixed(1), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                                    Text(p.rating.toStringAsFixed(1), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
                                     const SizedBox(width: 4),
                                     const Icon(Icons.star_rounded, color: Colors.white, size: 16),
                                   ],
@@ -257,7 +257,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                             const SizedBox(height: 14),
                             if (_reviews.isEmpty)
-                              const Text('No reviews yet — be the first to write one.', style: TextStyle(color: _P.subtext, fontSize: 13))
+                              const Text('No reviews yet — be the first to write one.', style: TextStyle(color: _P.subtext, fontSize: 11))
                             else
                               ..._reviews.take(5).map((r) => _ReviewCard(review: r)),
 
@@ -291,7 +291,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   padding: const EdgeInsets.symmetric(vertical: 15),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
-                                child: const Text('Buy Now', style: TextStyle(fontWeight: FontWeight.w600)),
+                                child: const Text('Buy Now', style: TextStyle(fontWeight: FontWeight.w500)),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -309,7 +309,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   padding: const EdgeInsets.symmetric(vertical: 15),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
-                                child: Text(widget.cartQty > 0 ? 'Add More' : 'Add to Bag', style: const TextStyle(fontWeight: FontWeight.w600)),
+                                child: Text(widget.cartQty > 0 ? 'Add More' : 'Add to Bag', style: const TextStyle(fontWeight: FontWeight.w500)),
                               ),
                             ),
                           ],
@@ -336,7 +336,7 @@ class _InfoLine extends StatelessWidget {
         children: [
           Icon(icon, size: 17, color: _P.text),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 13, color: _P.text))),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 11, color: _P.text))),
         ],
       ),
     );
@@ -366,25 +366,25 @@ class _ReviewCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('${review.rating}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+                    Text('${review.rating}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 10)),
                     const Icon(Icons.star_rounded, color: Colors.white, size: 12),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Text('${d.day} ${months[d.month - 1]} ${d.year}', style: const TextStyle(fontSize: 12, color: _P.subtext)),
+              Text('${d.day} ${months[d.month - 1]} ${d.year}', style: const TextStyle(fontSize: 10, color: _P.subtext)),
             ],
           ),
           if (review.comment != null && review.comment!.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(review.comment!, style: const TextStyle(fontSize: 13, color: _P.text, height: 1.4)),
+            Text(review.comment!, style: const TextStyle(fontSize: 11, color: _P.text, height: 1.4)),
           ],
           const SizedBox(height: 8),
           Row(
             children: [
               const Icon(Icons.check_circle, size: 13, color: Color(0xFF15803D)),
               const SizedBox(width: 4),
-              Text(review.userName, style: const TextStyle(fontSize: 12, color: _P.subtext)),
+              Text(review.userName, style: const TextStyle(fontSize: 10, color: _P.subtext)),
             ],
           ),
         ],
@@ -407,7 +407,7 @@ class _SimilarProducts extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Similar Products', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+        const Text('Similar Products', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
         const SizedBox(height: 12),
         SizedBox(
           height: 200,
@@ -445,9 +445,9 @@ class _SimilarProducts extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.text)),
+                            Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: _P.text)),
                             const SizedBox(height: 4),
-                            Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _P.text)),
+                            Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: _P.text)),
                           ],
                         ),
                       ),

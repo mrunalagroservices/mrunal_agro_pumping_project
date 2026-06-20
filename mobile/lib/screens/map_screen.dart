@@ -80,7 +80,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: Text(
                     farm.name,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -94,7 +94,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               isActive
                   ? 'Pump running · ${farm.deviceCount} device(s)'
                   : 'Idle · ${farm.deviceCount} device(s)',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
             ),
           ],
         ),
@@ -173,7 +173,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       'No farm locations set yet.\n'
                       'Add latitude/longitude to a farm to see it on the map.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ),
@@ -227,8 +227,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                 farm.name,
                                 style: TextStyle(
                                   color: selected ? Colors.white : AppColors.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 11,
                                 ),
                               ),
                             ],
@@ -336,8 +336,8 @@ class _LiveFarmMarkerState extends State<_LiveFarmMarker> with SingleTickerProvi
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
+              fontSize: 8,
+              fontWeight: FontWeight.w600,
               color: widget.selected ? AppColors.primary700 : const Color(0xFF1e293b),
             ),
           ),

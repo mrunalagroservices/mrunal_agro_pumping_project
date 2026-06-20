@@ -52,11 +52,11 @@ class _FarmsScreenState extends State<FarmsScreen> with SingleTickerProviderStat
     return Scaffold(
       appBar: AppBar(
         title: const Text('Farms & Devices',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
         actions: const [TopBarActions()],
         bottom: TabBar(
           controller: _tabs,
-          labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
           tabs: const [
             Tab(icon: Icon(Icons.agriculture_outlined, size: 18), text: 'Farms'),
             Tab(icon: Icon(Icons.bolt_outlined, size: 18), text: 'Electricity'),
@@ -164,7 +164,7 @@ class _ElectricityTab extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Battery-powered ESP32 stays online 24/7. An AC detection circuit reports electricity ON/OFF events.',
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF92400E)),
+                    style: const TextStyle(fontSize: 10, color: Color(0xFF92400E)),
                   ),
                 ),
               ],
@@ -185,7 +185,7 @@ class _ElectricityTab extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(farm.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    child: Text(farm.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
                   ...farmDevices.map((d) {
                     final hasPower = d.isOnline;
@@ -227,7 +227,7 @@ class _ElectricityTab extends StatelessWidget {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(d.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                                      Text(d.name, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
                                       Row(
                                         children: [
                                           Container(
@@ -239,14 +239,14 @@ class _ElectricityTab extends StatelessWidget {
                                             child: Text(
                                               hasPower ? '⚡ Power ON' : 'No Power',
                                               style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w600,
                                                 color: hasPower ? const Color(0xFF059669) : AppColors.textMuted,
                                               ),
                                             ),
                                           ),
                                           const SizedBox(width: 6),
-                                          Text(_timeSince(d.lastSeenAt), style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                                          Text(_timeSince(d.lastSeenAt), style: TextStyle(fontSize: 8, color: AppColors.textMuted)),
                                         ],
                                       ),
                                     ],
@@ -275,8 +275,8 @@ class _ElectricityTab extends StatelessWidget {
                                         Text(
                                           notifyOn ? 'Notify ON' : 'Notify',
                                           style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w500,
                                             color: notifyOn ? const Color(0xFFD97706) : AppColors.textMuted,
                                           ),
                                         ),
@@ -305,7 +305,7 @@ class _ElectricityTab extends StatelessWidget {
                                 ),
                                 child: Text(
                                   'No power events recorded yet. Wire the AC detection module to get daily ON/OFF history.',
-                                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                  style: TextStyle(fontSize: 9, color: AppColors.textMuted),
                                 ),
                               ),
                             )
@@ -324,9 +324,9 @@ class _ElectricityTab extends StatelessWidget {
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(day.label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                                              Text(day.label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w500)),
                                               if (day.totalMinutes > 0)
-                                                Text(fmtHours(day.totalMinutes), style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                                                Text(fmtHours(day.totalMinutes), style: TextStyle(fontSize: 8, color: AppColors.textMuted)),
                                             ],
                                           ),
                                         ),
@@ -343,11 +343,11 @@ class _ElectricityTab extends StatelessWidget {
                                                       padding: const EdgeInsets.only(bottom: 3),
                                                       child: Row(
                                                         children: [
-                                                          Text(onStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF059669))),
+                                                          Text(onStr, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w500, color: Color(0xFF059669))),
                                                           const SizedBox(width: 4),
                                                           Expanded(child: Container(height: 6, decoration: BoxDecoration(color: const Color(0xFF6EE7B7), borderRadius: BorderRadius.circular(3)))),
                                                           const SizedBox(width: 4),
-                                                          Text(offStr, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: w.off == null ? const Color(0xFF059669) : const Color(0xFFEF4444))),
+                                                          Text(offStr, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w500, color: w.off == null ? const Color(0xFF059669) : const Color(0xFFEF4444))),
                                                         ],
                                                       ),
                                                     );
@@ -420,11 +420,11 @@ class _AntiTheftTab extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Text('Requires CT current sensor hardware', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDC2626), fontSize: 13)),
+                    Text('Requires CT current sensor hardware', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFDC2626), fontSize: 11)),
                     SizedBox(height: 4),
                     Text(
                       'Clip an SCT-013 current transformer around the motor wire. If motor is ON but current drops to 0A — wire cut detected. Instant alert sent.',
-                      style: TextStyle(color: Color(0xFF991B1B), fontSize: 12),
+                      style: TextStyle(color: Color(0xFF991B1B), fontSize: 10),
                     ),
                   ],
                 ),
@@ -469,7 +469,7 @@ class _AntiTheftTab extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(farm.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  child: Text(farm.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                 ),
                 ...allFarmActuators.map((a) {
                   final isEnabled = enabled.contains(a.id);
@@ -507,7 +507,7 @@ class _AntiTheftTab extends StatelessWidget {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(a.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                                        Text(a.name, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
                                         const SizedBox(width: 6),
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -517,12 +517,12 @@ class _AntiTheftTab extends StatelessWidget {
                                           ),
                                           child: Text(
                                             a.isOn ? '● ON' : 'OFF',
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: a.isOn ? AppColors.primary600 : AppColors.textMuted),
+                                            style: TextStyle(fontSize: 8, fontWeight: FontWeight.w600, color: a.isOn ? AppColors.primary600 : AppColors.textMuted),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    Text(a.actuatorType, style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                                    Text(a.actuatorType, style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
                                   ],
                                 ),
                               ),
@@ -543,7 +543,7 @@ class _AntiTheftTab extends StatelessWidget {
                               children: [
                                 const Icon(Icons.settings_outlined, size: 14, color: Color(0xFFDC2626)),
                                 const SizedBox(width: 6),
-                                const Text('Expected current:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                                const Text('Expected current:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500)),
                                 const SizedBox(width: 8),
                                 SizedBox(
                                   width: 80,
@@ -561,7 +561,7 @@ class _AntiTheftTab extends StatelessWidget {
                                       ),
                                       isDense: true,
                                     ),
-                                    style: const TextStyle(fontSize: 13),
+                                    style: const TextStyle(fontSize: 11),
                                   ),
                                 ),
                               ],
@@ -578,7 +578,7 @@ class _AntiTheftTab extends StatelessWidget {
                                     ? 'Enter expected current to activate monitoring'
                                     : 'Alert fires if current drops below ${(double.tryParse(threshold) ?? 0) * 0.5}A while motor is ON',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 9,
                                   color: threshold.isEmpty ? const Color(0xFFD97706) : const Color(0xFFDC2626),
                                 ),
                               ),
@@ -620,8 +620,8 @@ class _SummaryCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('$count', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-              Text(label, style: TextStyle(fontSize: 11, color: color.withValues(alpha: 0.8))),
+              Text('$count', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: color)),
+              Text(label, style: TextStyle(fontSize: 9, color: color.withValues(alpha: 0.8))),
             ],
           ),
         ],
@@ -650,8 +650,8 @@ class _HowCard extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(height: 6),
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 13)),
-          Text(desc, style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+          Text(title, style: TextStyle(fontWeight: FontWeight.w600, color: color, fontSize: 11)),
+          Text(desc, style: TextStyle(color: AppColors.textSecondary, fontSize: 9)),
         ],
       ),
     );

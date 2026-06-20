@@ -103,7 +103,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             children: [
               Icon(Icons.check_circle, color: _P.green, size: 48),
               SizedBox(height: 12),
-              Text('Order placed!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+              Text('Order placed!', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
             ],
           ),
           content: Text('Order #${order.id} · ₹${_total.toStringAsFixed(0)}',
@@ -119,7 +119,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('Continue Shopping', style: TextStyle(fontWeight: FontWeight.w600)),
+                child: const Text('Continue Shopping', style: TextStyle(fontWeight: FontWeight.w500)),
               ),
             ),
           ],
@@ -144,7 +144,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         backgroundColor: Colors.white,
         foregroundColor: _P.text,
         elevation: 0,
-        title: const Text('Payment', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+        title: const Text('Payment', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
       ),
       body: Column(
         children: [
@@ -152,7 +152,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
-                const Text('Order summary', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+                const Text('Order summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                 const SizedBox(height: 14),
                 _SummaryRow(label: 'Subtotal', value: '₹${widget.subtotal.toStringAsFixed(0)}'),
                 if (widget.discount > 0)
@@ -163,13 +163,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
                 if (_method == 'cod') ...[
                   const SizedBox(height: 4),
-                  const Text('Cash on delivery adds ₹100 handling charge.', style: TextStyle(fontSize: 12, color: _P.subtext)),
+                  const Text('Cash on delivery adds ₹100 handling charge.', style: TextStyle(fontSize: 10, color: _P.subtext)),
                 ],
                 const Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Divider(height: 1, thickness: 1, color: _P.divider)),
                 _SummaryRow(label: 'Total payable', value: '₹${_total.toStringAsFixed(0)}', bold: true),
 
                 const SizedBox(height: 24),
-                const Text('Select payment method', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+                const Text('Select payment method', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                 const SizedBox(height: 14),
 
                 _MethodTile(
@@ -217,7 +217,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
                 if (_error != null) ...[
                   const SizedBox(height: 16),
-                  Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13)),
+                  Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
                 ],
               ],
             ),
@@ -237,7 +237,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
                 child: _placing
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text('Pay ₹${_total.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    : Text('Pay ₹${_total.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
               ),
             ),
           ),
@@ -277,8 +277,8 @@ class _MethodTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text)),
-                      Text(subtitle, style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                      Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
+                      Text(subtitle, style: const TextStyle(fontSize: 11, color: _P.subtext)),
                     ],
                   ),
                 ),
@@ -305,10 +305,10 @@ class _Field extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       onChanged: (_) => onChanged?.call(),
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text),
+      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 13, color: _P.subtext),
+        labelStyle: const TextStyle(fontSize: 11, color: _P.subtext),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
@@ -332,8 +332,8 @@ class _SummaryRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: bold ? 17 : 15, fontWeight: bold ? FontWeight.w600 : FontWeight.w400, color: _P.text)),
-          Text(value, style: TextStyle(fontSize: bold ? 17 : 15, fontWeight: bold ? FontWeight.w600 : FontWeight.w400, color: valueColor ?? _P.text)),
+          Text(label, style: TextStyle(fontSize: bold ? 17 : 15, fontWeight: bold ? FontWeight.w500 : FontWeight.w400, color: _P.text)),
+          Text(value, style: TextStyle(fontSize: bold ? 17 : 15, fontWeight: bold ? FontWeight.w500 : FontWeight.w400, color: valueColor ?? _P.text)),
         ],
       ),
     );

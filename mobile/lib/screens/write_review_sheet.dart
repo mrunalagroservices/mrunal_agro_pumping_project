@@ -65,7 +65,7 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
             children: [
               Expanded(
                 child: Text(widget.productName, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
               ),
               InkWell(onTap: () => Navigator.pop(context), child: const Icon(Icons.close, color: _P.text)),
             ],
@@ -93,7 +93,7 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 10),
-            Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13)),
+            Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
           ],
           const SizedBox(height: 16),
           SizedBox(
@@ -108,7 +108,7 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
               ),
               child: _saving
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Submit Review', style: TextStyle(fontWeight: FontWeight.w600)),
+                  : const Text('Submit Review', style: TextStyle(fontWeight: FontWeight.w500)),
             ),
           ),
         ],

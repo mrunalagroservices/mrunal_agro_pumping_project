@@ -56,7 +56,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Continue', style: TextStyle(color: _P.danger, fontWeight: FontWeight.w600)),
+            child: const Text('Continue', style: TextStyle(color: _P.danger, fontWeight: FontWeight.w500)),
           ),
         ],
       ),
@@ -72,7 +72,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete my account', style: TextStyle(color: _P.danger, fontWeight: FontWeight.w600)),
+            child: const Text('Delete my account', style: TextStyle(color: _P.danger, fontWeight: FontWeight.w500)),
           ),
         ],
       ),
@@ -114,7 +114,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                   const Expanded(
                     child: Text('Privacy',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                   ),
                   const SizedBox(width: 44),
                 ],
@@ -126,7 +126,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
                 children: [
-                  const Text('Data privacy', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _P.text)),
+                  const Text('Data privacy', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
                   const SizedBox(height: 14),
 
                   _OutlinedRow(
@@ -143,12 +143,12 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text('Help improve the app',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _P.text)),
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
                             const SizedBox(height: 4),
                             const Text(
                               "When this is on, we use anonymous usage data to improve features across "
                               "Mrunal Agro — farm management, irrigation scheduling, and the marketplace.",
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.35),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.35),
                             ),
                           ],
                         ),
@@ -178,7 +178,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                           Text(
                             'Account deletion requested'
                             '${deletionDate != null ? ' on ${deletionDate.day} ${_months[deletionDate.month - 1]} ${deletionDate.year}' : ''}.',
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _P.danger),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _P.danger),
                           ),
                           const SizedBox(height: 10),
                           OutlinedButton(
@@ -188,7 +188,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                               side: const BorderSide(color: _P.border),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                            child: const Text('Cancel deletion', style: TextStyle(fontWeight: FontWeight.w600)),
+                            child: const Text('Cancel deletion', style: TextStyle(fontWeight: FontWeight.w500)),
                           ),
                         ],
                       ),
@@ -229,7 +229,7 @@ class _OutlinedRow extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: labelColor ?? _P.text)),
+              child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: labelColor ?? _P.text)),
             ),
             const Icon(Icons.chevron_right, color: _P.subtext),
           ],

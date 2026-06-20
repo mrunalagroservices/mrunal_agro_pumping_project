@@ -31,7 +31,7 @@ class PaymentsScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(color: _P.circleBtn, borderRadius: BorderRadius.circular(24)),
-                    child: const Text('₹ – INR', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _P.text)),
+                    child: const Text('₹ – INR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _P.text)),
                   ),
                 ],
               ),
@@ -41,10 +41,10 @@ class PaymentsScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                 children: [
                   const Text('Payments & payouts',
-                      style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                   const SizedBox(height: 28),
 
-                  const Text('Your account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _P.text)),
+                  const Text('Your account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
                   const SizedBox(height: 14),
 
                   _OutlinedRow(
@@ -98,13 +98,13 @@ class _OutlinedRow extends StatelessWidget {
             Icon(icon, size: 22, color: _P.text),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text)),
+              child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
             ),
             if (badge != null) ...[
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: _P.badge, borderRadius: BorderRadius.circular(20)),
-                child: Text(badge!, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                child: Text(badge!, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500)),
               ),
               const SizedBox(width: 8),
             ],

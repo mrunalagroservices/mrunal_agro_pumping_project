@@ -68,16 +68,16 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
             Align(alignment: Alignment.topLeft, child: _CircleBack(onTap: () => Navigator.pop(context))),
             const SizedBox(height: 18),
             const Text('Credits and coupons',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
             const SizedBox(height: 28),
 
-            const Text('Gift credit', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _P.text)),
+            const Text('Gift credit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: _P.text)),
             const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Current balance', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text)),
-                const Text('₹0.00', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _P.text)),
+                const Text('Current balance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
+                const Text('₹0.00', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
               ],
             ),
             const SizedBox(height: 16),
@@ -87,14 +87,14 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
             const Divider(height: 1, thickness: 1, color: _P.divider),
             const SizedBox(height: 28),
 
-            const Text('Coupons', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _P.text)),
+            const Text('Coupons', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: _P.text)),
             const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Your coupons', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text)),
+                const Text('Your coupons', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
                 Text('${_coupons?.length ?? 0}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text, decoration: TextDecoration.underline)),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, decoration: TextDecoration.underline)),
               ],
             ),
             const SizedBox(height: 14),
@@ -102,7 +102,7 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13)),
+                child: Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
               ),
 
             if (_coupons == null)
@@ -110,7 +110,7 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
             else if (_coupons!.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                child: Text("You don't have any saved coupons yet.", style: TextStyle(fontSize: 14, color: _P.subtext)),
+                child: Text("You don't have any saved coupons yet.", style: TextStyle(fontSize: 12, color: _P.subtext)),
               )
             else
               ..._coupons!.map((c) => Padding(
@@ -154,15 +154,15 @@ class _CouponCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(expired ? '🏷️' : '🟢', style: const TextStyle(fontSize: 18)),
+          Text(expired ? '🏷️' : '🟢', style: const TextStyle(fontSize: 16)),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(code, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _P.text)),
+                Text(code, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _P.text)),
                 const SizedBox(height: 2),
-                Text(description, style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                Text(description, style: const TextStyle(fontSize: 11, color: _P.subtext)),
               ],
             ),
           ),
@@ -218,7 +218,7 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
           Row(
             children: [
               const Expanded(
-                child: Text('Coupons', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+                child: Text('Coupons', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
               ),
               InkWell(
                 onTap: () => Navigator.pop(context, false),
@@ -243,7 +243,7 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 10),
-            Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13)),
+            Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
           ],
           const SizedBox(height: 20),
           SizedBox(
@@ -259,7 +259,7 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
               ),
               child: _loading
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Apply', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  : const Text('Apply', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
             ),
           ),
         ],
@@ -285,7 +285,7 @@ class _DarkButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
-        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
       ),
     );
   }

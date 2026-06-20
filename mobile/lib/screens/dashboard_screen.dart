@@ -43,10 +43,10 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('Mrunal Agro',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18, color: _kText, letterSpacing: -0.2)),
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: _kText, letterSpacing: -0.2)),
                 Text(
                   state.user != null ? 'Hi, ${state.user!.name}' : 'Pumping Control',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _kSub),
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _kSub),
                 ),
               ],
             ),
@@ -124,8 +124,8 @@ class DashboardScreen extends StatelessWidget {
                               Text(
                                 'View live map',
                                 style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w500,
                                   color: AppColors.primary700,
                                 ),
                               ),
@@ -146,7 +146,7 @@ class DashboardScreen extends StatelessWidget {
                               'to see it on the map.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                  color: Colors.white, fontWeight: FontWeight.w600),
+                                  color: Colors.white, fontWeight: FontWeight.w500),
                             ),
                           ),
                         ),
@@ -161,7 +161,7 @@ class DashboardScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     const Text('Overview',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _kText, letterSpacing: -0.3)),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _kText, letterSpacing: -0.3)),
                     const Spacer(),
                     if (state.isLoadingDashboard)
                       const SizedBox(
@@ -317,8 +317,8 @@ class DashboardScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              Text('History & Analytics', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: _kText)),
-                              Text('Runtime, water, electricity, cost', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _kSub)),
+                              Text('History & Analytics', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: _kText)),
+                              Text('Runtime, water, electricity, cost', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _kSub)),
                             ],
                           ),
                         ),
@@ -378,8 +378,8 @@ class _QuickLinkCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: _kText)),
-                  Text(subtitle, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _kSub)),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: _kText)),
+                  Text(subtitle, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _kSub)),
                 ],
               ),
             ),
@@ -427,14 +427,14 @@ class _StatCard extends StatelessWidget {
               value,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _kText),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _kText),
             ),
             const SizedBox(height: 1),
             Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: _kSub, fontSize: 10.5, fontWeight: FontWeight.w400),
+              style: const TextStyle(color: _kSub, fontSize: 8.5, fontWeight: FontWeight.w400),
             ),
           ],
         ),
@@ -471,7 +471,7 @@ class _FarmMarker extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w500),
           ),
         ),
         const SizedBox(height: 2),

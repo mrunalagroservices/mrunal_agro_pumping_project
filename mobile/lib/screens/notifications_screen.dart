@@ -178,7 +178,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text('Notifications',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
               ),
             ),
             const SizedBox(height: 12),
@@ -191,8 +191,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
               indicatorColor: _P.text,
               indicatorSize: TabBarIndicatorSize.label,
               labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-              labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              unselectedLabelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
               tabs: const [
                 Tab(text: 'Offers and updates'),
                 Tab(text: 'Account'),
@@ -209,16 +209,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                       for (final section in _offerSections) ..._buildSection(section),
                       const SizedBox(height: 8),
                       const Text('Unsubscribe from all offers and updates',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                       const SizedBox(height: 4),
                       const Text("You'll continue to get notifications about your account activity.",
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
                       const SizedBox(height: 14),
                       _CategoryRow(label: 'All offers and updates', status: _allOffersStatus, onTap: _unsubscribeAll),
                       const SizedBox(height: 24),
                       Text.rich(
                         TextSpan(
-                          style: const TextStyle(fontSize: 13, color: _P.subtext, height: 1.4),
+                          style: const TextStyle(fontSize: 11, color: _P.subtext, height: 1.4),
                           children: [
                             TextSpan(
                                 text: 'By opting in to text messages, you agree to receive automated marketing '
@@ -226,7 +226,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                                     'number, '),
                             TextSpan(
                               text: 'update your phone number settings',
-                              style: const TextStyle(fontWeight: FontWeight.w600, decoration: TextDecoration.underline, color: _P.text),
+                              style: const TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline, color: _P.text),
                               recognizer: _phoneSettingsLink,
                             ),
                             const TextSpan(text: ' on your personal info page.'),
@@ -242,7 +242,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                       const SizedBox(height: 8),
                       Text.rich(
                         TextSpan(
-                          style: const TextStyle(fontSize: 13, color: _P.subtext, height: 1.4),
+                          style: const TextStyle(fontSize: 11, color: _P.subtext, height: 1.4),
                           children: [
                             TextSpan(
                                 text: 'By opting in to text messages, you agree to receive automated account '
@@ -250,7 +250,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                                     'number, '),
                             TextSpan(
                               text: 'update your phone number settings',
-                              style: const TextStyle(fontWeight: FontWeight.w600, decoration: TextDecoration.underline, color: _P.text),
+                              style: const TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline, color: _P.text),
                               recognizer: _phoneSettingsLink,
                             ),
                             const TextSpan(text: ' on your personal info page.'),
@@ -270,9 +270,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
 
   List<Widget> _buildSection(_Section section) {
     return [
-      Text(section.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+      Text(section.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
       const SizedBox(height: 4),
-      Text(section.description, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
+      Text(section.description, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
       const SizedBox(height: 14),
       for (final cat in section.categories)
         Padding(
@@ -305,9 +305,9 @@ class _CategoryRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text)),
+              Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
               const SizedBox(height: 2),
-              Text(status, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
+              Text(status, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext)),
             ],
           ),
         ),
@@ -343,7 +343,7 @@ class _EditLinkState extends State<_EditLink> {
           duration: const Duration(milliseconds: 120),
           child: const Text(
             'Edit',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text, decoration: TextDecoration.underline),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, decoration: TextDecoration.underline),
           ),
         ),
       ),
@@ -383,7 +383,7 @@ class _NotificationEditSheetState extends State<_NotificationEditSheet> {
               children: [
                 Expanded(
                   child: Text(widget.category.label,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _P.text)),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
                 ),
                 InkWell(
                   onTap: () => Navigator.pop(context, _prefs),
@@ -427,7 +427,7 @@ class _ChannelToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text))),
+        Expanded(child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text))),
         Switch(
           value: value,
           onChanged: onChanged,

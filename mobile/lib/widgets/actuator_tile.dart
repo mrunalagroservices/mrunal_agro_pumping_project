@@ -51,7 +51,7 @@ class ActuatorTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(actuator.name,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                    style: const TextStyle(fontWeight: FontWeight.w500)),
                 const SizedBox(height: 2),
                 Row(
                   children: [
@@ -61,7 +61,7 @@ class ActuatorTile extends StatelessWidget {
                       actuator.isOn
                           ? 'Running'
                           : (deviceOnline ? 'Off' : 'Device offline'),
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
                     ),
                   ],
                 ),

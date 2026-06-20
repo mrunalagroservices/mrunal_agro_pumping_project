@@ -148,7 +148,7 @@ class _FarmCardState extends State<FarmCard> {
                       Text(
                         widget.farm.name,
                         style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold),
+                            fontSize: 15, fontWeight: FontWeight.w600),
                       ),
                       if (widget.farm.location != null &&
                           widget.farm.location!.isNotEmpty)
@@ -157,7 +157,7 @@ class _FarmCardState extends State<FarmCard> {
                           child: Text(
                             widget.farm.location!,
                             style: TextStyle(
-                                color: AppColors.textSecondary, fontSize: 13),
+                                color: AppColors.textSecondary, fontSize: 11),
                           ),
                         ),
                     ],
@@ -251,12 +251,12 @@ class _DeviceSection extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   device.name,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   device.isOnline ? 'Online' : 'Offline',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 10),
                 ),
               ],
             ),
@@ -266,7 +266,7 @@ class _DeviceSection extends StatelessWidget {
               padding: const EdgeInsets.only(left: 14, top: 4, bottom: 4),
               child: Text(
                 'No actuators configured.',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                style: TextStyle(color: AppColors.textMuted, fontSize: 11),
               ),
             )
           else
@@ -304,7 +304,7 @@ class _FarmStatusBadge extends StatelessWidget {
           Text(
             active ? 'Running' : 'Idle',
             style: TextStyle(
-                color: color, fontSize: 12, fontWeight: FontWeight.w600),
+                color: color, fontSize: 10, fontWeight: FontWeight.w500),
           ),
         ],
       ),

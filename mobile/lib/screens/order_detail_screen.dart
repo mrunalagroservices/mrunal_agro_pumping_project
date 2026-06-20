@@ -111,7 +111,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 child: SizedBox(
                   height: 280,
                   child: images.isEmpty
-                      ? Container(color: _P.tile, child: const Center(child: Text('🌿', style: TextStyle(fontSize: 64))))
+                      ? Container(color: _P.tile, child: const Center(child: Text('🌿', style: TextStyle(fontSize: 62))))
                       : Stack(
                           children: [
                             PageView.builder(
@@ -123,7 +123,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                                 errorBuilder: (_, __, ___) =>
-                                    Container(color: _P.tile, child: const Center(child: Text('🌿', style: TextStyle(fontSize: 64)))),
+                                    Container(color: _P.tile, child: const Center(child: Text('🌿', style: TextStyle(fontSize: 62)))),
                               ),
                             ),
                             if (images.length > 1)
@@ -162,10 +162,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Order #${o.id}',
-                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                   const SizedBox(height: 4),
                   Text('Placed on ${o.createdAt.day} ${_months[o.createdAt.month - 1]} ${o.createdAt.year}',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.subtext)),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
                 ],
               ),
             ),
@@ -185,10 +185,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_statusHeadline(o.status), style: TextStyle(color: o.statusColor, fontWeight: FontWeight.w600, fontSize: 15)),
+                          Text(_statusHeadline(o.status), style: TextStyle(color: o.statusColor, fontWeight: FontWeight.w500, fontSize: 13)),
                           if (o.status == 'delivered' || o.status == 'shipped' || o.status == 'cancelled') ...[
                             const SizedBox(height: 2),
-                            Text(_date(o.updatedAt), style: TextStyle(color: o.statusColor.withValues(alpha: 0.8), fontSize: 13)),
+                            Text(_date(o.updatedAt), style: TextStyle(color: o.statusColor.withValues(alpha: 0.8), fontSize: 11)),
                           ],
                         ],
                       ),
@@ -213,10 +213,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Ordered', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+                              const Text('Ordered', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                               const SizedBox(height: 6),
-                              Text(_date(o.createdAt), style: const TextStyle(fontSize: 16, color: _P.text)),
-                              Text(_time(o.createdAt), style: const TextStyle(fontSize: 15, color: _P.subtext)),
+                              Text(_date(o.createdAt), style: const TextStyle(fontSize: 14, color: _P.text)),
+                              Text(_time(o.createdAt), style: const TextStyle(fontSize: 13, color: _P.subtext)),
                             ],
                           ),
                         ),
@@ -228,10 +228,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text('Payment', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+                              const Text('Payment', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                               const SizedBox(height: 6),
-                              Text(o.paymentMethod.toUpperCase(), style: const TextStyle(fontSize: 16, color: _P.text)),
-                              Text('₹${o.total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 15, color: _P.subtext)),
+                              Text(o.paymentMethod.toUpperCase(), style: const TextStyle(fontSize: 14, color: _P.text)),
+                              Text('₹${o.total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, color: _P.subtext)),
                             ],
                           ),
                         ),
@@ -255,11 +255,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Delivery address', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+                        const Text('Delivery address', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                         const SizedBox(height: 3),
                         Text('${o.deliveryAddress.name} · ${o.deliveryAddress.phone}',
-                            style: const TextStyle(fontSize: 15, color: _P.subtext)),
-                        Text(o.deliveryAddress.oneLine, style: const TextStyle(fontSize: 15, color: _P.subtext, height: 1.3)),
+                            style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                        Text(o.deliveryAddress.oneLine, style: const TextStyle(fontSize: 13, color: _P.subtext, height: 1.3)),
                       ],
                     ),
                   ),
@@ -274,7 +274,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             // ── Order details ────────────────────────────────────────────
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text('Order details', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _P.text)),
+              child: Text('Order details', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
             ),
             const SizedBox(height: 14),
 
@@ -293,8 +293,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               color: _P.tile,
                               child: item.productImage != null && item.productImage!.isNotEmpty
                                   ? Image.network(item.productImage!, fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => const Center(child: Text('🌿', style: TextStyle(fontSize: 22))))
-                                  : const Center(child: Text('🌿', style: TextStyle(fontSize: 22))),
+                                      errorBuilder: (_, __, ___) => const Center(child: Text('🌿', style: TextStyle(fontSize: 20))))
+                                  : const Center(child: Text('🌿', style: TextStyle(fontSize: 20))),
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -305,14 +305,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 Text(item.productName,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _P.text)),
                                 Text('${item.unit ?? ''}  ·  Qty ${item.qty}',
-                                    style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                                    style: const TextStyle(fontSize: 11, color: _P.subtext)),
                               ],
                             ),
                           ),
                           Text('₹${(item.price * item.qty).toStringAsFixed(0)}',
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _P.text)),
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _P.text)),
                         ],
                       ),
                       if (o.status == 'delivered' && item.productId != null) ...[
@@ -370,7 +370,7 @@ class _SummaryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = TextStyle(
       fontSize: bold ? 17 : 15,
-      fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+      fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
       color: valueColor ?? _P.text,
     );
     return Padding(
@@ -378,7 +378,7 @@ class _SummaryRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: bold ? 17 : 15, fontWeight: bold ? FontWeight.w700 : FontWeight.w400, color: _P.text)),
+          Text(label, style: TextStyle(fontSize: bold ? 17 : 15, fontWeight: bold ? FontWeight.w600 : FontWeight.w400, color: _P.text)),
           Text(value, style: style),
         ],
       ),
@@ -454,7 +454,7 @@ class _RatingBoxState extends State<_RatingBox> {
               await showWriteReviewSheet(context,
                   productId: widget.productId, productName: widget.productName, initialRating: _rating == 0 ? 5 : _rating);
             },
-            child: const Text('Write Review', style: TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w700, fontSize: 13)),
+            child: const Text('Write Review', style: TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w600, fontSize: 11)),
           ),
         ],
       ),
@@ -483,7 +483,7 @@ class _YouMayAlsoLike extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('You may also like', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _P.text)),
+          const Text('You may also like', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
           const SizedBox(height: 14),
           SizedBox(
             height: 200,
@@ -526,9 +526,9 @@ class _YouMayAlsoLike extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.text)),
+                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: _P.text)),
                               const SizedBox(height: 4),
-                              Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _P.text)),
+                              Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: _P.text)),
                             ],
                           ),
                         ),

@@ -43,7 +43,7 @@ class AnalysisScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Analysis',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
         actions: const [TopBarActions()],
       ),
       body: RefreshIndicator(
@@ -52,7 +52,7 @@ class AnalysisScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             const Text('Equipment breakdown',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             if (byType.isEmpty)
               Card(
@@ -83,7 +83,7 @@ class AnalysisScreen extends StatelessWidget {
                           color: AppColors.primary600, size: 20),
                     ),
                     title: Text(_labelFor(entry.key),
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                        style: const TextStyle(fontWeight: FontWeight.w500)),
                     subtitle: Text('${entry.value.length} total'),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -92,12 +92,12 @@ class AnalysisScreen extends StatelessWidget {
                         Text(
                           '$running running',
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               color: AppColors.primary600),
                         ),
                         Text(
                           '${entry.value.length - running} off',
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 10),
                         ),
                       ],
                     ),
@@ -106,7 +106,7 @@ class AnalysisScreen extends StatelessWidget {
               }),
             const SizedBox(height: 24),
             const Text('Farm status',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             if (state.farms.isEmpty)
               Card(
@@ -129,7 +129,7 @@ class AnalysisScreen extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     title: Text(farm.name,
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                        style: const TextStyle(fontWeight: FontWeight.w500)),
                     subtitle: Text('$online / ${devices.length} devices online'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -147,8 +147,8 @@ class AnalysisScreen extends StatelessWidget {
                             color: active
                                 ? AppColors.primary600
                                 : AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
                           ),
                         ),
                       ],

@@ -27,7 +27,7 @@ class PointsScreen extends StatelessWidget {
               const SizedBox(height: 16),
               const Text(
                 'Coming soon',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Text(

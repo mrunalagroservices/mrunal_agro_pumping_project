@@ -88,7 +88,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             const Padding(
                               padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
                               child: Text('My Orders',
-                                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                             ),
                             const _EmptyOrders(),
                           ],
@@ -102,7 +102,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                               return const Padding(
                                 padding: EdgeInsets.fromLTRB(20, 16, 20, 16),
                                 child: Text('My Orders',
-                                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                               );
                             }
                             return _OrderBlock(order: state.orders[i - 1]);
@@ -141,9 +141,9 @@ class _OrderBlock extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(info.headline, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _P.text)),
+                    Text(info.headline, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
                     const SizedBox(height: 2),
-                    Text(info.subtitle, style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                    Text(info.subtitle, style: const TextStyle(fontSize: 11, color: _P.subtext)),
                   ],
                 ),
               ),
@@ -171,7 +171,7 @@ class _OrderBlock extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () => _needHelp(context),
                 icon: const Icon(Icons.support_agent_outlined, size: 18, color: _P.text),
-                label: const Text('Need Help?', style: TextStyle(color: _P.text, fontWeight: FontWeight.w600)),
+                label: const Text('Need Help?', style: TextStyle(color: _P.text, fontWeight: FontWeight.w500)),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: _P.divider),
                   padding: const EdgeInsets.symmetric(vertical: 13),
@@ -239,8 +239,8 @@ class _ItemRowState extends State<_ItemRow> {
                     color: _P.tile,
                     child: item.productImage != null
                         ? Image.network(item.productImage!, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Center(child: Text('🌿', style: TextStyle(fontSize: 24))))
-                        : const Center(child: Text('🌿', style: TextStyle(fontSize: 24))),
+                            errorBuilder: (_, __, ___) => const Center(child: Text('🌿', style: TextStyle(fontSize: 22))))
+                        : const Center(child: Text('🌿', style: TextStyle(fontSize: 22))),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -249,9 +249,9 @@ class _ItemRowState extends State<_ItemRow> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.productName, maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _P.text)),
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _P.text)),
                       const SizedBox(height: 2),
-                      Text('${item.unit ?? ''} · Qty ${item.qty}', style: const TextStyle(fontSize: 12, color: _P.subtext)),
+                      Text('${item.unit ?? ''} · Qty ${item.qty}', style: const TextStyle(fontSize: 10, color: _P.subtext)),
                     ],
                   ),
                 ),
@@ -284,7 +284,7 @@ class _ItemRowState extends State<_ItemRow> {
                           productId: item.productId!, productName: item.productName, initialRating: _hoverRating == 0 ? 5 : _hoverRating);
                       if (result == true) setState(() {});
                     },
-                    child: const Text('Write Review', style: TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w700, fontSize: 13)),
+                    child: const Text('Write Review', style: TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w600, fontSize: 11)),
                   ),
                 ],
               ),
@@ -305,12 +305,12 @@ class _EmptyOrders extends StatelessWidget {
       padding: const EdgeInsets.only(top: 64),
       child: Column(
         children: [
-          const Text('📦', style: TextStyle(fontSize: 48)),
+          const Text('📦', style: TextStyle(fontSize: 46)),
           const SizedBox(height: 14),
-          const Text('No orders yet', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18, color: _P.text)),
+          const Text('No orders yet', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: _P.text)),
           const SizedBox(height: 6),
           const Text('Orders you place from Market will appear here.',
-              textAlign: TextAlign.center, style: TextStyle(color: _P.subtext, fontSize: 14)),
+              textAlign: TextAlign.center, style: TextStyle(color: _P.subtext, fontSize: 12)),
         ],
       ),
     );
@@ -332,7 +332,7 @@ class _ErrorView extends StatelessWidget {
             children: [
               const Icon(Icons.error_outline, size: 44, color: Color(0xFFDC2626)),
               const SizedBox(height: 14),
-              Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 15, color: _P.text)),
+              Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: _P.text)),
               const SizedBox(height: 16),
               OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
             ],

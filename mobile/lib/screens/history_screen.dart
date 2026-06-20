@@ -55,7 +55,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('History & Analytics',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 12),
@@ -200,7 +200,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   '$running motor${running > 1 ? 's' : ''} running right now',
                   style: TextStyle(
                       color: AppColors.primary600,
-                      fontWeight: FontWeight.w600),
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -213,10 +213,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
           Row(
             children: [
               const Text('Per pump breakdown',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const Spacer(),
               Text(_range == '24h' ? 'Last 24h' : 'Last 10 days',
-                  style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                  style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
             ],
           ),
           const SizedBox(height: 10),
@@ -241,7 +241,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 const Expanded(
                   child: Text(
                     'Water and electricity calculations need pump specs. Add pipe diameter, flow rate, and power rating in Settings on the web dashboard.',
-                    style: TextStyle(color: Color(0xFF92400E), fontSize: 13),
+                    style: TextStyle(color: Color(0xFF92400E), fontSize: 11),
                   ),
                 ),
               ],
@@ -254,7 +254,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         Row(
           children: [
             const Text('Session Log',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -264,7 +264,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               child: Text(
                 _range == '24h' ? '2 days' : '10 days',
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 9, color: AppColors.textSecondary),
               ),
             ),
           ],
@@ -333,14 +333,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   Text(
                                     day['label'] as String? ?? day['date'] as String? ?? '—',
                                     style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14),
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 12),
                                   ),
                                   const SizedBox(height: 4),
                                   if (!hasActivity)
                                     Text('No pump activity',
                                         style: TextStyle(
-                                            fontSize: 12,
+                                            fontSize: 10,
                                             color: AppColors.textMuted))
                                   else
                                     Row(
@@ -384,8 +384,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 child: Text(
                                   '${dayActuators.length} pump${dayActuators.length > 1 ? 's' : ''}',
                                   style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w500,
                                       color: AppColors.primary600),
                                 ),
                               ),
@@ -480,13 +480,13 @@ class _ActuatorSessionRow extends StatelessWidget {
               Expanded(
                 child: Text(name,
                     style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 13)),
+                        fontWeight: FontWeight.w500, fontSize: 11)),
               ),
               Text(
                 _fmtHours((hours * 60).round()),
                 style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.primary600),
               ),
             ],
@@ -517,8 +517,8 @@ class _ActuatorSessionRow extends StatelessWidget {
                     Text(
                       start,
                       style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
                           color: Color(0xFF059669)),
                     ),
                     const Padding(
@@ -532,8 +532,8 @@ class _ActuatorSessionRow extends StatelessWidget {
                     Text(
                       end,
                       style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
                           color: Color(0xFFDC2626)),
                     ),
                     if (dur != null) ...[
@@ -547,7 +547,7 @@ class _ActuatorSessionRow extends StatelessWidget {
                         ),
                         child: Text(dur,
                             style: TextStyle(
-                                fontSize: 10, color: AppColors.textSecondary)),
+                                fontSize: 8, color: AppColors.textSecondary)),
                       ),
                     ],
                   ],
@@ -612,8 +612,8 @@ class _RangeBtn extends StatelessWidget {
         ),
         child: Text(label,
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
               color: active ? Colors.white : AppColors.textSecondary,
             )),
       ),
@@ -653,13 +653,13 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(value,
                 style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             Text(label,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 9)),
             if (subtitle != null)
               Text(subtitle!,
                   style:
-                      TextStyle(color: AppColors.textMuted, fontSize: 10)),
+                      TextStyle(color: AppColors.textMuted, fontSize: 8)),
           ],
         ),
       ),
@@ -683,7 +683,7 @@ class _QuickStat extends StatelessWidget {
         const SizedBox(width: 3),
         Text(value,
             style: TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+                fontSize: 10, fontWeight: FontWeight.w500, color: color)),
       ],
     );
   }
@@ -724,7 +724,7 @@ class _ActuatorRow extends StatelessWidget {
                       children: [
                         Text(name,
                             style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 14)),
+                                fontWeight: FontWeight.w500, fontSize: 12)),
                         const SizedBox(width: 6),
                         if (isOn)
                           Container(
@@ -736,25 +736,25 @@ class _ActuatorRow extends StatelessWidget {
                             ),
                             child: Text('● ON',
                                 style: TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 8,
                                     color: AppColors.primary600,
-                                    fontWeight: FontWeight.bold)),
+                                    fontWeight: FontWeight.w600)),
                           ),
                       ],
                     ),
                     if (farm.isNotEmpty)
                       Text(farm,
                           style: TextStyle(
-                              fontSize: 12, color: AppColors.textMuted)),
+                              fontSize: 10, color: AppColors.textMuted)),
                   ],
                 ),
               ),
               Text(
                 _fmtHours(runtimeMin),
                 style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.primary600,
-                    fontSize: 15),
+                    fontSize: 13),
               ),
             ],
           ),
@@ -808,10 +808,10 @@ class _MiniStat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+          Text(label, style: TextStyle(fontSize: 8, color: AppColors.textMuted)),
           Text(value,
               style:
-                  const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
         ],
       ),
     );

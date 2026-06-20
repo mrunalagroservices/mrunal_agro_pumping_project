@@ -54,7 +54,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                   const Expanded(
                     child: Text('Payment methods',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _P.text)),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                   ),
                   const SizedBox(width: 44),
                 ],
@@ -67,7 +67,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text('This is used as your default at checkout. You can still '
                     'switch payment method on any individual order.',
-                    style: TextStyle(fontSize: 13, color: _P.subtext, height: 1.4)),
+                    style: TextStyle(fontSize: 11, color: _P.subtext, height: 1.4)),
               ),
             ),
             Expanded(
@@ -87,9 +87,9 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _P.text)),
+                                Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
                                 const SizedBox(height: 2),
-                                Text(subtitle, style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                                Text(subtitle, style: const TextStyle(fontSize: 11, color: _P.subtext)),
                               ],
                             ),
                           ),

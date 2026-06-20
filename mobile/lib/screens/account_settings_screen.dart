@@ -87,7 +87,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             ),
             const SizedBox(height: 18),
             const Text('Account settings',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
             const SizedBox(height: 20),
 
             // ── Dismissible banner carousel ──────────────────────────────
@@ -149,7 +149,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               const SizedBox(height: 16),
               const Divider(height: 1, thickness: 1, color: _P.divider),
               const SizedBox(height: 16),
-              Text(_versionLabel!, style: const TextStyle(fontSize: 13, color: _P.subtext)),
+              Text(_versionLabel!, style: const TextStyle(fontSize: 11, color: _P.subtext)),
             ],
           ],
         ),
@@ -180,7 +180,7 @@ class _BannerCard extends StatelessWidget {
               SizedBox(
                 width: 40,
                 child: data.emoji != null
-                    ? Text(data.emoji!, style: const TextStyle(fontSize: 30))
+                    ? Text(data.emoji!, style: const TextStyle(fontSize: 28))
                     : Icon(data.icon, size: 28, color: _P.text),
               ),
               const SizedBox(width: 8),
@@ -188,9 +188,9 @@ class _BannerCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(data.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: _P.text)),
+                    Text(data.title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: _P.text)),
                     const SizedBox(height: 3),
-                    Text(data.subtitle, style: const TextStyle(color: _P.subtext, fontWeight: FontWeight.w400, fontSize: 14, height: 1.3)),
+                    Text(data.subtitle, style: const TextStyle(color: _P.subtext, fontWeight: FontWeight.w400, fontSize: 12, height: 1.3)),
                   ],
                 ),
               ),
@@ -212,7 +212,7 @@ class _BannerCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text(data.action, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              child: Text(data.action, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
             ),
           ),
         ],
@@ -237,7 +237,7 @@ class _Row extends StatelessWidget {
           children: [
             Icon(icon, color: _P.text, size: 26),
             const SizedBox(width: 18),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text))),
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text))),
             const Icon(Icons.chevron_right, color: Color(0xFF717171), size: 24),
           ],
         ),

@@ -94,7 +94,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     child: Row(
                       children: [
                         Text(widget.title,
-                            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                         const SizedBox(width: 8),
                         InkWell(
                           borderRadius: BorderRadius.circular(20),
@@ -127,7 +127,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   controller: _searchController,
                   autofocus: true,
                   onChanged: (_) => setState(() {}),
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
                   decoration: InputDecoration(
                     hintText: 'Search messages',
                     hintStyle: const TextStyle(color: _P.subtext),
@@ -202,7 +202,7 @@ class _Pill extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: FontWeight.w400,
             color: active ? Colors.white : _P.text,
           ),
@@ -257,11 +257,11 @@ class _MessageRow extends StatelessWidget {
                           item.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text),
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(_dayLabel(item.createdAt), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.subtext)),
+                      Text(_dayLabel(item.createdAt), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _P.subtext)),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -269,12 +269,12 @@ class _MessageRow extends StatelessWidget {
                     item.message,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     _statusLabel(item),
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext),
                   ),
                 ],
               ),
@@ -349,10 +349,10 @@ class _DetailSheetState extends State<_DetailSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text)),
+                      Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
                       Text(
                         item.isAlert ? (item.severity ?? '').toUpperCase() : _statusLabel(item),
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext),
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: _P.subtext),
                       ),
                     ],
                   ),
@@ -365,7 +365,7 @@ class _DetailSheetState extends State<_DetailSheet> {
               ],
             ),
             const SizedBox(height: 18),
-            Text(item.message, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _P.text, height: 1.4)),
+            Text(item.message, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, height: 1.4)),
             const SizedBox(height: 20),
             if (item.isAlert && item.status != 'resolved')
               SizedBox(
@@ -380,11 +380,11 @@ class _DetailSheetState extends State<_DetailSheet> {
                   ),
                   child: _resolving
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Mark as resolved', style: TextStyle(fontWeight: FontWeight.w400, fontSize: 16)),
+                      : const Text('Mark as resolved', style: TextStyle(fontWeight: FontWeight.w400, fontSize: 14)),
                 ),
               )
             else if (item.isAlert)
-              const Text('This was marked resolved.', style: TextStyle(fontSize: 14, color: _P.subtext)),
+              const Text('This was marked resolved.', style: TextStyle(fontSize: 12, color: _P.subtext)),
           ],
         ),
       ),
@@ -425,12 +425,12 @@ class _EmptyView extends StatelessWidget {
             children: [
               const Icon(Icons.notifications_none_outlined, size: 44, color: _P.subtext),
               const SizedBox(height: 14),
-              const Text('No messages', style: TextStyle(color: _P.text, fontSize: 17, fontWeight: FontWeight.w400)),
+              const Text('No messages', style: TextStyle(color: _P.text, fontSize: 15, fontWeight: FontWeight.w400)),
               const SizedBox(height: 4),
               const Text(
                 'Alerts, order updates, and irrigation activity will show up here.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: _P.subtext, fontSize: 14),
+                style: TextStyle(color: _P.subtext, fontSize: 12),
               ),
             ],
           ),

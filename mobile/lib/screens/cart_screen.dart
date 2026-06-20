@@ -189,7 +189,7 @@ class _CartScreenState extends State<CartScreen> {
         foregroundColor: _P.text,
         elevation: 0,
         title: Text('My Cart (${_cart.values.fold(0, (a, b) => a + b)})',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
       ),
       body: _entries.isEmpty
           ? const _EmptyCart()
@@ -212,7 +212,7 @@ class _CartScreenState extends State<CartScreen> {
                       const Divider(height: 1, thickness: 1, color: _P.divider),
                       const SizedBox(height: 20),
 
-                      const Text('Deliver to', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+                      const Text('Deliver to', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                       const SizedBox(height: 14),
                       Row(children: [
                         Expanded(child: _Field(label: 'Full name', controller: _name)),
@@ -236,7 +236,7 @@ class _CartScreenState extends State<CartScreen> {
                       const Divider(height: 1, thickness: 1, color: _P.divider),
                       const SizedBox(height: 20),
 
-                      const Text('Coupon', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+                      const Text('Coupon', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                       const SizedBox(height: 14),
                       if (_appliedCoupon != null)
                         Container(
@@ -249,7 +249,7 @@ class _CartScreenState extends State<CartScreen> {
                               Expanded(
                                 child: Text(
                                   '${_appliedCoupon!['code']} applied — you saved ₹${_discount.toStringAsFixed(0)}',
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.green),
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.green),
                                 ),
                               ),
                               InkWell(onTap: _removeCoupon, child: const Icon(Icons.close, size: 18, color: _P.green)),
@@ -292,21 +292,21 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                       if (_couponError != null) ...[
                         const SizedBox(height: 8),
-                        Text(_couponError!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13)),
+                        Text(_couponError!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
                       ],
 
                       const SizedBox(height: 24),
                       const Divider(height: 1, thickness: 1, color: _P.divider),
                       const SizedBox(height: 20),
 
-                      const Text('Order summary', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
+                      const Text('Order summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                       const SizedBox(height: 14),
                       _SummaryRow(label: 'Subtotal', value: '₹${_subtotal.toStringAsFixed(0)}'),
                       if (_discount > 0)
                         _SummaryRow(label: 'Coupon discount', value: '−₹${_discount.toStringAsFixed(0)}', valueColor: _P.green),
                       const SizedBox(height: 4),
                       const Text('Delivery charge is calculated on the next step based on payment method.',
-                          style: TextStyle(fontSize: 12, color: _P.subtext)),
+                          style: TextStyle(fontSize: 10, color: _P.subtext)),
                     ],
                   ),
                 ),
@@ -323,8 +323,8 @@ class _CartScreenState extends State<CartScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('₹${(_subtotal - _discount).toStringAsFixed(0)}',
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _P.text)),
-                            const Text('+ delivery', style: TextStyle(fontSize: 12, color: _P.subtext)),
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                            const Text('+ delivery', style: TextStyle(fontSize: 10, color: _P.subtext)),
                           ],
                         ),
                       ),
@@ -336,7 +336,7 @@ class _CartScreenState extends State<CartScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Continue to Pay', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                        child: const Text('Continue to Pay', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
                       ),
                     ],
                   ),
@@ -374,14 +374,14 @@ class _CartItemRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text)),
                 const SizedBox(height: 2),
-                Text(product.unit, style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                Text(product.unit, style: const TextStyle(fontSize: 11, color: _P.subtext)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Text('₹${(product.price * qty).toStringAsFixed(0)}',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _P.text)),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _P.text)),
                     const Spacer(),
                     _QtyStepper(qty: qty, onIncrement: onIncrement, onDecrement: onDecrement),
                   ],
@@ -409,7 +409,7 @@ class _QtyStepper extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(onTap: onDecrement, child: const Padding(padding: EdgeInsets.all(8), child: Icon(Icons.remove, size: 16))),
-          SizedBox(width: 28, child: Text('$qty', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600))),
+          SizedBox(width: 28, child: Text('$qty', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w500))),
           InkWell(onTap: onIncrement, child: const Padding(padding: EdgeInsets.all(8), child: Icon(Icons.add, size: 16))),
         ],
       ),
@@ -428,10 +428,10 @@ class _Field extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text),
+      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 13, color: _P.subtext),
+        labelStyle: const TextStyle(fontSize: 11, color: _P.subtext),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
@@ -454,8 +454,8 @@ class _SummaryRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
-          Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: valueColor ?? _P.text)),
+          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text)),
+          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: valueColor ?? _P.text)),
         ],
       ),
     );
@@ -475,7 +475,7 @@ class _EmptyCart extends StatelessWidget {
           children: [
             const Icon(Icons.shopping_cart_outlined, size: 48, color: _P.subtext),
             const SizedBox(height: 14),
-            const Text('Your cart is empty', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: _P.text)),
+            const Text('Your cart is empty', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
           ],
         ),
       ),

@@ -157,7 +157,7 @@ class _ShopScreenState extends State<ShopScreen> {
                               children: [
                                 const Expanded(
                                   child: Text('Market',
-                                      style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600, color: _P.text, letterSpacing: -0.3)),
+                                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                                 ),
                                 _CircleIconBtn(
                                   icon: Icons.favorite_border,
@@ -177,10 +177,10 @@ class _ShopScreenState extends State<ShopScreen> {
                             child: TextField(
                               controller: _searchCtrl,
                               onChanged: (v) => setState(() => _searchQuery = v),
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text),
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
                               decoration: InputDecoration(
                                 hintText: 'Search seeds, fertilizers, tools…',
-                                hintStyle: const TextStyle(fontSize: 14, color: _P.subtext),
+                                hintStyle: const TextStyle(fontSize: 12, color: _P.subtext),
                                 prefixIcon: const Icon(Icons.search, color: _P.subtext, size: 20),
                                 suffixIcon: _searchQuery.isNotEmpty
                                     ? IconButton(
@@ -224,7 +224,7 @@ class _ShopScreenState extends State<ShopScreen> {
                                     alignment: Alignment.center,
                                     child: Text(
                                       cat,
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: active ? Colors.white : _P.text),
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: active ? Colors.white : _P.text),
                                     ),
                                   ),
                                 );
@@ -247,7 +247,7 @@ class _ShopScreenState extends State<ShopScreen> {
                                   Expanded(
                                     child: Text(
                                       'Free delivery by $_deliveryDate on orders above ₹499',
-                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
+                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _P.text),
                                     ),
                                   ),
                                 ],
@@ -262,7 +262,7 @@ class _ShopScreenState extends State<ShopScreen> {
                             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                             child: Text(
                               '${filtered.length} product${filtered.length == 1 ? '' : 's'}',
-                              style: const TextStyle(fontSize: 13, color: _P.subtext, fontWeight: FontWeight.w400),
+                              style: const TextStyle(fontSize: 11, color: _P.subtext, fontWeight: FontWeight.w400),
                             ),
                           ),
                         ),
@@ -276,7 +276,7 @@ class _ShopScreenState extends State<ShopScreen> {
                                     children: [
                                       const Icon(Icons.search_off_outlined, size: 44, color: _P.subtext),
                                       const SizedBox(height: 12),
-                                      const Text('No products found', style: TextStyle(color: _P.text, fontSize: 15, fontWeight: FontWeight.w400)),
+                                      const Text('No products found', style: TextStyle(color: _P.text, fontSize: 13, fontWeight: FontWeight.w400)),
                                     ],
                                   ),
                                 ),
@@ -321,14 +321,14 @@ class _ShopScreenState extends State<ShopScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(8)),
                         child: Text('$_cartCount item${_cartCount > 1 ? 's' : ''}',
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500)),
                       ),
                       const SizedBox(width: 10),
                       const Expanded(
-                        child: Text('View Cart', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 15)),
+                        child: Text('View Cart', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 13)),
                       ),
                       Text('₹${_cartTotal(all).toStringAsFixed(0)}',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 13)),
                       const SizedBox(width: 6),
                       const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
                     ],
@@ -389,7 +389,7 @@ class _CartIcon extends StatelessWidget {
                   decoration: const BoxDecoration(color: Color(0xFFE61E4D), shape: BoxShape.circle),
                   constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                   child: Text('$count', textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                      style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w500)),
                 ),
               ),
           ],
@@ -460,18 +460,18 @@ class _ProductCard extends StatelessWidget {
           if (p.reviewCount > 0)
             Row(
               children: [
-                Text(p.rating.toStringAsFixed(1), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _P.text)),
+                Text(p.rating.toStringAsFixed(1), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: _P.text)),
                 const SizedBox(width: 3),
                 const Icon(Icons.star_rounded, size: 13, color: Color(0xFF15803D)),
                 const SizedBox(width: 6),
-                Text(_fmtCount(p.reviewCount), style: const TextStyle(fontSize: 12, color: _P.subtext)),
+                Text(_fmtCount(p.reviewCount), style: const TextStyle(fontSize: 10, color: _P.subtext)),
               ],
             ),
           const SizedBox(height: 3),
 
           // ── Name ─────────────────────────────────────────────────────────
           Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text, height: 1.3)),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _P.text, height: 1.3)),
           const SizedBox(height: 4),
 
           // ── Price row ────────────────────────────────────────────────────
@@ -481,10 +481,10 @@ class _ProductCard extends StatelessWidget {
             children: [
               if (p.discountPercent > 0)
                 Text('₹${p.originalPrice.toStringAsFixed(0)}',
-                    style: const TextStyle(fontSize: 12, color: _P.subtext, decoration: TextDecoration.lineThrough)),
-              Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _P.text)),
+                    style: const TextStyle(fontSize: 10, color: _P.subtext, decoration: TextDecoration.lineThrough)),
+              Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _P.text)),
               if (p.discountPercent > 0)
-                Text('${p.discountPercent}% OFF', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFEA580C))),
+                Text('${p.discountPercent}% OFF', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFFEA580C))),
             ],
           ),
         ],

@@ -61,7 +61,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text('Wishlist', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: _P.text)),
+                  const Text('Wishlist', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
                 ],
               ),
             ),
@@ -134,17 +134,17 @@ class _WishlistRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text)),
                   const SizedBox(height: 4),
-                  Text(p.unit, style: const TextStyle(fontSize: 12, color: _P.subtext)),
+                  Text(p.unit, style: const TextStyle(fontSize: 10, color: _P.subtext)),
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _P.text)),
+                      Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _P.text)),
                       if (p.discountPercent > 0) ...[
                         const SizedBox(width: 6),
                         Text('₹${p.originalPrice.toStringAsFixed(0)}',
-                            style: const TextStyle(fontSize: 12, color: Color(0xFFB0B0B0), decoration: TextDecoration.lineThrough)),
+                            style: const TextStyle(fontSize: 10, color: Color(0xFFB0B0B0), decoration: TextDecoration.lineThrough)),
                       ],
                     ],
                   ),
@@ -176,10 +176,10 @@ class _EmptyWishlist extends StatelessWidget {
           children: [
             const Icon(Icons.favorite_border, size: 48, color: _P.subtext),
             const SizedBox(height: 14),
-            const Text('Your wishlist is empty', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w400, color: _P.text)),
+            const Text('Your wishlist is empty', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
             const SizedBox(height: 6),
             const Text('Tap the heart on any product to save it here.',
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: _P.subtext)),
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: _P.subtext)),
           ],
         ),
       ),

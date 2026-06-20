@@ -124,8 +124,8 @@ class _BottomBar extends StatelessWidget {
                       Text(
                         item.label,
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                          fontSize: 9,
+                          fontWeight: active ? FontWeight.w500 : FontWeight.w400,
                           color: color,
                         ),
                       ),
@@ -177,7 +177,7 @@ class _IconWithBadge extends StatelessWidget {
             child: Text(
               '$badge',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+              style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w600),
             ),
           ),
         ),

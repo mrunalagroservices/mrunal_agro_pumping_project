@@ -37,7 +37,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Schedules', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text('Schedules', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -74,12 +74,12 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                               Icon(Icons.schedule_outlined, size: 48, color: AppColors.textMuted),
                               const SizedBox(height: 12),
                               Text('No schedules yet',
-                                  style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+                                  style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
                               const SizedBox(height: 4),
                               Text(
                                 'Tap + to automatically run motors at fixed times.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                                style: TextStyle(color: AppColors.textMuted, fontSize: 11),
                               ),
                             ],
                           ),
@@ -153,16 +153,16 @@ class _ScheduleCardState extends State<_ScheduleCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(s.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text(s.name, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
                   const SizedBox(height: 2),
                   Text(
                     '${s.actuatorName ?? 'Unknown'} · ${s.displayTime} · ${s.durationMinutes}min',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     s.activeDays,
-                    style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                    style: TextStyle(fontSize: 9, color: AppColors.textMuted),
                   ),
                 ],
               ),
@@ -306,7 +306,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
             children: [
               Row(
                 children: [
-                  const Text('Add schedule', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text('Add schedule', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   const Spacer(),
                   IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
                 ],
@@ -340,7 +340,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                           children: [
                             const Icon(Icons.access_time, size: 18, color: Color(0xFF64748B)),
                             const SizedBox(width: 8),
-                            Text(_startTime.format(context), style: const TextStyle(fontSize: 15)),
+                            Text(_startTime.format(context), style: const TextStyle(fontSize: 13)),
                           ],
                         ),
                       ),
@@ -362,7 +362,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                 ],
               ),
               const SizedBox(height: 16),
-              const Text('Repeat on', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              const Text('Repeat on', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               Row(
                 children: List.generate(7, (i) {
@@ -381,8 +381,8 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                         child: Text(
                           _dayLabels[i],
                           style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
                             color: active ? Colors.white : AppColors.textSecondary,
                           ),
                         ),
@@ -399,7 +399,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                     color: const Color(0xFFFEF2F2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13)),
+                  child: Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
                 ),
               ],
               const SizedBox(height: 20),
@@ -414,7 +414,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   ),
                   child: _submitting
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Add schedule', style: TextStyle(fontSize: 15)),
+                      : const Text('Add schedule', style: TextStyle(fontSize: 13)),
                 ),
               ),
             ],

@@ -54,8 +54,8 @@ ThemeData buildAppTheme() {
       titleTextStyle: TextStyle(
         fontFamily: kFontFamily,
         color: AppColors.textPrimary,
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
       ),
     ),
     cardTheme: CardThemeData(
@@ -73,7 +73,7 @@ ThemeData buildAppTheme() {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(fontFamily: kFontFamily, fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontFamily: kFontFamily, fontSize: 14, fontWeight: FontWeight.w500),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
