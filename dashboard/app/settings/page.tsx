@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   Loader2, IndianRupee, Gauge, Save, Check, MapPin, Plus, Pencil, Trash2, Star, X,
-  ClipboardList, ChevronDown, ChevronRight, Package, Settings,
+  ClipboardList, ChevronDown, ChevronRight, Package, Settings, UserCog,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import { httpClient } from "@/lib/api";
@@ -12,6 +12,7 @@ import {
   SavedAddress, getSavedAddresses, upsertAddress, deleteAddress,
   setDefaultAddress, newId,
 } from "@/lib/savedAddresses";
+import AccountSettings from "@/components/settings/AccountSettings";
 
 type SpecField = "pipe_diameter_mm" | "flow_velocity_ms" | "flow_rate_lpm" | "power_rating_watts";
 
@@ -194,7 +195,7 @@ function OrderCard({ order }: { order: Order }) {
 }
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState<"settings" | "orders">("settings");
+  const [tab, setTab] = useState<"settings" | "account" | "orders">("settings");
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
@@ -214,10 +215,11 @@ export default function SettingsPage() {
   const [addrModal, setAddrModal] = useState<SavedAddress | null | "new">(null);
 
   useEffect(() => {
-    // Read ?tab=orders from URL on mount (avoids Suspense requirement)
+    // Read ?tab=orders|account from URL on mount (avoids Suspense requirement)
     const params = new URLSearchParams(window.location.search);
-    if (params.get("tab") === "orders") {
-      setTab("orders");
+    const requested = params.get("tab");
+    if (requested === "orders" || requested === "account") {
+      setTab(requested);
     }
     setAddresses(getSavedAddresses());
   }, []);
@@ -315,13 +317,20 @@ export default function SettingsPage() {
       <div className="flex gap-1 mb-6 bg-slate-100 rounded-2xl p-1 w-fit">
         <button onClick={() => setTab("settings")}
           className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "settings" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-          <Settings className="w-4 h-4" /> Settings
+          <Settings className="w-4 h-4" /> Farm Settings
+        </button>
+        <button onClick={() => setTab("account")}
+          className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "account" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+          <UserCog className="w-4 h-4" /> Account
         </button>
         <button onClick={() => setTab("orders")}
           className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "orders" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
           <ClipboardList className="w-4 h-4" /> My Orders
         </button>
       </div>
+
+      {/* Account tab */}
+      {tab === "account" && <AccountSettings />}
 
       {/* My Orders tab */}
       {tab === "orders" && (

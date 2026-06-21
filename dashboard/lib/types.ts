@@ -8,8 +8,37 @@ export interface Organization {
   id: number;
   name: string;
   electricity_rate_per_kwh?: number;
+  support_email?: string;
+  support_phone?: string | null;
+  support_hours?: string;
   created_at?: string;
 }
+
+export interface Address {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+}
+
+export interface EmergencyContact {
+  name?: string;
+  phone?: string;
+  relationship?: string;
+}
+
+export interface NotificationChannelPrefs {
+  email: boolean;
+  push: boolean;
+  sms: boolean;
+}
+
+export type NotificationCategory =
+  | "promo_offers" | "farming_tips" | "news_updates" | "feedback_requests" | "service_alerts"
+  | "account_activity" | "order_policies" | "schedule_reminders" | "support_messages";
+
+export type NotificationPreferences = Record<NotificationCategory, NotificationChannelPrefs>;
 
 export interface User {
   id: number;
@@ -19,6 +48,35 @@ export interface User {
   phone?: string | null;
   role: string;
   is_admin?: boolean;
+  preferred_first_name?: string | null;
+  residential_address?: Address | null;
+  postal_address?: Address | null;
+  emergency_contact?: EmergencyContact | null;
+  analytics_opt_in?: boolean;
+  deletion_requested_at?: string | null;
+  preferred_payment_method?: "cod" | "card" | "upi";
+  notification_preferences?: NotificationPreferences;
+}
+
+export interface LegalSection {
+  heading: string;
+  body: string;
+}
+
+export interface LegalDocumentSummary {
+  slug: string;
+  title: string;
+  updated_at: string;
+}
+
+export interface LegalDocument extends LegalDocumentSummary {
+  sections: LegalSection[];
+}
+
+export interface FaqTopic {
+  id: number;
+  question: string;
+  answer: string;
 }
 
 export interface AdminStats {

@@ -7,6 +7,9 @@ CREATE TABLE organizations (
   id                       SERIAL PRIMARY KEY,
   name                     VARCHAR(150) NOT NULL,
   electricity_rate_per_kwh NUMERIC NOT NULL DEFAULT 8, -- ₹ per kWh, used for analytics cost estimates
+  support_email            VARCHAR(150) NOT NULL DEFAULT 'support@mrunalagro.in',
+  support_phone            VARCHAR(30),
+  support_hours            VARCHAR(100) NOT NULL DEFAULT 'Mon–Sat, 9am–6pm',
   created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -61,6 +64,29 @@ CREATE TABLE user_saved_coupons (
   UNIQUE(user_id, code)
 );
 CREATE INDEX idx_user_saved_coupons_user ON user_saved_coupons(user_id);
+
+-- ─── Legal documents (Legal → Terms of Service / Privacy Policy / etc.) ───────
+-- One row per document; `sections` is an ordered array of {heading, body}.
+-- Editable from the admin dashboard without an app release.
+CREATE TABLE legal_documents (
+  id         SERIAL PRIMARY KEY,
+  slug       VARCHAR(50) UNIQUE NOT NULL, -- e.g. 'terms-of-service'
+  title      VARCHAR(150) NOT NULL,
+  sections   JSONB NOT NULL DEFAULT '[]', -- [{ "heading": "...", "body": "..." }, ...]
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─── Support FAQ topics (Find support → help bot quick replies) ──────────────
+CREATE TABLE faq_topics (
+  id         SERIAL PRIMARY KEY,
+  question   VARCHAR(255) NOT NULL,
+  answer     TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_active  BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
 -- ─── Farms ────────────────────────────────────────────────────────────────
 CREATE TABLE farms (
