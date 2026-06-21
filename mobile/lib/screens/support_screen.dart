@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../providers/app_state.dart';
 import 'faq_chat_screen.dart';
 
 class _P {
@@ -9,22 +11,34 @@ class _P {
   static const circleBtn = Color(0xFFF2F2F2);
 }
 
-// TODO: replace with the real support line before launch.
-const _supportEmail = 'support@mrunalagro.in';
-const _supportPhone = '+91 98765 43210';
-
-class SupportScreen extends StatelessWidget {
+class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
 
-  Future<void> _launch(BuildContext context, Uri uri, String failureMessage) async {
+  @override
+  State<SupportScreen> createState() => _SupportScreenState();
+}
+
+class _SupportScreenState extends State<SupportScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().loadSupportInfo();
+    });
+  }
+
+  Future<void> _launch(Uri uri, String failureMessage) async {
     final ok = await launchUrl(uri);
-    if (!ok && context.mounted) {
+    if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failureMessage)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final contact = state.supportContact;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -63,28 +77,35 @@ class SupportScreen extends StatelessWidget {
                     subtitle: 'Instant answers for orders, devices, and payments',
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FaqChatScreen())),
                   ),
-                  const SizedBox(height: 12),
-                  _ContactRow(
-                    icon: Icons.mail_outline,
-                    title: 'Email us',
-                    subtitle: _supportEmail,
-                    onTap: () => _launch(
-                      context,
-                      Uri(scheme: 'mailto', path: _supportEmail, query: 'subject=Support request'),
-                      'Could not open an email app.',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _ContactRow(
-                    icon: Icons.call_outlined,
-                    title: 'Call us',
-                    subtitle: '$_supportPhone · Mon–Sat, 9am–6pm',
-                    onTap: () => _launch(
-                      context,
-                      Uri(scheme: 'tel', path: _supportPhone),
-                      'Could not open the dialer.',
-                    ),
-                  ),
+                  if (state.isLoadingSupport && contact == null) ...[
+                    const SizedBox(height: 24),
+                    const Center(child: CircularProgressIndicator()),
+                  ] else if (contact != null) ...[
+                    if (contact.email != null) ...[
+                      const SizedBox(height: 12),
+                      _ContactRow(
+                        icon: Icons.mail_outline,
+                        title: 'Email us',
+                        subtitle: contact.email!,
+                        onTap: () => _launch(
+                          Uri(scheme: 'mailto', path: contact.email, query: 'subject=Support request'),
+                          'Could not open an email app.',
+                        ),
+                      ),
+                    ],
+                    if (contact.phone != null) ...[
+                      const SizedBox(height: 12),
+                      _ContactRow(
+                        icon: Icons.call_outlined,
+                        title: 'Call us',
+                        subtitle: contact.hours != null ? '${contact.phone} · ${contact.hours}' : contact.phone!,
+                        onTap: () => _launch(
+                          Uri(scheme: 'tel', path: contact.phone),
+                          'Could not open the dialer.',
+                        ),
+                      ),
+                    ],
+                  ],
                 ],
               ),
             ),

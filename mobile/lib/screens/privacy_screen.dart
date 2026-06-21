@@ -134,7 +134,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                     label: 'Privacy Policy',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const LegalDocScreen(doc: privacyPolicyDoc)),
+                      MaterialPageRoute(builder: (_) => const LegalDocScreen(slug: 'privacy-policy', title: 'Privacy Policy')),
                     ),
                   ),
                   const SizedBox(height: 12),

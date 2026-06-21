@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/faq_topic.dart';
+import '../providers/app_state.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -8,37 +11,6 @@ class _P {
   static const bubbleBg = Color(0xFFF2F2F2);
   static const accent = Color(0xFF16A34A);
 }
-
-class _FaqTopic {
-  final String question;
-  final String answer;
-  const _FaqTopic(this.question, this.answer);
-}
-
-// Local, rule-based FAQ replies — no AI/network call. Keep answers in sync
-// with actual app behaviour as features change.
-const _faqTopics = [
-  _FaqTopic('Where can I track my order?',
-      "Open the Orders tab from the bottom bar to see every order's status — placed, confirmed, "
-      "shipped, or delivered. Tap an order for full details and a live status timeline."),
-  _FaqTopic('How do I cancel an order?',
-      "You can cancel an order before it ships from the order's detail screen. Once it's shipped, "
-      "please contact us by email so we can help with a return."),
-  _FaqTopic('My pump shows offline — what do I do?',
-      "Check that the device has power and a working internet/WiFi connection at the farm. The "
-      "Farms & Devices screen shows the last time each device reported in. If it's been offline for "
-      "more than a few minutes, check the ESP32 controller's power and signal at the pump site."),
-  _FaqTopic('How is electricity cost calculated?',
-      "We estimate electricity usage from your pump's motor power rating and how long it ran, using "
-      "the per-kWh rate set on the Settings page. Add or update pump specs from Farms & Devices to "
-      "get accurate readings."),
-  _FaqTopic('What payment methods are accepted?',
-      "Cash on Delivery is available on all orders (a small handling fee applies). Card and UPI "
-      "options appear at checkout when available for your order."),
-  _FaqTopic('How do I delete my account?',
-      "Go to Profile → Account settings → Privacy → Delete my account. We'll schedule deletion with "
-      "a grace period during which you can still cancel it."),
-];
 
 class _ChatMessage {
   final String text;
@@ -54,15 +26,16 @@ class FaqChatScreen extends StatefulWidget {
 }
 
 class _FaqChatScreenState extends State<FaqChatScreen> {
-  final List<_ChatMessage> _messages = [
-    const _ChatMessage(
-      "Hi! I'm the Mrunal Agro help bot. Pick a question below, or email "
-      "support@mrunalagro.in if you need a person.",
-      false,
-    ),
-  ];
+  final List<_ChatMessage> _messages = [];
   final _scroll = ScrollController();
   final Set<int> _askedTopics = {};
+  bool _greeted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AppState>().loadSupportInfo());
+  }
 
   @override
   void dispose() {
@@ -70,12 +43,22 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
     super.dispose();
   }
 
-  void _ask(int i) {
-    final topic = _faqTopics[i];
+  void _greet(String? email) {
+    if (_greeted) return;
+    _greeted = true;
+    _messages.add(_ChatMessage(
+      "Hi! I'm the Mrunal Agro help bot. Pick a question below"
+      "${email != null ? ', or email $email if you need a person.' : '.'}",
+      false,
+    ));
+  }
+
+  void _ask(List<FaqTopic> topics, int i) {
+    final topic = topics[i];
     setState(() {
       _messages.add(_ChatMessage(topic.question, true));
       _messages.add(_ChatMessage(topic.answer, false));
-      _askedTopics.add(i);
+      _askedTopics.add(topic.id);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
@@ -86,7 +69,10 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final remaining = List.generate(_faqTopics.length, (i) => i).where((i) => !_askedTopics.contains(i)).toList();
+    final state = context.watch<AppState>();
+    final topics = state.faqTopics;
+    _greet(state.supportContact?.email);
+    final remaining = List.generate(topics.length, (i) => i).where((i) => !_askedTopics.contains(topics[i].id)).toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -109,12 +95,14 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
             ),
             const Divider(height: 1, thickness: 1, color: _P.divider),
             Expanded(
-              child: ListView.builder(
-                controller: _scroll,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                itemCount: _messages.length,
-                itemBuilder: (context, i) => _Bubble(message: _messages[i]),
-              ),
+              child: state.isLoadingSupport && topics.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      controller: _scroll,
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      itemCount: _messages.length,
+                      itemBuilder: (context, i) => _Bubble(message: _messages[i]),
+                    ),
             ),
             if (remaining.isNotEmpty)
               Container(
@@ -128,25 +116,28 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
                   children: remaining
                       .map((i) => InkWell(
                             borderRadius: BorderRadius.circular(18),
-                            onTap: () => _ask(i),
+                            onTap: () => _ask(topics, i),
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(color: _P.accent),
                               ),
-                              child: Text(_faqTopics[i].question,
+                              child: Text(topics[i].question,
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _P.accent)),
                             ),
                           ))
                       .toList(),
                 ),
               )
-            else
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 12, 16, 16),
-                child: Text("That's everything I can help with — email support@mrunalagro.in for anything else.",
-                    style: TextStyle(fontSize: 12, color: _P.subtext)),
+            else if (topics.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Text(
+                  "That's everything I can help with"
+                  "${state.supportContact?.email != null ? ' — email ${state.supportContact!.email} for anything else.' : '.'}",
+                  style: const TextStyle(fontSize: 12, color: _P.subtext),
+                ),
               ),
           ],
         ),

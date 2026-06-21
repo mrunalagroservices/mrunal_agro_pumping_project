@@ -3,6 +3,8 @@ import '../models/actuator.dart';
 import '../models/alert_model.dart';
 import '../models/device.dart';
 import '../models/farm.dart';
+import '../models/faq_topic.dart';
+import '../models/legal_document.dart';
 import '../models/notification_item.dart';
 import '../models/order.dart';
 import '../models/power_event.dart';
@@ -10,6 +12,7 @@ import '../models/product.dart';
 import '../models/schedule.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
+import '../services/local_db.dart';
 import '../services/socket_service.dart';
 
 enum AuthStatus { unknown, loggedOut, loggedIn }
@@ -32,6 +35,12 @@ class AppState extends ChangeNotifier {
   List<Product> wishlist = [];
   Set<int> wishlistIds = {};
   Map<int, List<PowerEvent>> powerEvents = {}; // deviceId → events
+
+  List<LegalDocumentSummary> legalDocuments = [];
+  List<FaqTopic> faqTopics = [];
+  SupportContact? supportContact;
+  bool isLoadingLegal = false;
+  bool isLoadingSupport = false;
 
   bool isLoadingDashboard = false;
   bool isLoadingSchedules = false;
@@ -699,6 +708,58 @@ class AppState extends ChangeNotifier {
       actuators[index] = previous; // revert
       notifyListeners();
       return 'Could not reach the server.';
+    }
+  }
+
+  // ── Legal & Support (backend is source of truth; local DB is offline cache) ─
+  Future<void> loadLegalDocuments() async {
+    isLoadingLegal = true;
+    notifyListeners();
+    try {
+      final data = await _api.get('/legal/documents') as List;
+      await LocalDb.instance.saveLegalDocumentSummaries(data);
+      legalDocuments = data
+          .map((j) => LegalDocumentSummary.fromJson(j as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      final cached = await LocalDb.instance.getLegalDocumentSummaries();
+      legalDocuments = cached.map((j) => LegalDocumentSummary.fromJson(j)).toList();
+    } finally {
+      isLoadingLegal = false;
+      notifyListeners();
+    }
+  }
+
+  Future<LegalDocument?> fetchLegalDocument(String slug) async {
+    try {
+      final data = await _api.get('/legal/documents/$slug') as Map<String, dynamic>;
+      await LocalDb.instance.saveLegalDocument(data);
+      return LegalDocument.fromJson(data);
+    } catch (_) {
+      final cached = await LocalDb.instance.getLegalDocument(slug);
+      if (cached == null) return null;
+      return LegalDocument.fromJson(cached);
+    }
+  }
+
+  Future<void> loadSupportInfo() async {
+    isLoadingSupport = true;
+    notifyListeners();
+    try {
+      final contactData = await _api.get('/support/contact') as Map<String, dynamic>;
+      final faqData = await _api.get('/support/faqs') as List;
+      await LocalDb.instance.saveSupportContact(contactData);
+      await LocalDb.instance.saveFaqTopics(faqData);
+      supportContact = SupportContact.fromJson(contactData);
+      faqTopics = faqData.map((j) => FaqTopic.fromJson(j as Map<String, dynamic>)).toList();
+    } catch (_) {
+      final cachedContact = await LocalDb.instance.getSupportContact();
+      if (cachedContact != null) supportContact = SupportContact.fromJson(cachedContact);
+      final cachedFaqs = await LocalDb.instance.getFaqTopics();
+      faqTopics = cachedFaqs.map((j) => FaqTopic.fromJson(j)).toList();
+    } finally {
+      isLoadingSupport = false;
+      notifyListeners();
     }
   }
 }
