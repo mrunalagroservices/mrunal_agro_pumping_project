@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
+import 'legal_screen.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -129,6 +130,14 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                   const Text('Data privacy', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
                   const SizedBox(height: 14),
 
+                  _OutlinedRow(
+                    label: 'Privacy Policy',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LegalDocScreen(doc: privacyPolicyDoc)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   _OutlinedRow(
                     label: 'Request my personal data',
                     onTap: _busy ? null : _requestDataExport,

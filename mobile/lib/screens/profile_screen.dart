@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 import 'account_settings_screen.dart';
+import 'legal_screen.dart';
 import 'privacy_screen.dart';
+import 'support_screen.dart';
 
 /// Palette tuned to match the reference profile design.
 class _P {
@@ -182,9 +184,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             _MenuRow(icon: Icons.group_add_outlined, label: 'Refer a friend', onTap: () => _comingSoon('Referrals')),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.support_agent_outlined, label: 'Find support', onTap: () => _comingSoon('Support')),
+            _MenuRow(icon: Icons.support_agent_outlined, label: 'Find support', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen()));
+            }),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.menu_book_outlined, label: 'Legal', onTap: () => _comingSoon('Legal')),
+            _MenuRow(icon: Icons.menu_book_outlined, label: 'Legal', onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LegalScreen()));
+            }),
             const _MenuDivider(),
             _MenuRow(
               icon: Icons.meeting_room_outlined,
