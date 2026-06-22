@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronRight, Package } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronRight, Package } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import { httpClient } from "@/lib/api";
 import { ApiResponse, Order } from "@/lib/types";
@@ -14,52 +15,28 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-red-100 text-red-600",
 };
 
-function OrderCard({ order }: { order: Order }) {
-  const [open, setOpen] = useState(false);
+function OrderRow({ order, onOpen }: { order: Order; onOpen: () => void }) {
   const total = Number(order.total);
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden">
-      <button onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-slate-50 transition-colors">
-        {open ? <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" /> : <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-bold text-slate-800">Order #{order.id}</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${STATUS_COLORS[order.status] || "bg-slate-100 text-slate-600"}`}>{order.status}</span>
-          </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            {new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · {order.items.length} item{order.items.length !== 1 ? "s" : ""} · {order.payment_method.toUpperCase()}
-          </p>
+    <button onClick={onOpen}
+      className="w-full flex items-center gap-3 px-4 py-4 text-left border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-bold text-slate-800">Order #{order.id}</span>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${STATUS_COLORS[order.status] || "bg-slate-100 text-slate-600"}`}>{order.status}</span>
         </div>
-        <p className="text-sm font-black text-slate-800 shrink-0">₹{total.toLocaleString("en-IN")}</p>
-      </button>
-      {open && (
-        <div className="border-t border-slate-100 px-4 py-3 space-y-2 bg-slate-50/60">
-          {order.items.map((item) => (
-            <div key={item.id} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 text-lg overflow-hidden">
-                {item.product_image
-                  ? <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover rounded-lg" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                  : "🌿"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-800 line-clamp-1">{item.product_name}</p>
-                <p className="text-[10px] text-slate-400">{item.unit} · Qty: {item.qty}</p>
-              </div>
-              <p className="text-xs font-bold text-slate-700 shrink-0">₹{(Number(item.price) * item.qty).toLocaleString("en-IN")}</p>
-            </div>
-          ))}
-          <div className="border-t border-slate-200 pt-2 mt-2 flex justify-between text-xs text-slate-500">
-            <span>Delivery: {order.delivery_address.line1}, {order.delivery_address.city}</span>
-            {Number(order.discount) > 0 && <span className="text-emerald-600 font-semibold">Saved ₹{Number(order.discount)}</span>}
-          </div>
-        </div>
-      )}
-    </div>
+        <p className="text-xs text-slate-400 mt-0.5">
+          {new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · {order.items.length} item{order.items.length !== 1 ? "s" : ""} · {order.payment_method.toUpperCase()}
+        </p>
+      </div>
+      <p className="text-sm font-black text-slate-800 shrink-0">₹{total.toLocaleString("en-IN")}</p>
+      <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+    </button>
   );
 }
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -89,7 +66,7 @@ export default function OrdersPage() {
         ) : (
           <>
             <p className="text-sm text-slate-500">{orders.length} order{orders.length !== 1 ? "s" : ""} placed</p>
-            {orders.map((o) => <OrderCard key={o.id} order={o} />)}
+            {orders.map((o) => <OrderRow key={o.id} order={o} onOpen={() => router.push(`/orders/${o.id}`)} />)}
           </>
         )}
       </div>
