@@ -109,6 +109,8 @@ CREATE TABLE farms (
   location        VARCHAR(255),
   latitude        DOUBLE PRECISION,
   longitude       DOUBLE PRECISION,
+  -- Pipe/wire layout editor (dashboard Map page) — { elements: [...], connections: [...] }
+  diagram         JSONB DEFAULT '{"elements": [], "connections": []}'::jsonb,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
