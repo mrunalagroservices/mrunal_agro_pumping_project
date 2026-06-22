@@ -738,4 +738,45 @@ const Map<String, Map<String, String>> kTranslations = {
   'widget_profile_tooltip': {'en': 'My profile', 'hi': 'मेरी प्रोफ़ाइल', 'mr': 'माझे प्रोफाइल'},
   'profile_new_badge': {'en': 'NEW', 'hi': 'नया', 'mr': 'नवीन'},
   'payment_order_number': {'en': 'Order #{id} · ₹{total}', 'hi': 'ऑर्डर #{id} · ₹{total}', 'mr': 'ऑर्डर #{id} · ₹{total}'},
+
+  // ── Notification feed (backend-generated, alerts_screen.dart) ───────────
+  'notif_pump_alert_default': {'en': 'Pump Alert', 'hi': 'पंप अलर्ट', 'mr': 'पंप अलर्ट'},
+  'notif_irrigation_default_title': {'en': 'Irrigation Plan', 'hi': 'सिंचाई योजना', 'mr': 'सिंचन योजना'},
+  'notif_order_title': {'en': 'Order #{id}', 'hi': 'ऑर्डर #{id}', 'mr': 'ऑर्डर #{id}'},
+  'notif_order_status_message': {
+    'en': 'Status updated to {status} · ₹{total}',
+    'hi': 'स्टेटस अपडेट होकर {status} हुआ · ₹{total}',
+    'mr': 'स्टेटस अपडेट होऊन {status} झाले · ₹{total}',
+  },
+  'notif_run_completed': {'en': 'Completed successfully', 'hi': 'सफलतापूर्वक पूरा हुआ', 'mr': 'यशस्वीरित्या पूर्ण झाले'},
+  'notif_run_aborted': {'en': 'Stopped before completion', 'hi': 'पूरा होने से पहले रुक गया', 'mr': 'पूर्ण होण्यापूर्वी थांबले'},
+  'notif_msg_threshold': {
+    'en': '{name} is {breach} threshold ({value}{unit})',
+    'hi': '{name} थ्रेशोल्ड से {breach} है ({value}{unit})',
+    'mr': '{name} थ्रेशोल्डपेक्षा {breach} आहे ({value}{unit})',
+  },
+  'notif_breach_above': {'en': 'above', 'hi': 'ज्यादा', 'mr': 'जास्त'},
+  'notif_breach_below': {'en': 'below', 'hi': 'कम', 'mr': 'कमी'},
+  'notif_msg_device_offline_went': {
+    'en': 'Device "{name}" went offline',
+    'hi': 'डिवाइस "{name}" ऑफलाइन हो गया',
+    'mr': 'डिव्हाइस "{name}" ऑफलाइन झाले',
+  },
+  'notif_msg_device_offline_stopped': {
+    'en': 'Device "{name}" stopped responding',
+    'hi': 'डिवाइस "{name}" ने जवाब देना बंद कर दिया',
+    'mr': 'डिव्हाइस "{name}" ने प्रतिसाद देणे बंद केले',
+  },
+  'notif_msg_safety_cutoff': {
+    'en': '"{name}" exceeded max runtime ({minutes} min) and was switched off',
+    'hi': '"{name}" ने अधिकतम रनटाइम ({minutes} मिनट) पार कर लिया और बंद कर दिया गया',
+    'mr': '"{name}" ने कमाल रनटाइम ({minutes} मिनिटे) ओलांडले आणि बंद केले गेले',
+  },
+  'notif_status_placed': {'en': 'Placed', 'hi': 'प्लेस्ड', 'mr': 'प्लेस्ड'},
+  'notif_status_confirmed': {'en': 'Confirmed', 'hi': 'कन्फर्म्ड', 'mr': 'कन्फर्म्ड'},
+  'notif_status_shipped': {'en': 'Shipped', 'hi': 'शिप्ड', 'mr': 'शिप्ड'},
+  'notif_status_delivered': {'en': 'Delivered', 'hi': 'डिलीवर्ड', 'mr': 'डिलिव्हर्ड'},
+  'notif_status_cancelled': {'en': 'Cancelled', 'hi': 'कैंसल्ड', 'mr': 'कॅन्सल्ड'},
+  'notif_status_completed': {'en': 'Completed', 'hi': 'पूरा हुआ', 'mr': 'पूर्ण झाले'},
+  'notif_status_aborted': {'en': 'Aborted', 'hi': 'रोका गया', 'mr': 'थांबवले'},
 };

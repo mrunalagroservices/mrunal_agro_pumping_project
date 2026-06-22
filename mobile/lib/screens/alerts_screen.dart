@@ -223,8 +223,60 @@ IconData _iconFor(NotificationItem item) {
   return Icons.water_drop;
 }
 
+const _alertMessageKeyMap = {
+  'threshold': 'notif_msg_threshold',
+  'device_offline_went': 'notif_msg_device_offline_went',
+  'device_offline_stopped': 'notif_msg_device_offline_stopped',
+  'safety_cutoff': 'notif_msg_safety_cutoff',
+};
+
+String _orderStatusLabel(BuildContext context, String status) {
+  switch (status) {
+    case 'placed': return context.tr('notif_status_placed');
+    case 'confirmed': return context.tr('notif_status_confirmed');
+    case 'shipped': return context.tr('notif_status_shipped');
+    case 'delivered': return context.tr('notif_status_delivered');
+    case 'cancelled': return context.tr('notif_status_cancelled');
+    default: return status.isEmpty ? '' : status[0].toUpperCase() + status.substring(1);
+  }
+}
+
+String _titleFor(BuildContext context, NotificationItem item) {
+  final key = item.titleKey;
+  if (key == null) return item.title;
+  var result = context.tr(key);
+  (item.titleParams ?? const {}).forEach((k, v) => result = result.replaceAll('{$k}', '$v'));
+  return result;
+}
+
+String _messageFor(BuildContext context, NotificationItem item) {
+  final key = item.messageKey;
+  if (key == null) return item.message;
+  final params = item.messageParams ?? const {};
+
+  if (item.isOrder) {
+    final statusWord = _orderStatusLabel(context, '${params['status'] ?? ''}');
+    return context.tr(key).replaceAll('{status}', statusWord).replaceAll('{total}', '${params['total'] ?? ''}');
+  }
+  if (item.isIrrigation) return context.tr(key);
+
+  final mappedKey = _alertMessageKeyMap[key];
+  if (mappedKey == null) return item.message;
+  var result = context.tr(mappedKey);
+  params.forEach((k, v) {
+    if (k == 'breach') {
+      result = result.replaceAll('{breach}', v == 'above' ? context.tr('notif_breach_above') : context.tr('notif_breach_below'));
+    } else {
+      result = result.replaceAll('{$k}', '$v');
+    }
+  });
+  return result;
+}
+
 String _statusLabel(BuildContext context, NotificationItem item) {
   if (item.isAlert) return item.status == 'resolved' ? context.tr('alerts_resolved') : context.tr('alerts_ongoing');
+  if (item.isOrder) return _orderStatusLabel(context, item.status);
+  if (item.isIrrigation) return item.status == 'completed' ? context.tr('notif_status_completed') : context.tr('notif_status_aborted');
   final s = item.status;
   return s.isEmpty ? '' : s[0].toUpperCase() + s.substring(1);
 }
@@ -259,7 +311,7 @@ class _MessageRow extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          item.title,
+                          _titleFor(context, item),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text),
@@ -271,7 +323,7 @@ class _MessageRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    item.message,
+                    _messageFor(context, item),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
@@ -355,7 +407,7 @@ class _DetailSheetState extends State<_DetailSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
+                      Text(_titleFor(context, item), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
                       Text(
                         item.isAlert ? (item.severity ?? '').toUpperCase() : _statusLabel(context, item),
                         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: _P.subtext),
@@ -371,7 +423,7 @@ class _DetailSheetState extends State<_DetailSheet> {
               ],
             ),
             const SizedBox(height: 18),
-            Text(item.message, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, height: 1.4)),
+            Text(_messageFor(context, item), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, height: 1.4)),
             const SizedBox(height: 20),
             if (item.isAlert && item.status != 'resolved')
               SizedBox(

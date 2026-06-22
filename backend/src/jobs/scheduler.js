@@ -84,9 +84,13 @@ async function enforceSafetyCutoffs() {
     );
 
     const alert = await db.query(
-      `INSERT INTO alerts (organization_id, device_id, actuator_id, alert_type, severity, message)
-       VALUES ($1, $2, $3, 'safety_cutoff', 'warning', $4) RETURNING *`,
-      [act.organization_id, act.device_id, act.id, `"${act.name}" exceeded max runtime (${act.max_runtime_minutes} min) and was switched off`]
+      `INSERT INTO alerts (organization_id, device_id, actuator_id, alert_type, severity, message, message_template, message_params)
+       VALUES ($1, $2, $3, 'safety_cutoff', 'warning', $4, 'safety_cutoff', $5) RETURNING *`,
+      [
+        act.organization_id, act.device_id, act.id,
+        `"${act.name}" exceeded max runtime (${act.max_runtime_minutes} min) and was switched off`,
+        JSON.stringify({ name: act.name, minutes: act.max_runtime_minutes }),
+      ]
     );
 
     emitToOrg(act.organization_id, 'actuator-status', updated.rows[0]);
@@ -111,9 +115,9 @@ async function detectOfflineDevices() {
     );
 
     const alert = await db.query(
-      `INSERT INTO alerts (organization_id, device_id, alert_type, severity, message)
-       VALUES ($1, $2, 'offline', 'critical', $3) RETURNING *`,
-      [device.organization_id, device.id, `Device "${device.name}" stopped responding`]
+      `INSERT INTO alerts (organization_id, device_id, alert_type, severity, message, message_template, message_params)
+       VALUES ($1, $2, 'offline', 'critical', $3, 'device_offline_stopped', $4) RETURNING *`,
+      [device.organization_id, device.id, `Device "${device.name}" stopped responding`, JSON.stringify({ name: device.name })]
     );
 
     emitToOrg(device.organization_id, 'device-status', { device_id: device.id, status: 'offline' });

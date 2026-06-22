@@ -253,7 +253,11 @@ CREATE TABLE alerts (
   actuator_id      INTEGER REFERENCES actuators(id) ON DELETE CASCADE,
   alert_type       VARCHAR(50) NOT NULL, -- threshold, offline, safety_cutoff, error
   severity         VARCHAR(20) NOT NULL DEFAULT 'warning', -- info, warning, critical
-  message          TEXT NOT NULL,
+  message          TEXT NOT NULL, -- English message, still used by the web dashboard
+  message_template VARCHAR(50), -- e.g. 'threshold', 'device_offline_went'; lets the
+                                 -- mobile app render `message` in Hindi/Marathi via
+                                 -- a translation key instead of this English text
+  message_params   JSONB, -- params for message_template, e.g. {"name": "...", "value": 42}
   is_resolved      BOOLEAN NOT NULL DEFAULT false,
   resolved_at      TIMESTAMPTZ,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()

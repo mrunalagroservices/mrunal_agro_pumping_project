@@ -54,10 +54,11 @@ async function checkThresholdAlert(sensor, value, device, orgId) {
   if (breach) {
     if (!existing.rows.length) {
       const message = `${sensor.name} is ${breach} threshold (${value}${sensor.unit || ''})`;
+      const messageParams = JSON.stringify({ name: sensor.name, breach, value, unit: sensor.unit || '' });
       const alert = await db.query(
-        `INSERT INTO alerts (organization_id, device_id, sensor_id, alert_type, severity, message)
-         VALUES ($1, $2, $3, 'threshold', 'warning', $4) RETURNING *`,
-        [orgId, device.id, sensor.id, message]
+        `INSERT INTO alerts (organization_id, device_id, sensor_id, alert_type, severity, message, message_template, message_params)
+         VALUES ($1, $2, $3, 'threshold', 'warning', $4, 'threshold', $5) RETURNING *`,
+        [orgId, device.id, sensor.id, message, messageParams]
       );
       emitToOrg(orgId, 'alert', alert.rows[0]);
     }
@@ -138,9 +139,9 @@ async function handleStatusMessage(device, orgId, payload) {
 
     if (newStatus === 'offline') {
       const alert = await db.query(
-        `INSERT INTO alerts (organization_id, device_id, alert_type, severity, message)
-         VALUES ($1, $2, 'offline', 'critical', $3) RETURNING *`,
-        [orgId, device.id, `Device "${device.name}" went offline`]
+        `INSERT INTO alerts (organization_id, device_id, alert_type, severity, message, message_template, message_params)
+         VALUES ($1, $2, 'offline', 'critical', $3, 'device_offline_went', $4) RETURNING *`,
+        [orgId, device.id, `Device "${device.name}" went offline`, JSON.stringify({ name: device.name })]
       );
       emitToOrg(orgId, 'alert', alert.rows[0]);
     } else {
