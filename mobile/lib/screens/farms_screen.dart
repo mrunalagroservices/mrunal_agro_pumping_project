@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../models/power_event.dart';
 import '../providers/app_state.dart';
 import '../widgets/farm_card.dart';
+import '../widgets/language_switcher.dart';
 import '../widgets/top_bar_actions.dart';
 
 class FarmsScreen extends StatefulWidget {
@@ -49,18 +51,19 @@ class _FarmsScreenState extends State<FarmsScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Farms & Devices',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-        actions: const [TopBarActions()],
+        title: Text(context.tr('farms_title'),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        actions: const [LanguageSwitcher(size: 36), SizedBox(width: 6), TopBarActions()],
         bottom: TabBar(
           controller: _tabs,
           labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-          tabs: const [
-            Tab(icon: Icon(Icons.agriculture_outlined, size: 18), text: 'Farms'),
-            Tab(icon: Icon(Icons.bolt_outlined, size: 18), text: 'Electricity'),
-            Tab(icon: Icon(Icons.shield_outlined, size: 18), text: 'Anti-Theft'),
+          tabs: [
+            Tab(icon: const Icon(Icons.agriculture_outlined, size: 18), text: context.tr('farms_tab_farms')),
+            Tab(icon: const Icon(Icons.bolt_outlined, size: 18), text: context.tr('farms_tab_electricity')),
+            Tab(icon: const Icon(Icons.shield_outlined, size: 18), text: context.tr('farms_tab_antitheft')),
           ],
         ),
       ),
@@ -104,8 +107,8 @@ class _FarmsTab extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(24),
               child: Center(
-                child: Text('No farms yet. Add one from the web dashboard.',
-                    style: TextStyle(color: AppColors.textSecondary)),
+                child: Text(context.tr('farms_empty'),
+                    style: const TextStyle(color: AppColors.textSecondary)),
               ),
             ),
           ]);
@@ -142,9 +145,9 @@ class _ElectricityTab extends StatelessWidget {
           // Summary row
           Row(
             children: [
-              Expanded(child: _SummaryCard(icon: Icons.bolt, color: const Color(0xFF10B981), count: onlineCount, label: 'Power ON')),
+              Expanded(child: _SummaryCard(icon: Icons.bolt, color: const Color(0xFF10B981), count: onlineCount, label: context.tr('farms_power_on'))),
               const SizedBox(width: 10),
-              Expanded(child: _SummaryCard(icon: Icons.bolt_outlined, color: AppColors.offGray, count: offlineCount, label: 'No Power')),
+              Expanded(child: _SummaryCard(icon: Icons.bolt_outlined, color: AppColors.offGray, count: offlineCount, label: context.tr('farms_no_power'))),
             ],
           ),
           const SizedBox(height: 12),
@@ -163,7 +166,7 @@ class _ElectricityTab extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Battery-powered ESP32 stays online 24/7. An AC detection circuit reports electricity ON/OFF events.',
+                    context.tr('farms_electricity_banner'),
                     style: const TextStyle(fontSize: 10, color: Color(0xFF92400E)),
                   ),
                 ),
@@ -174,7 +177,7 @@ class _ElectricityTab extends StatelessWidget {
           if (state.devices.isEmpty)
             Center(child: Padding(
               padding: const EdgeInsets.all(32),
-              child: Text('No devices added yet.', style: TextStyle(color: AppColors.textSecondary)),
+              child: Text(context.tr('farms_no_devices'), style: const TextStyle(color: AppColors.textSecondary)),
             ))
           else
             ...state.farms.map((farm) {
@@ -237,7 +240,7 @@ class _ElectricityTab extends StatelessWidget {
                                               borderRadius: BorderRadius.circular(6),
                                             ),
                                             child: Text(
-                                              hasPower ? '⚡ Power ON' : 'No Power',
+                                              hasPower ? context.tr('farms_power_on_badge') : context.tr('farms_no_power'),
                                               style: TextStyle(
                                                 fontSize: 8,
                                                 fontWeight: FontWeight.w600,
@@ -246,7 +249,7 @@ class _ElectricityTab extends StatelessWidget {
                                             ),
                                           ),
                                           const SizedBox(width: 6),
-                                          Text(_timeSince(d.lastSeenAt), style: TextStyle(fontSize: 8, color: AppColors.textMuted)),
+                                          Text(_timeSince(context, d.lastSeenAt), style: TextStyle(fontSize: 8, color: AppColors.textMuted)),
                                         ],
                                       ),
                                     ],
@@ -273,7 +276,7 @@ class _ElectricityTab extends StatelessWidget {
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          notifyOn ? 'Notify ON' : 'Notify',
+                                          notifyOn ? context.tr('farms_notify_on') : context.tr('farms_notify'),
                                           style: TextStyle(
                                             fontSize: 9,
                                             fontWeight: FontWeight.w500,
@@ -304,7 +307,7 @@ class _ElectricityTab extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  'No power events recorded yet. Wire the AC detection module to get daily ON/OFF history.',
+                                  context.tr('farms_no_power_events'),
                                   style: TextStyle(fontSize: 9, color: AppColors.textMuted),
                                 ),
                               ),
@@ -338,7 +341,7 @@ class _ElectricityTab extends StatelessWidget {
                                                     final onStr = '${w.on.hour.toString().padLeft(2, '0')}:${w.on.minute.toString().padLeft(2, '0')}';
                                                     final offStr = w.off != null
                                                         ? '${w.off!.hour.toString().padLeft(2, '0')}:${w.off!.minute.toString().padLeft(2, '0')}'
-                                                        : 'Now';
+                                                        : context.tr('farms_now');
                                                     return Padding(
                                                       padding: const EdgeInsets.only(bottom: 3),
                                                       child: Row(
@@ -372,13 +375,13 @@ class _ElectricityTab extends StatelessWidget {
     );
   }
 
-  String _timeSince(DateTime? dt) {
-    if (dt == null) return 'Never';
+  String _timeSince(BuildContext context, DateTime? dt) {
+    if (dt == null) return context.tr('farms_time_never');
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return context.tr('farms_time_just_now');
+    if (diff.inHours < 1) return context.tr('farms_time_min_ago').replaceAll('{n}', '${diff.inMinutes}');
+    if (diff.inDays < 1) return context.tr('farms_time_hr_ago').replaceAll('{n}', '${diff.inHours}');
+    return context.tr('farms_time_day_ago').replaceAll('{n}', '${diff.inDays}');
   }
 }
 
@@ -419,12 +422,12 @@ class _AntiTheftTab extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text('Requires CT current sensor hardware', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFDC2626), fontSize: 11)),
-                    SizedBox(height: 4),
+                  children: [
+                    Text(context.tr('farms_antitheft_requires'), style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFDC2626), fontSize: 11)),
+                    const SizedBox(height: 4),
                     Text(
-                      'Clip an SCT-013 current transformer around the motor wire. If motor is ON but current drops to 0A — wire cut detected. Instant alert sent.',
-                      style: TextStyle(color: Color(0xFF991B1B), fontSize: 10),
+                      context.tr('farms_antitheft_desc'),
+                      style: const TextStyle(color: Color(0xFF991B1B), fontSize: 10),
                     ),
                   ],
                 ),
@@ -440,15 +443,15 @@ class _AntiTheftTab extends StatelessWidget {
             Expanded(child: _HowCard(
               icon: Icons.check_circle_outline,
               color: const Color(0xFF10B981),
-              title: 'Normal',
-              desc: 'Motor ON → current high → safe',
+              title: context.tr('farms_normal'),
+              desc: context.tr('farms_normal_desc'),
             )),
             const SizedBox(width: 8),
             Expanded(child: _HowCard(
               icon: Icons.warning_amber_outlined,
               color: const Color(0xFFDC2626),
-              title: 'Wire cut',
-              desc: 'Motor ON → current 0A → ALERT',
+              title: context.tr('farms_wire_cut'),
+              desc: context.tr('farms_wire_cut_desc'),
             )),
           ],
         ),
@@ -457,7 +460,7 @@ class _AntiTheftTab extends StatelessWidget {
         if (state.actuators.isEmpty)
           Center(child: Padding(
             padding: const EdgeInsets.all(32),
-            child: Text('No actuators/motors found.', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(context.tr('farms_no_actuators'), style: const TextStyle(color: AppColors.textSecondary)),
           ))
         else
           ...state.farms.map((farm) {
@@ -516,7 +519,7 @@ class _AntiTheftTab extends StatelessWidget {
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Text(
-                                            a.isOn ? '● ON' : 'OFF',
+                                            a.isOn ? context.tr('farms_status_on') : context.tr('farms_status_off'),
                                             style: TextStyle(fontSize: 8, fontWeight: FontWeight.w600, color: a.isOn ? AppColors.primary600 : AppColors.textMuted),
                                           ),
                                         ),
@@ -543,7 +546,7 @@ class _AntiTheftTab extends StatelessWidget {
                               children: [
                                 const Icon(Icons.settings_outlined, size: 14, color: Color(0xFFDC2626)),
                                 const SizedBox(width: 6),
-                                const Text('Expected current:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500)),
+                                Text(context.tr('farms_expected_current'), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500)),
                                 const SizedBox(width: 8),
                                 SizedBox(
                                   width: 80,
@@ -575,8 +578,8 @@ class _AntiTheftTab extends StatelessWidget {
                               ),
                               child: Text(
                                 threshold.isEmpty
-                                    ? 'Enter expected current to activate monitoring'
-                                    : 'Alert fires if current drops below ${(double.tryParse(threshold) ?? 0) * 0.5}A while motor is ON',
+                                    ? context.tr('farms_enter_current')
+                                    : context.tr('farms_alert_threshold').replaceAll('{value}', '${(double.tryParse(threshold) ?? 0) * 0.5}'),
                                 style: TextStyle(
                                   fontSize: 9,
                                   color: threshold.isEmpty ? const Color(0xFFD97706) : const Color(0xFFDC2626),

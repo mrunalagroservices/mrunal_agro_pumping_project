@@ -712,11 +712,11 @@ class AppState extends ChangeNotifier {
   }
 
   // ── Legal & Support (backend is source of truth; local DB is offline cache) ─
-  Future<void> loadLegalDocuments() async {
+  Future<void> loadLegalDocuments({String lang = 'en'}) async {
     isLoadingLegal = true;
     notifyListeners();
     try {
-      final data = await _api.get('/legal/documents') as List;
+      final data = await _api.get('/legal/documents?lang=$lang') as List;
       await LocalDb.instance.saveLegalDocumentSummaries(data);
       legalDocuments = data
           .map((j) => LegalDocumentSummary.fromJson(j as Map<String, dynamic>))
@@ -730,9 +730,9 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<LegalDocument?> fetchLegalDocument(String slug) async {
+  Future<LegalDocument?> fetchLegalDocument(String slug, {String lang = 'en'}) async {
     try {
-      final data = await _api.get('/legal/documents/$slug') as Map<String, dynamic>;
+      final data = await _api.get('/legal/documents/$slug?lang=$lang') as Map<String, dynamic>;
       await LocalDb.instance.saveLegalDocument(data);
       return LegalDocument.fromJson(data);
     } catch (_) {
@@ -742,12 +742,12 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> loadSupportInfo() async {
+  Future<void> loadSupportInfo({String lang = 'en'}) async {
     isLoadingSupport = true;
     notifyListeners();
     try {
       final contactData = await _api.get('/support/contact') as Map<String, dynamic>;
-      final faqData = await _api.get('/support/faqs') as List;
+      final faqData = await _api.get('/support/faqs?lang=$lang') as List;
       await LocalDb.instance.saveSupportContact(contactData);
       await LocalDb.instance.saveFaqTopics(faqData);
       supportContact = SupportContact.fromJson(contactData);

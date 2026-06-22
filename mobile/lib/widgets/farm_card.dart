@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../models/actuator.dart';
 import '../models/device.dart';
 import '../models/farm.dart';
@@ -41,19 +42,19 @@ class _FarmCardState extends State<FarmCard> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Edit farm'),
+          title: Text(context.tr('widget_edit_farm')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Farm name'),
+                decoration: InputDecoration(labelText: context.tr('widget_farm_name')),
                 textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: locationController,
-                decoration: const InputDecoration(labelText: 'Location'),
+                decoration: InputDecoration(labelText: context.tr('widget_location')),
                 textCapitalization: TextCapitalization.words,
               ),
             ],
@@ -61,11 +62,11 @@ class _FarmCardState extends State<FarmCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
+              child: Text(context.tr('widget_cancel')),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Save'),
+              child: Text(context.tr('widget_save')),
             ),
           ],
         );
@@ -95,22 +96,21 @@ class _FarmCardState extends State<FarmCard> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Delete farm'),
+          title: Text(context.tr('widget_delete_farm')),
           content: Text(
-            'Are you sure you want to delete "${widget.farm.name}"? '
-            'This will also remove its devices and actuators.',
+            context.tr('widget_delete_farm_confirm').replaceAll('{name}', widget.farm.name),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
+              child: Text(context.tr('widget_cancel')),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.offlineRed,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Delete'),
+              child: Text(context.tr('widget_delete')),
             ),
           ],
         );
@@ -173,22 +173,22 @@ class _FarmCardState extends State<FarmCard> {
                       _handleDelete();
                     }
                   },
-                  itemBuilder: (context) => const [
+                  itemBuilder: (context) => [
                     PopupMenuItem(
                       value: 'edit',
                       child: ListTile(
-                        leading: Icon(Icons.edit_outlined),
-                        title: Text('Edit'),
+                        leading: const Icon(Icons.edit_outlined),
+                        title: Text(context.tr('widget_edit')),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
                     PopupMenuItem(
                       value: 'delete',
                       child: ListTile(
-                        leading: Icon(Icons.delete_outline,
+                        leading: const Icon(Icons.delete_outline,
                             color: AppColors.offlineRed),
-                        title: Text('Delete',
-                            style: TextStyle(color: AppColors.offlineRed)),
+                        title: Text(context.tr('widget_delete'),
+                            style: const TextStyle(color: AppColors.offlineRed)),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -200,7 +200,7 @@ class _FarmCardState extends State<FarmCard> {
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
-                  'No devices added for this farm yet.',
+                  context.tr('widget_no_devices'),
                   style: TextStyle(color: AppColors.textMuted),
                 ),
               )
@@ -255,7 +255,7 @@ class _DeviceSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  device.isOnline ? 'Online' : 'Offline',
+                  device.isOnline ? context.tr('widget_online') : context.tr('widget_offline'),
                   style: TextStyle(color: AppColors.textMuted, fontSize: 10),
                 ),
               ],
@@ -265,7 +265,7 @@ class _DeviceSection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 14, top: 4, bottom: 4),
               child: Text(
-                'No actuators configured.',
+                context.tr('widget_no_actuators'),
                 style: TextStyle(color: AppColors.textMuted, fontSize: 11),
               ),
             )
@@ -302,7 +302,7 @@ class _FarmStatusBadge extends StatelessWidget {
           StatusDot(color: color, size: 8),
           const SizedBox(width: 6),
           Text(
-            active ? 'Running' : 'Idle',
+            active ? context.tr('widget_running') : context.tr('widget_idle'),
             style: TextStyle(
                 color: color, fontSize: 10, fontWeight: FontWeight.w500),
           ),

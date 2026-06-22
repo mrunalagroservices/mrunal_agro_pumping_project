@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
 
 class _P {
@@ -55,6 +56,7 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + MediaQuery.of(context).viewInsets.bottom),
       child: Column(
@@ -85,7 +87,7 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
             controller: _comment,
             maxLines: 4,
             decoration: InputDecoration(
-              hintText: 'Share your experience with this product (optional)',
+              hintText: context.tr('review_hint'),
               hintStyle: const TextStyle(color: _P.subtext),
               contentPadding: const EdgeInsets.all(14),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFB0B0B0))),
@@ -108,7 +110,7 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
               ),
               child: _saving
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Submit Review', style: TextStyle(fontWeight: FontWeight.w500)),
+                  : Text(context.tr('review_submit'), style: const TextStyle(fontWeight: FontWeight.w500)),
             ),
           ),
         ],

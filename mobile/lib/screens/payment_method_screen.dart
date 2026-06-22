@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -10,9 +12,9 @@ class _P {
 }
 
 const _methods = [
-  ('cod', 'Cash on delivery', 'Pay when your order arrives', true),
-  ('upi', 'UPI', 'Pay instantly via UPI app', false),
-  ('card', 'Card', 'Visa, Mastercard, RuPay', false),
+  ('cod', 'pm_cod', 'pm_cod_sub', true),
+  ('upi', 'pm_upi', 'pm_upi_sub', false),
+  ('card', 'pm_card', 'pm_card_sub', false),
 ];
 
 class PaymentMethodScreen extends StatefulWidget {
@@ -39,6 +41,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final selected = context.watch<AppState>().user?.preferredPaymentMethod ?? 'cod';
 
     return Scaffold(
@@ -51,12 +54,12 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
               child: Row(
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
-                  const Expanded(
-                    child: Text('Payment methods',
+                  Expanded(
+                    child: Text(context.tr('pm_title'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                   ),
-                  const SizedBox(width: 44),
+                  const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
@@ -65,9 +68,8 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('This is used as your default at checkout. You can still '
-                    'switch payment method on any individual order.',
-                    style: TextStyle(fontSize: 11, color: _P.subtext, height: 1.4)),
+                child: Text(context.tr('pm_default_hint'),
+                    style: const TextStyle(fontSize: 11, color: _P.subtext, height: 1.4)),
               ),
             ),
             Expanded(
@@ -76,7 +78,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 itemCount: _methods.length,
                 separatorBuilder: (_, __) => const Divider(height: 1, thickness: 1, color: _P.divider, indent: 20, endIndent: 20),
                 itemBuilder: (context, i) {
-                  final (value, label, subtitle, enabled) = _methods[i];
+                  final (value, labelKey, subtitleKey, enabled) = _methods[i];
                   return Opacity(
                     opacity: enabled ? 1 : 0.5,
                     child: InkWell(
@@ -89,9 +91,9 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
+                                  Text(context.tr(labelKey), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
                                   const SizedBox(height: 2),
-                                  Text(subtitle, style: const TextStyle(fontSize: 11, color: _P.subtext)),
+                                  Text(context.tr(subtitleKey), style: const TextStyle(fontSize: 11, color: _P.subtext)),
                                 ],
                               ),
                             ),
@@ -99,7 +101,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(color: _P.divider, borderRadius: BorderRadius.circular(20)),
-                                child: const Text('Coming soon', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: _P.subtext)),
+                                child: Text(context.tr('pm_coming_soon'), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: _P.subtext)),
                               )
                             else
                               Radio<String>(

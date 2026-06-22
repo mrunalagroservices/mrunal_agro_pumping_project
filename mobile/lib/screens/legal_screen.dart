@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../models/legal_document.dart';
 import '../providers/app_state.dart';
+import '../providers/locale_provider.dart';
+import '../widgets/language_switcher.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -18,16 +21,25 @@ class LegalScreen extends StatefulWidget {
 }
 
 class _LegalScreenState extends State<LegalScreen> {
+  String? _loadedLang;
+
+  void _ensureLoaded(BuildContext context) {
+    final lang = context.read<LocaleProvider>().languageCode;
+    if (_loadedLang == lang) return;
+    _loadedLang = lang;
+    context.read<AppState>().loadLegalDocuments(lang: lang);
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadLegalDocuments();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureLoaded(context));
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureLoaded(context));
     final state = context.watch<AppState>();
     final docs = state.legalDocuments;
 
@@ -41,12 +53,12 @@ class _LegalScreenState extends State<LegalScreen> {
               child: Row(
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
-                  const Expanded(
-                    child: Text('Legal',
+                  Expanded(
+                    child: Text(context.tr('legal_title'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                   ),
-                  const SizedBox(width: 44),
+                  const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
@@ -55,7 +67,7 @@ class _LegalScreenState extends State<LegalScreen> {
               child: state.isLoadingLegal && docs.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : docs.isEmpty
-                      ? const Center(child: Text('Could not load legal documents.', style: TextStyle(color: _P.subtext)))
+                      ? Center(child: Text(context.tr('legal_could_not_load_docs'), style: const TextStyle(color: _P.subtext)))
                       : ListView.separated(
                           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
                           itemCount: docs.length,
@@ -102,15 +114,17 @@ class LegalDocScreen extends StatefulWidget {
 class _LegalDocScreenState extends State<LegalDocScreen> {
   LegalDocument? _doc;
   bool _loading = true;
+  String? _loadedLang;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _load(context.read<LocaleProvider>().languageCode);
   }
 
-  Future<void> _load() async {
-    final doc = await context.read<AppState>().fetchLegalDocument(widget.slug);
+  Future<void> _load(String lang) async {
+    _loadedLang = lang;
+    final doc = await context.read<AppState>().fetchLegalDocument(widget.slug, lang: lang);
     if (!mounted) return;
     setState(() {
       _doc = doc;
@@ -120,6 +134,11 @@ class _LegalDocScreenState extends State<LegalDocScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = context.read<LocaleProvider>().languageCode;
+    if (_loadedLang != lang) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _load(lang));
+    }
+    context.watchLocale();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -135,7 +154,7 @@ class _LegalDocScreenState extends State<LegalDocScreen> {
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                   ),
-                  const SizedBox(width: 44),
+                  const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
@@ -144,12 +163,12 @@ class _LegalDocScreenState extends State<LegalDocScreen> {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _doc == null
-                      ? const Center(child: Text('Could not load this document.', style: TextStyle(color: _P.subtext)))
+                      ? Center(child: Text(context.tr('legal_could_not_load_doc'), style: const TextStyle(color: _P.subtext)))
                       : ListView(
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
                           children: [
                             if (_doc!.updatedAt.isNotEmpty)
-                              Text(_formatUpdated(_doc!.updatedAt), style: const TextStyle(fontSize: 11, color: _P.subtext)),
+                              Text(_formatUpdated(context, _doc!.updatedAt), style: const TextStyle(fontSize: 11, color: _P.subtext)),
                             const SizedBox(height: 16),
                             for (final section in _doc!.sections) ...[
                               Text(section.heading,
@@ -168,11 +187,11 @@ class _LegalDocScreenState extends State<LegalDocScreen> {
     );
   }
 
-  String _formatUpdated(String iso) {
+  String _formatUpdated(BuildContext context, String iso) {
     final d = DateTime.tryParse(iso);
     if (d == null) return '';
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return 'Last updated ${d.day} ${months[d.month - 1]} ${d.year}';
+    return context.tr('legal_last_updated').replaceAll('{date}', '${d.day} ${months[d.month - 1]} ${d.year}');
   }
 }
 

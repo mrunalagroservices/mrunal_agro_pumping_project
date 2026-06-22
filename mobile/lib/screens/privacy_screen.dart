@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 import 'legal_screen.dart';
 
 class _P {
@@ -35,7 +37,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     final err = await context.read<AppState>().requestDataExport();
     if (!mounted) return;
     setState(() => _busy = false);
-    _toast(err ?? "Request received — we'll email your data export when it's ready.");
+    _toast(err ?? context.tr('privacy_export_toast'));
   }
 
   Future<void> _toggleAnalytics(bool value) async {
@@ -48,16 +50,13 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     final firstConfirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete your account?'),
-        content: const Text(
-          'This will schedule your account for deletion. You can cancel anytime before it is processed. '
-          'Your farms, devices, and order history will eventually be permanently removed.',
-        ),
+        title: Text(context.tr('privacy_delete_dialog_title')),
+        content: Text(context.tr('privacy_delete_dialog_body')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('privacy_cancel'))),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Continue', style: TextStyle(color: _P.danger, fontWeight: FontWeight.w500)),
+            child: Text(context.tr('privacy_continue'), style: const TextStyle(color: _P.danger, fontWeight: FontWeight.w500)),
           ),
         ],
       ),
@@ -67,13 +66,13 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     final secondConfirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Are you absolutely sure?'),
-        content: const Text('This action cannot be undone once processed. Type nothing — just confirm to proceed.'),
+        title: Text(context.tr('privacy_sure_title')),
+        content: Text(context.tr('privacy_sure_body')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('privacy_cancel'))),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete my account', style: TextStyle(color: _P.danger, fontWeight: FontWeight.w500)),
+            child: Text(context.tr('privacy_delete_dialog_confirm'), style: const TextStyle(color: _P.danger, fontWeight: FontWeight.w500)),
           ),
         ],
       ),
@@ -84,7 +83,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     final err = await context.read<AppState>().requestAccountDeletion();
     if (!mounted) return;
     setState(() => _busy = false);
-    _toast(err ?? 'Account deletion requested.');
+    _toast(err ?? context.tr('privacy_deletion_requested_toast'));
   }
 
   Future<void> _cancelDeletion() async {
@@ -92,11 +91,12 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     final err = await context.read<AppState>().cancelAccountDeletion();
     if (!mounted) return;
     setState(() => _busy = false);
-    _toast(err ?? 'Deletion request cancelled.');
+    _toast(err ?? context.tr('privacy_deletion_cancelled_toast'));
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final user = context.watch<AppState>().user;
     final deletionPending = user?.deletionPending ?? false;
     final deletionDate = user?.deletionRequestedAt;
@@ -112,12 +112,12 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               child: Row(
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
-                  const Expanded(
-                    child: Text('Privacy',
+                  Expanded(
+                    child: Text(context.tr('privacy_title'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                   ),
-                  const SizedBox(width: 44),
+                  const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
@@ -127,19 +127,19 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
                 children: [
-                  const Text('Data privacy', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+                  Text(context.tr('privacy_data_privacy'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
                   const SizedBox(height: 14),
 
                   _OutlinedRow(
-                    label: 'Privacy Policy',
+                    label: context.tr('privacy_policy'),
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const LegalDocScreen(slug: 'privacy-policy', title: 'Privacy Policy')),
+                      MaterialPageRoute(builder: (_) => LegalDocScreen(slug: 'privacy-policy', title: context.tr('privacy_policy'))),
                     ),
                   ),
                   const SizedBox(height: 12),
                   _OutlinedRow(
-                    label: 'Request my personal data',
+                    label: context.tr('privacy_request_data'),
                     onTap: _busy ? null : _requestDataExport,
                   ),
                   const SizedBox(height: 24),
@@ -151,13 +151,12 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Help improve the app',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
+                            Text(context.tr('privacy_help_improve'),
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
                             const SizedBox(height: 4),
-                            const Text(
-                              "When this is on, we use anonymous usage data to improve features across "
-                              "Mrunal Agro — farm management, irrigation scheduling, and the marketplace.",
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.35),
+                            Text(
+                              context.tr('privacy_help_improve_sub'),
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.35),
                             ),
                           ],
                         ),
@@ -185,7 +184,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Account deletion requested'
+                            '${context.tr('privacy_deletion_requested')}'
                             '${deletionDate != null ? ' on ${deletionDate.day} ${_months[deletionDate.month - 1]} ${deletionDate.year}' : ''}.',
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _P.danger),
                           ),
@@ -197,14 +196,14 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                               side: const BorderSide(color: _P.border),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                            child: const Text('Cancel deletion', style: TextStyle(fontWeight: FontWeight.w500)),
+                            child: Text(context.tr('privacy_cancel_deletion'), style: const TextStyle(fontWeight: FontWeight.w500)),
                           ),
                         ],
                       ),
                     ),
                   ] else
                     _OutlinedRow(
-                      label: 'Delete my account',
+                      label: context.tr('privacy_delete_account'),
                       labelColor: _P.danger,
                       onTap: _busy ? null : _confirmDelete,
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../models/order.dart';
 import '../providers/app_state.dart';
 import '../services/api_client.dart';
@@ -74,15 +75,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Column(
+          title: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle, color: _P.green, size: 48),
-              SizedBox(height: 12),
-              Text('Order placed!', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+              const Icon(Icons.check_circle, color: _P.green, size: 48),
+              const SizedBox(height: 12),
+              Text(context.tr('payment_order_placed'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
             ],
           ),
-          content: Text('Order #${order.id} · ₹${_total.toStringAsFixed(0)}',
+          content: Text(
+              context.tr('payment_order_number').replaceAll('{id}', '${order.id}').replaceAll('{total}', _total.toStringAsFixed(0)),
               textAlign: TextAlign.center, style: const TextStyle(color: _P.subtext)),
           actions: [
             SizedBox(
@@ -95,7 +97,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('Continue Shopping', style: TextStyle(fontWeight: FontWeight.w500)),
+                child: Text(context.tr('payment_continue_shopping'), style: const TextStyle(fontWeight: FontWeight.w500)),
               ),
             ),
           ],
@@ -108,19 +110,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
       setState(() { _placing = false; _error = e.message; });
     } catch (_) {
       if (!mounted) return;
-      setState(() { _placing = false; _error = 'Could not place order. Please try again.'; });
+      setState(() { _placing = false; _error = context.tr('payment_order_failed'); });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: _P.text,
         elevation: 0,
-        title: const Text('Payment', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+        title: Text(context.tr('payment_title'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
       ),
       body: Column(
         children: [
@@ -128,44 +131,44 @@ class _PaymentScreenState extends State<PaymentScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
-                const Text('Order summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                Text(context.tr('cart_order_summary'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                 const SizedBox(height: 14),
-                _SummaryRow(label: 'Subtotal', value: '₹${widget.subtotal.toStringAsFixed(0)}'),
+                _SummaryRow(label: context.tr('cart_subtotal'), value: '₹${widget.subtotal.toStringAsFixed(0)}'),
                 if (widget.discount > 0)
-                  _SummaryRow(label: 'Coupon discount', value: '−₹${widget.discount.toStringAsFixed(0)}', valueColor: _P.green),
+                  _SummaryRow(label: context.tr('cart_coupon_discount'), value: '−₹${widget.discount.toStringAsFixed(0)}', valueColor: _P.green),
                 _SummaryRow(
-                  label: 'Delivery charge',
-                  value: _deliveryCharge == 0 ? 'Free' : '₹${_deliveryCharge.toStringAsFixed(0)}',
+                  label: context.tr('payment_delivery_charge'),
+                  value: _deliveryCharge == 0 ? context.tr('payment_free') : '₹${_deliveryCharge.toStringAsFixed(0)}',
                 ),
                 const SizedBox(height: 4),
-                const Text('Cash on delivery adds ₹100 handling charge.', style: TextStyle(fontSize: 10, color: _P.subtext)),
+                Text(context.tr('payment_cod_handling'), style: const TextStyle(fontSize: 10, color: _P.subtext)),
                 const Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Divider(height: 1, thickness: 1, color: _P.divider)),
-                _SummaryRow(label: 'Total payable', value: '₹${_total.toStringAsFixed(0)}', bold: true),
+                _SummaryRow(label: context.tr('payment_total_payable'), value: '₹${_total.toStringAsFixed(0)}', bold: true),
 
                 const SizedBox(height: 24),
-                const Text('Select payment method', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                Text(context.tr('payment_select_method'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                 const SizedBox(height: 14),
 
-                const _MethodTile(
+                _MethodTile(
                   selected: true,
-                  title: 'Cash on Delivery',
-                  subtitle: 'Pay with cash when your order arrives · +₹100',
+                  title: context.tr('payment_cod_title'),
+                  subtitle: context.tr('payment_cod_subtitle'),
                 ),
                 const SizedBox(height: 10),
-                const _MethodTile(
+                _MethodTile(
                   enabled: false,
                   selected: false,
-                  title: 'UPI',
-                  subtitle: 'Pay instantly via any UPI app',
-                  badge: 'Coming soon',
+                  title: context.tr('payment_upi_title'),
+                  subtitle: context.tr('payment_upi_subtitle'),
+                  badge: context.tr('payment_coming_soon'),
                 ),
                 const SizedBox(height: 10),
-                const _MethodTile(
+                _MethodTile(
                   enabled: false,
                   selected: false,
-                  title: 'Card',
-                  subtitle: 'Visa, Mastercard, RuPay',
-                  badge: 'Coming soon',
+                  title: context.tr('payment_card_title'),
+                  subtitle: context.tr('payment_card_subtitle'),
+                  badge: context.tr('payment_coming_soon'),
                 ),
 
                 if (_error != null) ...[
@@ -190,7 +193,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
                 child: _placing
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text('Pay ₹${_total.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                    : Text(context.tr('payment_pay_amount').replaceAll('{amount}', _total.toStringAsFixed(0)), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
               ),
             ),
           ),

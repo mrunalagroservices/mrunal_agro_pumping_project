@@ -5,6 +5,12 @@ const { requireAuth } = require('../../middleware/auth');
 
 router.use(requireAuth);
 
+// Accepts ?lang=hi|mr, defaults to English. Any other value falls back to 'en'.
+function pickLang(req) {
+  const lang = req.query.lang;
+  return lang === 'hi' || lang === 'mr' ? lang : 'en';
+}
+
 // GET /api/v1/support/contact
 router.get('/contact', async (req, res) => {
   try {
@@ -23,10 +29,17 @@ router.get('/contact', async (req, res) => {
 // GET /api/v1/support/faqs
 router.get('/faqs', async (req, res) => {
   try {
+    const lang = pickLang(req);
     const result = await db.query(
-      `SELECT id, question, answer FROM faq_topics WHERE is_active = true ORDER BY sort_order ASC`
+      `SELECT id, question, question_hi, question_mr, answer, answer_hi, answer_mr
+       FROM faq_topics WHERE is_active = true ORDER BY sort_order ASC`
     );
-    res.json({ success: true, data: result.rows });
+    const data = result.rows.map((row) => ({
+      id: row.id,
+      question: (lang !== 'en' && row[`question_${lang}`]) || row.question,
+      answer: (lang !== 'en' && row[`answer_${lang}`]) || row.answer,
+    }));
+    res.json({ success: true, data });
   } catch (err) {
     console.error('[Support]', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch FAQs' });

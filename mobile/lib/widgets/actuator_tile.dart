@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../models/actuator.dart';
 import 'status_dot.dart';
 
@@ -59,8 +60,8 @@ class ActuatorTile extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       actuator.isOn
-                          ? 'Running'
-                          : (deviceOnline ? 'Off' : 'Device offline'),
+                          ? context.tr('widget_running')
+                          : (deviceOnline ? context.tr('widget_off') : context.tr('widget_device_offline')),
                       style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
                     ),
                   ],

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -52,8 +54,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return Scaffold(
-      appBar: AppBar(title: const Text('Create your organization')),
+      appBar: AppBar(
+        title: Text(context.tr('register_title')),
+        actions: const [LanguageSwitcher(size: 36), SizedBox(width: 6)],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -62,33 +68,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               TextField(
                 controller: _orgController,
-                decoration: const InputDecoration(
-                  labelText: 'Farm / Organization name',
+                decoration: InputDecoration(
+                  labelText: context.tr('register_org_name'),
                   hintText: 'Mrunal Agro',
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Your name'),
+                decoration: InputDecoration(labelText: context.tr('register_your_name')),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: context.tr('login_email_label')),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'Phone (optional)'),
+                decoration: InputDecoration(labelText: context.tr('register_phone_optional')),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
+                decoration: InputDecoration(labelText: context.tr('login_password_label')),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
@@ -116,7 +122,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Create account'),
+                    : Text(context.tr('register_create_account')),
               ),
             ],
           ),

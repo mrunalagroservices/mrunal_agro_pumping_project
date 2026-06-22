@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../models/faq_topic.dart';
 import '../providers/app_state.dart';
+import '../providers/locale_provider.dart';
+import '../widgets/language_switcher.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -30,11 +33,19 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
   final _scroll = ScrollController();
   final Set<int> _askedTopics = {};
   bool _greeted = false;
+  String? _loadedLang;
+
+  void _ensureLoaded(BuildContext context) {
+    final lang = context.read<LocaleProvider>().languageCode;
+    if (_loadedLang == lang) return;
+    _loadedLang = lang;
+    context.read<AppState>().loadSupportInfo(lang: lang);
+  }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<AppState>().loadSupportInfo());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureLoaded(context));
   }
 
   @override
@@ -43,12 +54,13 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
     super.dispose();
   }
 
-  void _greet(String? email) {
+  void _greet(BuildContext context, String? email) {
     if (_greeted) return;
     _greeted = true;
     _messages.add(_ChatMessage(
-      "Hi! I'm the Mrunal Agro help bot. Pick a question below"
-      "${email != null ? ', or email $email if you need a person.' : '.'}",
+      email != null
+          ? context.tr('faq_greeting_pick_email').replaceAll('{email}', email)
+          : context.tr('faq_greeting_pick'),
       false,
     ));
   }
@@ -69,9 +81,11 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureLoaded(context));
     final state = context.watch<AppState>();
     final topics = state.faqTopics;
-    _greet(state.supportContact?.email);
+    _greet(context, state.supportContact?.email);
     final remaining = List.generate(topics.length, (i) => i).where((i) => !_askedTopics.contains(topics[i].id)).toList();
 
     return Scaffold(
@@ -84,12 +98,12 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
               child: Row(
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
-                  const Expanded(
-                    child: Text('Help bot',
+                  Expanded(
+                    child: Text(context.tr('faq_title'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                   ),
-                  const SizedBox(width: 44),
+                  const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
@@ -134,8 +148,9 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 child: Text(
-                  "That's everything I can help with"
-                  "${state.supportContact?.email != null ? ' — email ${state.supportContact!.email} for anything else.' : '.'}",
+                  state.supportContact?.email != null
+                      ? context.tr('faq_everything_done_email').replaceAll('{email}', state.supportContact!.email!)
+                      : context.tr('faq_everything_done'),
                   style: const TextStyle(fontSize: 12, color: _P.subtext),
                 ),
               ),

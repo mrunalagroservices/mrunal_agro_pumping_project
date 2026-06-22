@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -52,11 +54,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('History & Analytics',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        title: Text(context.tr('dashboard_history_analytics'),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
         actions: [
+          const LanguageSwitcher(size: 36),
           Container(
             margin: const EdgeInsets.only(right: 12),
             padding: const EdgeInsets.all(4),
@@ -104,7 +108,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           Text(_error!,
                               style: const TextStyle(color: Color(0xFFDC2626))),
                           const SizedBox(height: 10),
-                          TextButton(onPressed: _load, child: const Text('Retry')),
+                          TextButton(onPressed: _load, child: Text(context.tr('common_retry'))),
                         ]),
                       ),
                     ),
@@ -117,9 +121,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             Icon(Icons.bar_chart_outlined,
                                 size: 48, color: AppColors.textMuted),
                             const SizedBox(height: 12),
-                            Text('No data yet',
+                            Text(context.tr('history_no_data'),
                                 style:
-                                    TextStyle(color: AppColors.textSecondary)),
+                                    const TextStyle(color: AppColors.textSecondary)),
                           ]),
                         )
                       ])
@@ -155,26 +159,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
             _StatCard(
               icon: Icons.timer_outlined,
               color: AppColors.primary600,
-              label: _range == '24h' ? 'Runtime (24h)' : 'Runtime (10d)',
+              label: _range == '24h' ? context.tr('history_runtime_24h') : context.tr('history_runtime_10d'),
               value: _fmtHours(runtimeMin),
             ),
             _StatCard(
               icon: Icons.water_drop_outlined,
               color: const Color(0xFF0EA5E9),
-              label: 'Water pumped',
+              label: context.tr('history_water_pumped'),
               value: water > 0 ? '${water.toStringAsFixed(0)} L' : '—',
-              subtitle: water == 0 ? 'Add pump specs' : null,
+              subtitle: water == 0 ? context.tr('history_add_pump_specs') : null,
             ),
             _StatCard(
               icon: Icons.bolt_outlined,
               color: const Color(0xFFF59E0B),
-              label: 'Electricity',
+              label: context.tr('history_electricity'),
               value: kwh > 0 ? '${kwh.toStringAsFixed(2)} kWh' : '—',
             ),
             _StatCard(
               icon: Icons.currency_rupee_outlined,
               color: const Color(0xFF10B981),
-              label: 'Est. cost',
+              label: context.tr('history_est_cost'),
               value: cost > 0 ? '₹${cost.toStringAsFixed(1)}' : '—',
               subtitle: '₹$rate/kWh',
             ),
@@ -197,7 +201,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Icon(Icons.bolt, color: AppColors.primary600, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  '$running motor${running > 1 ? 's' : ''} running right now',
+                  context.tr('history_motors_running').replaceAll('{n}', '$running'),
                   style: TextStyle(
                       color: AppColors.primary600,
                       fontWeight: FontWeight.w500),
@@ -212,10 +216,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
           const SizedBox(height: 20),
           Row(
             children: [
-              const Text('Per pump breakdown',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text(context.tr('history_per_pump_breakdown'),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const Spacer(),
-              Text(_range == '24h' ? 'Last 24h' : 'Last 10 days',
+              Text(_range == '24h' ? context.tr('history_last_24h') : context.tr('history_last_10d'),
                   style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
             ],
           ),
@@ -238,10 +242,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 const Icon(Icons.info_outline,
                     color: Color(0xFFD97706), size: 18),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Water and electricity calculations need pump specs. Add pipe diameter, flow rate, and power rating in Settings on the web dashboard.',
-                    style: TextStyle(color: Color(0xFF92400E), fontSize: 11),
+                    context.tr('history_needs_specs'),
+                    style: const TextStyle(color: Color(0xFF92400E), fontSize: 11),
                   ),
                 ),
               ],
@@ -253,8 +257,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
         const SizedBox(height: 24),
         Row(
           children: [
-            const Text('Session Log',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(context.tr('history_session_log'),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -263,7 +267,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                _range == '24h' ? '2 days' : '10 days',
+                _range == '24h' ? context.tr('history_days_2') : context.tr('history_days_10'),
                 style: TextStyle(fontSize: 9, color: AppColors.textSecondary),
               ),
             ),
@@ -279,8 +283,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            child: Text('No sessions recorded yet',
-                style: TextStyle(color: AppColors.textMuted)),
+            child: Text(context.tr('history_no_sessions'),
+                style: const TextStyle(color: AppColors.textMuted)),
           )
         else
           ...(_dailyLogs!).asMap().entries.map((entry) {
@@ -338,7 +342,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   if (!hasActivity)
-                                    Text('No pump activity',
+                                    Text(context.tr('history_no_pump_activity'),
                                         style: TextStyle(
                                             fontSize: 10,
                                             color: AppColors.textMuted))
@@ -382,7 +386,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  '${dayActuators.length} pump${dayActuators.length > 1 ? 's' : ''}',
+                                  context.tr('history_n_pumps').replaceAll('{n}', '${dayActuators.length}'),
                                   style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w500,
@@ -734,7 +738,7 @@ class _ActuatorRow extends StatelessWidget {
                               color: AppColors.primary600.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text('● ON',
+                            child: Text(context.tr('farms_status_on'),
                                 style: TextStyle(
                                     fontSize: 8,
                                     color: AppColors.primary600,
@@ -774,13 +778,13 @@ class _ActuatorRow extends StatelessWidget {
           Row(
             children: [
               _MiniStat(
-                  label: 'Water',
+                  label: context.tr('history_water_label'),
                   value: water > 0 ? '${water.toStringAsFixed(0)}L' : '—'),
               _MiniStat(
-                  label: 'Electricity',
+                  label: context.tr('history_electricity'),
                   value: kwh > 0 ? '${kwh.toStringAsFixed(2)}kWh' : '—'),
               _MiniStat(
-                  label: 'Cost',
+                  label: context.tr('history_cost_label'),
                   value: cost > 0 ? '₹${cost.toStringAsFixed(1)}' : '—'),
             ],
           ),

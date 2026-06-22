@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../models/actuator.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 import '../widgets/status_dot.dart';
 import '../widgets/top_bar_actions.dart';
 
@@ -20,19 +22,20 @@ class AnalysisScreen extends StatelessWidget {
     }
   }
 
-  String _labelFor(String actuatorType) {
+  String _labelFor(BuildContext context, String actuatorType) {
     switch (actuatorType) {
       case 'pump':
-        return 'Pumps';
+        return context.tr('analysis_pumps');
       case 'valve':
-        return 'Valves';
+        return context.tr('analysis_valves');
       default:
-        return 'Motors';
+        return context.tr('analysis_motors');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
 
     final byType = <String, List<Actuator>>{};
@@ -42,17 +45,17 @@ class AnalysisScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Analysis',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-        actions: const [TopBarActions()],
+        title: Text(context.tr('analysis_title'),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        actions: const [LanguageSwitcher(size: 36), SizedBox(width: 6), TopBarActions()],
       ),
       body: RefreshIndicator(
         onRefresh: () => context.read<AppState>().loadDashboard(),
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text('Equipment breakdown',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(context.tr('analysis_equipment_breakdown'),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             if (byType.isEmpty)
               Card(
@@ -60,8 +63,8 @@ class AnalysisScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   child: Center(
                     child: Text(
-                      'No actuators configured yet.',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      context.tr('analysis_no_actuators'),
+                      style: const TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 ),
@@ -82,21 +85,21 @@ class AnalysisScreen extends StatelessWidget {
                       child: Icon(_iconFor(entry.key),
                           color: AppColors.primary600, size: 20),
                     ),
-                    title: Text(_labelFor(entry.key),
+                    title: Text(_labelFor(context, entry.key),
                         style: const TextStyle(fontWeight: FontWeight.w500)),
-                    subtitle: Text('${entry.value.length} total'),
+                    subtitle: Text(context.tr('analysis_n_total').replaceAll('{n}', '${entry.value.length}')),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '$running running',
+                          context.tr('analysis_n_running').replaceAll('{n}', '$running'),
                           style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               color: AppColors.primary600),
                         ),
                         Text(
-                          '${entry.value.length - running} off',
+                          context.tr('analysis_n_off').replaceAll('{n}', '${entry.value.length - running}'),
                           style: TextStyle(color: AppColors.textMuted, fontSize: 10),
                         ),
                       ],
@@ -105,8 +108,8 @@ class AnalysisScreen extends StatelessWidget {
                 );
               }),
             const SizedBox(height: 24),
-            const Text('Farm status',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(context.tr('analysis_farm_status'),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             if (state.farms.isEmpty)
               Card(
@@ -114,8 +117,8 @@ class AnalysisScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   child: Center(
                     child: Text(
-                      'No farms yet.',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      context.tr('analysis_no_farms'),
+                      style: const TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 ),
@@ -130,7 +133,9 @@ class AnalysisScreen extends StatelessWidget {
                   child: ListTile(
                     title: Text(farm.name,
                         style: const TextStyle(fontWeight: FontWeight.w500)),
-                    subtitle: Text('$online / ${devices.length} devices online'),
+                    subtitle: Text(context.tr('analysis_devices_online')
+                        .replaceAll('{online}', '$online')
+                        .replaceAll('{total}', '${devices.length}')),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -142,7 +147,7 @@ class AnalysisScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          active ? 'Running' : 'Idle',
+                          active ? context.tr('dashboard_status_running') : context.tr('dashboard_status_idle'),
                           style: TextStyle(
                             color: active
                                 ? AppColors.primary600

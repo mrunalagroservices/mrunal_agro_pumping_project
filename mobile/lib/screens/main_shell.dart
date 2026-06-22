@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
 import 'alerts_screen.dart';
 import 'dashboard_screen.dart';
@@ -34,6 +35,7 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
     final unresolvedAlerts = state.notifications.where((n) => n.isUnresolvedAlert).length;
 
@@ -46,7 +48,7 @@ class _MainShellState extends State<MainShell> {
       ),
       const ShopScreen(),
       const OrdersScreen(),
-      const AlertsScreen(title: 'Messages'),
+      AlertsScreen(title: context.tr('nav_messages')),
       ProfileScreen(
         onViewOrders: () => _goTo(2),
         onViewMessages: () => _goTo(3),
@@ -86,11 +88,11 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <_NavItem>[
-      _NavItem(Icons.agriculture_outlined, Icons.agriculture, 'Farm'),
-      _NavItem(Icons.storefront_outlined, Icons.storefront, 'Market'),
-      _NavItem(Icons.shopping_bag_outlined, Icons.shopping_bag, 'Orders'),
-      _NavItem(Icons.chat_bubble_outline, Icons.chat_bubble, 'Messages', badge: messagesBadge),
-      _NavItem(Icons.person_outline, Icons.person, 'Profile'),
+      _NavItem(Icons.agriculture_outlined, Icons.agriculture, context.tr('nav_farm')),
+      _NavItem(Icons.storefront_outlined, Icons.storefront, context.tr('nav_market')),
+      _NavItem(Icons.shopping_bag_outlined, Icons.shopping_bag, context.tr('nav_orders')),
+      _NavItem(Icons.chat_bubble_outline, Icons.chat_bubble, context.tr('nav_messages'), badge: messagesBadge),
+      _NavItem(Icons.person_outline, Icons.person, context.tr('nav_profile')),
     ];
 
     return Container(

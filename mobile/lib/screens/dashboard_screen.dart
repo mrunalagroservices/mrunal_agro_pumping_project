@@ -3,7 +3,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 import '../widgets/top_bar_actions.dart';
 import 'farms_screen.dart';
 import 'history_screen.dart';
@@ -23,6 +25,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
 
     final farmsWithLocation = state.farms.where((f) => f.hasLocation).toList();
@@ -45,14 +48,16 @@ class DashboardScreen extends StatelessWidget {
                 const Text('Mrunal Agro',
                     style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: _kText, letterSpacing: -0.2)),
                 Text(
-                  state.user != null ? 'Hi, ${state.user!.name}' : 'Pumping Control',
+                  state.user != null
+                      ? context.tr('dashboard_greeting').replaceAll('{name}', state.user!.name)
+                      : context.tr('dashboard_pumping_control'),
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _kSub),
                 ),
               ],
             ),
           ],
         ),
-        actions: const [TopBarActions()],
+        actions: const [LanguageSwitcher(size: 36), SizedBox(width: 6), TopBarActions()],
       ),
       body: RefreshIndicator(
         onRefresh: () => context.read<AppState>().loadDashboard(),
@@ -118,12 +123,12 @@ class DashboardScreen extends StatelessWidget {
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(Icons.map_outlined, size: 14, color: AppColors.primary700),
-                              SizedBox(width: 4),
+                            children: [
+                              const Icon(Icons.map_outlined, size: 14, color: AppColors.primary700),
+                              const SizedBox(width: 4),
                               Text(
-                                'View live map',
-                                style: TextStyle(
+                                context.tr('dashboard_view_live_map'),
+                                style: const TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.primary700,
@@ -139,13 +144,12 @@ class DashboardScreen extends StatelessWidget {
                         child: Container(
                           color: Colors.black.withValues(alpha: 0.35),
                           alignment: Alignment.center,
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 24),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: Text(
-                              'No farm locations set yet.\nAdd latitude/longitude to a farm '
-                              'to see it on the map.',
+                              context.tr('dashboard_no_farm_location'),
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   color: Colors.white, fontWeight: FontWeight.w500),
                             ),
                           ),
@@ -160,8 +164,8 @@ class DashboardScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Row(
                   children: [
-                    const Text('Overview',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _kText, letterSpacing: -0.3)),
+                    Text(context.tr('dashboard_overview'),
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _kText, letterSpacing: -0.3)),
                     const Spacer(),
                     if (state.isLoadingDashboard)
                       const SizedBox(
@@ -201,7 +205,7 @@ class DashboardScreen extends StatelessWidget {
                       child: _StatCard(
                         icon: Icons.agriculture_outlined,
                         color: AppColors.primary600,
-                        label: 'Farms',
+                        label: context.tr('dashboard_stat_farms'),
                         value: '${state.farms.length}',
                       ),
                     ),
@@ -210,7 +214,7 @@ class DashboardScreen extends StatelessWidget {
                       child: _StatCard(
                         icon: Icons.developer_board_outlined,
                         color: AppColors.primary600,
-                        label: 'Online',
+                        label: context.tr('dashboard_stat_online'),
                         value: '$onlineDevices/${state.devices.length}',
                       ),
                     ),
@@ -219,7 +223,7 @@ class DashboardScreen extends StatelessWidget {
                       child: _StatCard(
                         icon: Icons.water_drop_outlined,
                         color: AppColors.primary600,
-                        label: 'Running',
+                        label: context.tr('dashboard_stat_running'),
                         value: '$activeActuators/${state.actuators.length}',
                       ),
                     ),
@@ -230,8 +234,10 @@ class DashboardScreen extends StatelessWidget {
                         color: activeActuators > 0
                             ? AppColors.primary600
                             : AppColors.offGray,
-                        label: 'Status',
-                        value: activeActuators > 0 ? 'Running' : 'Idle',
+                        label: context.tr('dashboard_stat_status'),
+                        value: activeActuators > 0
+                            ? context.tr('dashboard_status_running')
+                            : context.tr('dashboard_status_idle'),
                       ),
                     ),
                   ],
@@ -250,8 +256,8 @@ class DashboardScreen extends StatelessWidget {
                         icon: Icons.agriculture_outlined,
                         iconBg: const Color(0xFFDCFCE7),
                         iconColor: AppColors.primary700,
-                        title: 'Farms & Devices',
-                        subtitle: 'Manage zones, electricity, anti-theft',
+                        title: context.tr('dashboard_farms_devices'),
+                        subtitle: context.tr('dashboard_farms_devices_sub'),
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const FarmsScreen()),
@@ -272,8 +278,8 @@ class DashboardScreen extends StatelessWidget {
                         icon: Icons.schedule_outlined,
                         iconBg: const Color(0xFFFFF7ED),
                         iconColor: const Color(0xFFD97706),
-                        title: 'Schedules',
-                        subtitle: 'Automatic on/off timers',
+                        title: context.tr('dashboard_schedules'),
+                        subtitle: context.tr('dashboard_schedules_sub'),
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const SchedulesScreen()),
@@ -316,9 +322,9 @@ class DashboardScreen extends StatelessWidget {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text('History & Analytics', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: _kText)),
-                              Text('Runtime, water, electricity, cost', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _kSub)),
+                            children: [
+                              Text(context.tr('dashboard_history_analytics'), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: _kText)),
+                              Text(context.tr('dashboard_history_analytics_sub'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _kSub)),
                             ],
                           ),
                         ),

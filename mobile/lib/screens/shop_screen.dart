@@ -1,10 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../models/product.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 import 'cart_screen.dart';
 import 'product_detail_screen.dart';
 import 'wishlist_screen.dart';
+
+/// Maps a category name from the backend to its translation key, falling
+/// back to the raw name for categories without a known translation.
+String categoryLabel(BuildContext context, String category) {
+  const keys = {
+    'All': 'category_all',
+    'Seeds': 'category_seeds',
+    'Fertilizers': 'category_fertilizers',
+    'Irrigation': 'category_irrigation',
+    'Tools': 'category_tools',
+    'Pesticides': 'category_pesticides',
+    'Others': 'category_others',
+  };
+  final key = keys[category];
+  return key != null ? context.tr(key) : category;
+}
 
 class _P {
   static const text = Color(0xFF222222);
@@ -81,13 +99,13 @@ class _ShopScreenState extends State<ShopScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${p.name} added to cart'),
+        content: Text(context.tr('shop_added_to_cart').replaceAll('{name}', p.name)),
         duration: const Duration(seconds: 1),
         behavior: SnackBarBehavior.floating,
         backgroundColor: _P.text,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        action: SnackBarAction(label: 'View Cart', textColor: Colors.white, onPressed: _showCart),
+        action: SnackBarAction(label: context.tr('shop_view_cart'), textColor: Colors.white, onPressed: _showCart),
       ),
     );
   }
@@ -95,7 +113,7 @@ class _ShopScreenState extends State<ShopScreen> {
   void _showCart() {
     ScaffoldMessenger.of(context).clearSnackBars();
     if (_cart.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Your cart is empty')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.tr('shop_cart_empty'))));
       return;
     }
     Navigator.push(
@@ -133,6 +151,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
     final all = state.products;
     final filtered = _filtered(all);
@@ -155,10 +174,12 @@ class _ShopScreenState extends State<ShopScreen> {
                             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                             child: Row(
                               children: [
-                                const Expanded(
-                                  child: Text('Market',
-                                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                                Expanded(
+                                  child: Text(context.tr('nav_market'),
+                                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                                 ),
+                                const LanguageSwitcher(size: 40),
+                                const SizedBox(width: 10),
                                 _CircleIconBtn(
                                   icon: Icons.favorite_border,
                                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WishlistScreen())),
@@ -179,7 +200,7 @@ class _ShopScreenState extends State<ShopScreen> {
                               onChanged: (v) => setState(() => _searchQuery = v),
                               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
                               decoration: InputDecoration(
-                                hintText: 'Search seeds, fertilizers, tools…',
+                                hintText: context.tr('shop_search_hint'),
                                 hintStyle: const TextStyle(fontSize: 12, color: _P.subtext),
                                 prefixIcon: const Icon(Icons.search, color: _P.subtext, size: 20),
                                 suffixIcon: _searchQuery.isNotEmpty
@@ -223,7 +244,7 @@ class _ShopScreenState extends State<ShopScreen> {
                                     ),
                                     alignment: Alignment.center,
                                     child: Text(
-                                      cat,
+                                      categoryLabel(context, cat),
                                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: active ? Colors.white : _P.text),
                                     ),
                                   ),
@@ -246,7 +267,7 @@ class _ShopScreenState extends State<ShopScreen> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
-                                      'Free delivery by $_deliveryDate on orders above ₹499',
+                                      context.tr('shop_free_delivery').replaceAll('{date}', _deliveryDate),
                                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _P.text),
                                     ),
                                   ),
@@ -261,7 +282,7 @@ class _ShopScreenState extends State<ShopScreen> {
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                             child: Text(
-                              '${filtered.length} product${filtered.length == 1 ? '' : 's'}',
+                              context.tr('shop_n_products').replaceAll('{n}', '${filtered.length}'),
                               style: const TextStyle(fontSize: 11, color: _P.subtext, fontWeight: FontWeight.w400),
                             ),
                           ),
@@ -276,7 +297,7 @@ class _ShopScreenState extends State<ShopScreen> {
                                     children: [
                                       const Icon(Icons.search_off_outlined, size: 44, color: _P.subtext),
                                       const SizedBox(height: 12),
-                                      const Text('No products found', style: TextStyle(color: _P.text, fontSize: 13, fontWeight: FontWeight.w400)),
+                                      Text(context.tr('shop_no_products'), style: const TextStyle(color: _P.text, fontSize: 13, fontWeight: FontWeight.w400)),
                                     ],
                                   ),
                                 ),
@@ -320,12 +341,12 @@ class _ShopScreenState extends State<ShopScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(8)),
-                        child: Text('$_cartCount item${_cartCount > 1 ? 's' : ''}',
+                        child: Text(context.tr('shop_n_items').replaceAll('{n}', '$_cartCount'),
                             style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500)),
                       ),
                       const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text('View Cart', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 13)),
+                      Expanded(
+                        child: Text(context.tr('shop_view_cart'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 13)),
                       ),
                       Text('₹${_cartTotal(all).toStringAsFixed(0)}',
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 13)),
@@ -515,7 +536,7 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center, style: const TextStyle(color: _P.text)),
             const SizedBox(height: 12),
-            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+            OutlinedButton(onPressed: onRetry, child: Text(context.tr('common_retry'))),
           ],
         ),
       ),

@@ -1,8 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../models/user.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 import 'personal_info_screen.dart';
 
 class _P {
@@ -14,33 +16,33 @@ class _P {
 
 class _Category {
   final String key;
-  final String label;
-  const _Category(this.key, this.label);
+  final String labelKey;
+  const _Category(this.key, this.labelKey);
 }
 
 class _Section {
-  final String title;
-  final String description;
+  final String titleKey;
+  final String descriptionKey;
   final List<_Category> categories;
-  const _Section({required this.title, required this.description, required this.categories});
+  const _Section({required this.titleKey, required this.descriptionKey, required this.categories});
 }
 
 const _offerSections = [
   _Section(
-    title: 'Farm offers & tips',
-    description: 'Inspire your next planting season with personalised recommendations and special offers.',
+    titleKey: 'notif_section_offers_title',
+    descriptionKey: 'notif_section_offers_desc',
     categories: [
-      _Category('promo_offers', 'Promotions and offers'),
-      _Category('farming_tips', 'Farming tips'),
+      _Category('promo_offers', 'notif_cat_promo_offers'),
+      _Category('farming_tips', 'notif_cat_farming_tips'),
     ],
   ),
   _Section(
-    title: 'Mrunal Agro updates',
-    description: 'Stay up to date on the latest news from Mrunal Agro, and let us know how we can improve.',
+    titleKey: 'notif_section_updates_title',
+    descriptionKey: 'notif_section_updates_desc',
     categories: [
-      _Category('news_updates', 'News and features'),
-      _Category('feedback_requests', 'Feedback requests'),
-      _Category('service_alerts', 'Service alerts'),
+      _Category('news_updates', 'notif_cat_news_updates'),
+      _Category('feedback_requests', 'notif_cat_feedback_requests'),
+      _Category('service_alerts', 'notif_cat_service_alerts'),
     ],
   ),
 ];
@@ -49,25 +51,25 @@ const _offerCategoryKeys = ['promo_offers', 'farming_tips', 'news_updates', 'fee
 
 const _accountSections = [
   _Section(
-    title: 'Account activity and policies',
-    description: 'Confirm your orders and account activity, and learn about important Mrunal Agro policies.',
+    titleKey: 'notif_section_account_title',
+    descriptionKey: 'notif_section_account_desc',
     categories: [
-      _Category('account_activity', 'Account activity'),
-      _Category('order_policies', 'Order policies'),
+      _Category('account_activity', 'notif_cat_account_activity'),
+      _Category('order_policies', 'notif_cat_order_policies'),
     ],
   ),
   _Section(
-    title: 'Reminders',
-    description: 'Get important reminders about your irrigation schedules and account activity.',
+    titleKey: 'notif_section_reminders_title',
+    descriptionKey: 'notif_section_reminders_desc',
     categories: [
-      _Category('schedule_reminders', 'Schedule reminders'),
+      _Category('schedule_reminders', 'notif_cat_schedule_reminders'),
     ],
   ),
   _Section(
-    title: 'Support messages',
-    description: 'Keep in touch with support before, during and after your orders.',
+    titleKey: 'notif_section_support_title',
+    descriptionKey: 'notif_section_support_desc',
     categories: [
-      _Category('support_messages', 'Messages'),
+      _Category('support_messages', 'notif_cat_support_messages'),
     ],
   ),
 ];
@@ -123,11 +125,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Unsubscribe from all offers and updates?'),
-        content: const Text("You'll continue to get notifications about your account activity."),
+        title: Text(context.tr('notif_unsub_dialog_title')),
+        content: Text(context.tr('notif_unsub_dialog_body')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Unsubscribe')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('notif_cancel'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.tr('notif_unsubscribe'))),
         ],
       ),
     );
@@ -148,18 +150,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
   String get _allOffersStatus {
     final user = context.watch<AppState>().user;
     final prefsList = _offerCategoryKeys.map((k) => user?.notificationPreferences[k] ?? const ChannelPrefs());
-    if (prefsList.every((p) => !p.anyOn)) return 'All off';
+    if (prefsList.every((p) => !p.anyOn)) return context.tr('notif_status_all_off');
     final allDefaultOn = prefsList.every((p) => p.sms && !p.email && !p.push);
-    if (allDefaultOn) return 'On: SMS';
-    return 'Custom';
+    if (allDefaultOn) return context.tr('notif_status_on_sms');
+    return context.tr('notif_status_custom');
+  }
+
+  String _statusLabelFor(ChannelPrefs p) {
+    final channels = <String>[
+      if (p.email) context.tr('notif_channel_email'),
+      if (p.push) context.tr('notif_channel_push'),
+      if (p.sms) context.tr('notif_channel_sms'),
+    ];
+    if (channels.isEmpty) return context.tr('notif_status_off');
+    return context.tr('notif_status_on').replaceAll('{channels}', channels.join(context.tr('notif_and')));
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final user = context.watch<AppState>().user;
     final maskedPhone = (user?.phone != null && user!.phone!.length >= 4)
         ? '+91 ***** ${user.phone!.replaceAll(RegExp(r'\D'), '').substring(user.phone!.replaceAll(RegExp(r'\D'), '').length - 4)}'
-        : 'your number';
+        : context.tr('notif_your_number');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -168,17 +181,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: _CircleBack(onTap: () => Navigator.pop(context)),
+              child: Row(
+                children: [
+                  _CircleBack(onTap: () => Navigator.pop(context)),
+                  const Spacer(),
+                  const LanguageSwitcher(),
+                ],
               ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Notifications',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                child: Text(context.tr('notif_title'),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
               ),
             ),
             const SizedBox(height: 12),
@@ -193,9 +209,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
               labelPadding: const EdgeInsets.symmetric(horizontal: 20),
               labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
               unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
-              tabs: const [
-                Tab(text: 'Offers and updates'),
-                Tab(text: 'Account'),
+              tabs: [
+                Tab(text: context.tr('notif_tab_offers')),
+                Tab(text: context.tr('notif_tab_account')),
               ],
             ),
             const Divider(height: 1, thickness: 1, color: _P.divider),
@@ -208,28 +224,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                     children: [
                       for (final section in _offerSections) ..._buildSection(section),
                       const SizedBox(height: 8),
-                      const Text('Unsubscribe from all offers and updates',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                      Text(context.tr('notif_unsubscribe_title'),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                       const SizedBox(height: 4),
-                      const Text("You'll continue to get notifications about your account activity.",
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
+                      Text(context.tr('notif_unsubscribe_sub'),
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
                       const SizedBox(height: 14),
-                      _CategoryRow(label: 'All offers and updates', status: _allOffersStatus, onTap: _unsubscribeAll),
+                      _CategoryRow(label: context.tr('notif_all_offers'), status: _allOffersStatus, onTap: _unsubscribeAll),
                       const SizedBox(height: 24),
                       Text.rich(
                         TextSpan(
                           style: const TextStyle(fontSize: 11, color: _P.subtext, height: 1.4),
                           children: [
+                            TextSpan(text: context.tr('notif_consent_marketing').replaceAll('{phone}', maskedPhone)),
                             TextSpan(
-                                text: 'By opting in to text messages, you agree to receive automated marketing '
-                                    'messages from Mrunal Agro at $maskedPhone. To receive messages at a different '
-                                    'number, '),
-                            TextSpan(
-                              text: 'update your phone number settings',
+                              text: context.tr('notif_update_phone_link'),
                               style: const TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline, color: _P.text),
                               recognizer: _phoneSettingsLink,
                             ),
-                            const TextSpan(text: ' on your personal info page.'),
+                            TextSpan(text: context.tr('notif_on_personal_info_page')),
                           ],
                         ),
                       ),
@@ -244,16 +257,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                         TextSpan(
                           style: const TextStyle(fontSize: 11, color: _P.subtext, height: 1.4),
                           children: [
+                            TextSpan(text: context.tr('notif_consent_account').replaceAll('{phone}', maskedPhone)),
                             TextSpan(
-                                text: 'By opting in to text messages, you agree to receive automated account '
-                                    'messages from Mrunal Agro at $maskedPhone. To receive messages at a different '
-                                    'number, '),
-                            TextSpan(
-                              text: 'update your phone number settings',
+                              text: context.tr('notif_update_phone_link'),
                               style: const TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline, color: _P.text),
                               recognizer: _phoneSettingsLink,
                             ),
-                            const TextSpan(text: ' on your personal info page.'),
+                            TextSpan(text: context.tr('notif_on_personal_info_page')),
                           ],
                         ),
                       ),
@@ -270,16 +280,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
 
   List<Widget> _buildSection(_Section section) {
     return [
-      Text(section.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+      Text(context.tr(section.titleKey), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
       const SizedBox(height: 4),
-      Text(section.description, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
+      Text(context.tr(section.descriptionKey), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
       const SizedBox(height: 14),
       for (final cat in section.categories)
         Padding(
           padding: const EdgeInsets.only(bottom: 14),
           child: _CategoryRow(
-            label: cat.label,
-            status: _prefsFor(cat.key).statusLabel,
+            label: context.tr(cat.labelKey),
+            status: _statusLabelFor(_prefsFor(cat.key)),
             onTap: () => _editCategory(cat),
           ),
         ),
@@ -341,9 +351,9 @@ class _EditLinkState extends State<_EditLink> {
         child: AnimatedOpacity(
           opacity: _pressed ? 0.55 : 1.0,
           duration: const Duration(milliseconds: 120),
-          child: const Text(
-            'Edit',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, decoration: TextDecoration.underline),
+          child: Text(
+            context.tr('notif_edit'),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, decoration: TextDecoration.underline),
           ),
         ),
       ),
@@ -371,6 +381,7 @@ class _NotificationEditSheetState extends State<_NotificationEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return SafeArea(
       top: false,
       child: Padding(
@@ -382,7 +393,7 @@ class _NotificationEditSheetState extends State<_NotificationEditSheet> {
             Row(
               children: [
                 Expanded(
-                  child: Text(widget.category.label,
+                  child: Text(context.tr(widget.category.labelKey),
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
                 ),
                 InkWell(
@@ -394,19 +405,19 @@ class _NotificationEditSheetState extends State<_NotificationEditSheet> {
             ),
             const SizedBox(height: 22),
             _ChannelToggle(
-              label: 'Email',
+              label: context.tr('notif_channel_email'),
               value: _prefs.email,
               onChanged: (v) => setState(() => _prefs = _prefs.copyWith(email: v)),
             ),
             const Divider(height: 28, thickness: 1, color: _P.divider),
             _ChannelToggle(
-              label: 'Push notifications',
+              label: context.tr('notif_channel_push_full'),
               value: _prefs.push,
               onChanged: (v) => setState(() => _prefs = _prefs.copyWith(push: v)),
             ),
             const Divider(height: 28, thickness: 1, color: _P.divider),
             _ChannelToggle(
-              label: 'SMS',
+              label: context.tr('notif_channel_sms'),
               value: _prefs.sms,
               onChanged: (v) => setState(() => _prefs = _prefs.copyWith(sms: v)),
             ),

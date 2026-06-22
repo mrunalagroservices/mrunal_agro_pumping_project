@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 import 'notifications_screen.dart';
 import 'payments_screen.dart';
 import 'personal_info_screen.dart';
@@ -18,10 +20,10 @@ class _P {
 class _BannerData {
   final IconData? icon;
   final String? emoji;
-  final String title;
-  final String subtitle;
-  final String action;
-  _BannerData({this.icon, this.emoji, required this.title, required this.subtitle, required this.action});
+  final String titleKey;
+  final String subtitleKey;
+  final String actionKey;
+  _BannerData({this.icon, this.emoji, required this.titleKey, required this.subtitleKey, required this.actionKey});
 }
 
 class AccountSettingsScreen extends StatefulWidget {
@@ -40,10 +42,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   void initState() {
     super.initState();
     _banners = [
-      _BannerData(emoji: '🔔', title: 'Turn on notifications',
-          subtitle: "Don't miss updates about orders and pump alerts.", action: 'Yes, notify me'),
-      _BannerData(icon: Icons.mail_outline, title: 'Confirm your email address',
-          subtitle: "We'll send a code to your inbox.", action: 'Confirm email'),
+      _BannerData(emoji: '🔔', titleKey: 'settings_notif_banner_title',
+          subtitleKey: 'settings_notif_banner_sub', actionKey: 'settings_notif_banner_action'),
+      _BannerData(icon: Icons.mail_outline, titleKey: 'settings_email_banner_title',
+          subtitleKey: 'settings_email_banner_sub', actionKey: 'settings_email_banner_action'),
     ];
     _loadVersion();
   }
@@ -52,7 +54,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     try {
       final info = await PackageInfo.fromPlatform();
       if (!mounted) return;
-      setState(() => _versionLabel = 'Version ${info.version} (${info.buildNumber})');
+      setState(() => _versionLabel = context.tr('settings_version')
+          .replaceAll('{version}', info.version)
+          .replaceAll('{build}', info.buildNumber));
     } catch (_) {
       // Plugin channel not registered yet (e.g. mid hot-restart) — just omit the footer.
     }
@@ -66,7 +70,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   void _comingSoon(String f) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$f — coming soon'), behavior: SnackBarBehavior.floating),
+      SnackBar(content: Text(context.tr('profile_coming_soon').replaceAll('{feature}', f)), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -74,6 +78,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     context.watch<AppState>(); // keep reactive
     return Scaffold(
       backgroundColor: Colors.white,
@@ -81,13 +86,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: _CircleBack(onTap: () => Navigator.pop(context)),
+            Row(
+              children: [
+                _CircleBack(onTap: () => Navigator.pop(context)),
+                const Spacer(),
+                const LanguageSwitcher(),
+              ],
             ),
             const SizedBox(height: 18),
-            const Text('Account settings',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+            Text(context.tr('settings_title'),
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
             const SizedBox(height: 20),
 
             // ── Dismissible banner carousel ──────────────────────────────
@@ -110,7 +118,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                               padding: EdgeInsets.only(right: i == _banners.length - 1 ? 0 : 12),
                               child: _BannerCard(
                                 data: b,
-                                onAction: () => _comingSoon(b.title),
+                                onAction: () => _comingSoon(context.tr(b.titleKey)),
                                 onDismiss: () => _dismiss(b),
                               ),
                             );
@@ -121,29 +129,29 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             ),
 
             // ── Settings list ────────────────────────────────────────────
-            _Row(icon: Icons.person_outline, label: 'Personal information', onTap: () {
+            _Row(icon: Icons.person_outline, label: context.tr('settings_personal_info'), onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const PersonalInfoScreen()));
             }),
             const _Div(),
-            _Row(icon: Icons.shield_outlined, label: 'Login & security', onTap: () => _comingSoon('Login & security')),
+            _Row(icon: Icons.shield_outlined, label: context.tr('settings_login_security'), onTap: () => _comingSoon(context.tr('settings_login_security'))),
             const _Div(),
-            _Row(icon: Icons.front_hand_outlined, label: 'Privacy', onTap: () {
+            _Row(icon: Icons.front_hand_outlined, label: context.tr('settings_privacy'), onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyScreen()));
             }),
             const _Div(),
-            _Row(icon: Icons.notifications_outlined, label: 'Notifications', onTap: () {
+            _Row(icon: Icons.notifications_outlined, label: context.tr('settings_notifications'), onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
             }),
             const _Div(),
-            _Row(icon: Icons.payments_outlined, label: 'Payments', onTap: () {
+            _Row(icon: Icons.payments_outlined, label: context.tr('settings_payments'), onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentsScreen()));
             }),
             const _Div(),
-            _Row(icon: Icons.calculate_outlined, label: 'Taxes (GST)', onTap: () => _comingSoon('Taxes')),
+            _Row(icon: Icons.calculate_outlined, label: context.tr('settings_taxes'), onTap: () => _comingSoon(context.tr('settings_taxes'))),
             const _Div(),
-            _Row(icon: Icons.language_outlined, label: 'Translation', onTap: () => _comingSoon('Translation')),
+            _Row(icon: Icons.language_outlined, label: context.tr('settings_translation'), onTap: () => _comingSoon(context.tr('settings_translation'))),
             const _Div(),
-            _Row(icon: Icons.accessibility_new_outlined, label: 'Accessibility', onTap: () => _comingSoon('Accessibility')),
+            _Row(icon: Icons.accessibility_new_outlined, label: context.tr('settings_accessibility'), onTap: () => _comingSoon(context.tr('settings_accessibility'))),
 
             if (_versionLabel != null) ...[
               const SizedBox(height: 16),
@@ -188,9 +196,9 @@ class _BannerCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(data.title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: _P.text)),
+                    Text(context.tr(data.titleKey), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: _P.text)),
                     const SizedBox(height: 3),
-                    Text(data.subtitle, style: const TextStyle(color: _P.subtext, fontWeight: FontWeight.w400, fontSize: 12, height: 1.3)),
+                    Text(context.tr(data.subtitleKey), style: const TextStyle(color: _P.subtext, fontWeight: FontWeight.w400, fontSize: 12, height: 1.3)),
                   ],
                 ),
               ),
@@ -212,7 +220,7 @@ class _BannerCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text(data.action, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+              child: Text(context.tr(data.actionKey), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
             ),
           ),
         ],

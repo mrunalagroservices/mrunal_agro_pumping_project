@@ -3,8 +3,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../models/farm.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 
 // Default map center: Pune, Maharashtra (used when no farm has GPS coordinates yet).
 const _defaultCenter = LatLng(18.5204, 73.8567);
@@ -91,9 +93,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             ],
             const SizedBox(height: 12),
             Text(
-              isActive
-                  ? 'Pump running · ${farm.deviceCount} device(s)'
-                  : 'Idle · ${farm.deviceCount} device(s)',
+              (isActive ? context.tr('map_pump_running') : context.tr('map_idle'))
+                  .replaceAll('{n}', '${farm.deviceCount}'),
               style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
             ),
           ],
@@ -104,6 +105,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
     final farmsWithLocation = state.farms.where((f) => f.hasLocation).toList();
     final center = farmsWithLocation.isNotEmpty
@@ -112,8 +114,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Map'),
+        title: Text(context.tr('map_title')),
         actions: [
+          const LanguageSwitcher(size: 36),
           if (state.isLoadingDashboard)
             const Padding(
               padding: EdgeInsets.only(right: 16),
@@ -167,13 +170,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 child: Container(
                   alignment: Alignment.center,
                   color: Colors.black.withValues(alpha: 0.25),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 32),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Text(
-                      'No farm locations set yet.\n'
-                      'Add latitude/longitude to a farm to see it on the map.',
+                      context.tr('dashboard_no_farm_location'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ),

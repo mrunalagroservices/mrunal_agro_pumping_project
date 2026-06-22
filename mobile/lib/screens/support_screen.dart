@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
+import '../providers/locale_provider.dart';
+import '../widgets/language_switcher.dart';
 import 'faq_chat_screen.dart';
 
 class _P {
@@ -19,12 +22,19 @@ class SupportScreen extends StatefulWidget {
 }
 
 class _SupportScreenState extends State<SupportScreen> {
+  String? _loadedLang;
+
+  void _ensureLoaded(BuildContext context) {
+    final lang = context.read<LocaleProvider>().languageCode;
+    if (_loadedLang == lang) return;
+    _loadedLang = lang;
+    context.read<AppState>().loadSupportInfo(lang: lang);
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadSupportInfo();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureLoaded(context));
   }
 
   Future<void> _launch(Uri uri, String failureMessage) async {
@@ -36,6 +46,8 @@ class _SupportScreenState extends State<SupportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureLoaded(context));
     final state = context.watch<AppState>();
     final contact = state.supportContact;
 
@@ -49,12 +61,12 @@ class _SupportScreenState extends State<SupportScreen> {
               child: Row(
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
-                  const Expanded(
-                    child: Text('Find support',
+                  Expanded(
+                    child: Text(context.tr('support_title'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                   ),
-                  const SizedBox(width: 44),
+                  const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
@@ -63,18 +75,18 @@ class _SupportScreenState extends State<SupportScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
                 children: [
-                  const Text('How can we help?',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+                  Text(context.tr('support_how_can_we_help'),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
                   const SizedBox(height: 6),
-                  const Text(
-                    "Reach our team directly, or get instant answers from the help bot for common questions.",
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.4),
+                  Text(
+                    context.tr('support_intro'),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.4),
                   ),
                   const SizedBox(height: 24),
                   _ContactRow(
                     icon: Icons.chat_bubble_outline,
-                    title: 'Chat with our help bot',
-                    subtitle: 'Instant answers for orders, devices, and payments',
+                    title: context.tr('support_chat_bot'),
+                    subtitle: context.tr('support_chat_bot_sub'),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FaqChatScreen())),
                   ),
                   if (state.isLoadingSupport && contact == null) ...[
@@ -85,11 +97,11 @@ class _SupportScreenState extends State<SupportScreen> {
                       const SizedBox(height: 12),
                       _ContactRow(
                         icon: Icons.mail_outline,
-                        title: 'Email us',
+                        title: context.tr('support_email_us'),
                         subtitle: contact.email!,
                         onTap: () => _launch(
                           Uri(scheme: 'mailto', path: contact.email, query: 'subject=Support request'),
-                          'Could not open an email app.',
+                          context.tr('support_email_failed'),
                         ),
                       ),
                     ],
@@ -97,11 +109,11 @@ class _SupportScreenState extends State<SupportScreen> {
                       const SizedBox(height: 12),
                       _ContactRow(
                         icon: Icons.call_outlined,
-                        title: 'Call us',
+                        title: context.tr('support_call_us'),
                         subtitle: contact.hours != null ? '${contact.phone} · ${contact.hours}' : contact.phone!,
                         onTap: () => _launch(
                           Uri(scheme: 'tel', path: contact.phone),
-                          'Could not open the dialer.',
+                          context.tr('support_call_failed'),
                         ),
                       ),
                     ],

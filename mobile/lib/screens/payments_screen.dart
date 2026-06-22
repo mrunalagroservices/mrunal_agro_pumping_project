@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../l10n/tr_extension.dart';
+import '../widgets/language_switcher.dart';
 import 'credits_coupons_screen.dart';
 import 'orders_screen.dart';
 import 'payment_method_screen.dart';
@@ -16,6 +18,7 @@ class PaymentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -28,6 +31,8 @@ class PaymentsScreen extends StatelessWidget {
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
                   const Spacer(),
+                  const LanguageSwitcher(),
+                  const SizedBox(width: 10),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(color: _P.circleBtn, borderRadius: BorderRadius.circular(24)),
@@ -40,29 +45,29 @@ class PaymentsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                 children: [
-                  const Text('Payments & payouts',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                  Text(context.tr('payments_title'),
+                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                   const SizedBox(height: 28),
 
-                  const Text('Your account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
+                  Text(context.tr('payments_your_account'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
                   const SizedBox(height: 14),
 
                   _OutlinedRow(
                     icon: Icons.payments_outlined,
-                    label: 'Payment methods',
+                    label: context.tr('payments_methods'),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentMethodScreen())),
                   ),
                   const SizedBox(height: 12),
                   _OutlinedRow(
                     icon: Icons.receipt_long_outlined,
-                    label: 'Your payments',
+                    label: context.tr('payments_your_payments'),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen())),
                   ),
                   const SizedBox(height: 12),
                   _OutlinedRow(
                     icon: Icons.confirmation_number_outlined,
-                    label: 'Credits & coupons',
-                    badge: 'New',
+                    label: context.tr('payments_credits_coupons'),
+                    badge: context.tr('payments_new_badge'),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreditsCouponsScreen())),
                   ),
                 ],

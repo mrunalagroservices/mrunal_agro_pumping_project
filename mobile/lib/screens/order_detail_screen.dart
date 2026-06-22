@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../models/order.dart';
 import '../providers/app_state.dart';
 import 'product_detail_screen.dart';
@@ -38,18 +39,18 @@ String _tomorrowLabel() {
   return '${_weekdays[tomorrow.weekday - 1]}, ${tomorrow.day} ${_months[tomorrow.month - 1]}';
 }
 
-String _statusHeadline(String status) {
+String _statusHeadline(BuildContext context, String status) {
   switch (status) {
     case 'confirmed':
-      return 'Order Confirmed';
+      return context.tr('orders_status_confirmed_headline');
     case 'shipped':
-      return 'Shipped';
+      return context.tr('orders_status_shipped_headline');
     case 'delivered':
-      return 'Item Delivered';
+      return context.tr('order_detail_item_delivered');
     case 'cancelled':
-      return 'Order Cancelled';
+      return context.tr('orders_status_cancelled_headline');
     default:
-      return 'Order Placed';
+      return context.tr('orders_status_placed_headline');
   }
 }
 
@@ -83,6 +84,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final o = widget.order;
     final images = _images;
 
@@ -161,10 +163,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order #${o.id}',
+                  Text(context.tr('order_detail_number').replaceAll('{id}', '${o.id}'),
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                   const SizedBox(height: 4),
-                  Text('Placed on ${o.createdAt.day} ${_months[o.createdAt.month - 1]} ${o.createdAt.year}',
+                  Text(context.tr('order_detail_placed_on').replaceAll('{date}', '${o.createdAt.day} ${_months[o.createdAt.month - 1]} ${o.createdAt.year}'),
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
                 ],
               ),
@@ -185,7 +187,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_statusHeadline(o.status), style: TextStyle(color: o.statusColor, fontWeight: FontWeight.w500, fontSize: 13)),
+                          Text(_statusHeadline(context, o.status), style: TextStyle(color: o.statusColor, fontWeight: FontWeight.w500, fontSize: 13)),
                           if (o.status == 'delivered' || o.status == 'shipped' || o.status == 'cancelled') ...[
                             const SizedBox(height: 2),
                             Text(_date(o.updatedAt), style: TextStyle(color: o.statusColor.withValues(alpha: 0.8), fontSize: 11)),
@@ -213,7 +215,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Ordered', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                              Text(context.tr('order_detail_ordered_label'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                               const SizedBox(height: 6),
                               Text(_date(o.createdAt), style: const TextStyle(fontSize: 14, color: _P.text)),
                               Text(_time(o.createdAt), style: const TextStyle(fontSize: 13, color: _P.subtext)),
@@ -228,7 +230,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text('Payment', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                              Text(context.tr('payment_title'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                               const SizedBox(height: 6),
                               Text(o.paymentMethod.toUpperCase(), style: const TextStyle(fontSize: 14, color: _P.text)),
                               Text('₹${o.total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, color: _P.subtext)),
@@ -255,7 +257,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Delivery address', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                        Text(context.tr('order_detail_delivery_address'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                         const SizedBox(height: 3),
                         Text('${o.deliveryAddress.name} · ${o.deliveryAddress.phone}',
                             style: const TextStyle(fontSize: 13, color: _P.subtext)),
@@ -272,9 +274,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             const SizedBox(height: 22),
 
             // ── Order details ────────────────────────────────────────────
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text('Order details', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(context.tr('order_detail_title'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
             ),
             const SizedBox(height: 14),
 
@@ -306,7 +308,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _P.text)),
-                                Text('${item.unit ?? ''}  ·  Qty ${item.qty}',
+                                Text(context.tr('order_detail_qty').replaceAll('{unit}', item.unit ?? '').replaceAll('{qty}', '${item.qty}'),
                                     style: const TextStyle(fontSize: 11, color: _P.subtext)),
                               ],
                             ),
@@ -332,16 +334,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  _SummaryRow(label: 'Subtotal', value: '₹${o.subtotal.toStringAsFixed(0)}'),
+                  _SummaryRow(label: context.tr('cart_subtotal'), value: '₹${o.subtotal.toStringAsFixed(0)}'),
                   if (o.discount > 0)
-                    _SummaryRow(label: 'Discount${o.couponCode != null ? ' (${o.couponCode})' : ''}',
+                    _SummaryRow(label: '${context.tr('order_detail_discount')}${o.couponCode != null ? ' (${o.couponCode})' : ''}',
                         value: '−₹${o.discount.toStringAsFixed(0)}', valueColor: const Color(0xFF15803D)),
-                  _SummaryRow(label: 'Delivery', value: o.deliveryCharge == 0 ? 'Free' : '₹${o.deliveryCharge.toStringAsFixed(0)}'),
+                  _SummaryRow(label: context.tr('order_detail_delivery_label'), value: o.deliveryCharge == 0 ? context.tr('payment_free') : '₹${o.deliveryCharge.toStringAsFixed(0)}'),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: Divider(height: 1, thickness: 1, color: _P.divider),
                   ),
-                  _SummaryRow(label: 'Total', value: '₹${o.total.toStringAsFixed(0)}', bold: true),
+                  _SummaryRow(label: context.tr('order_detail_total'), value: '₹${o.total.toStringAsFixed(0)}', bold: true),
                 ],
               ),
             ),
@@ -454,7 +456,7 @@ class _RatingBoxState extends State<_RatingBox> {
               await showWriteReviewSheet(context,
                   productId: widget.productId, productName: widget.productName, initialRating: _rating == 0 ? 5 : _rating);
             },
-            child: const Text('Write Review', style: TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w600, fontSize: 11)),
+            child: Text(context.tr('orders_write_review'), style: const TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w600, fontSize: 11)),
           ),
         ],
       ),
@@ -483,7 +485,7 @@ class _YouMayAlsoLike extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('You may also like', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+          Text(context.tr('order_detail_you_may_like'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
           const SizedBox(height: 14),
           SizedBox(
             height: 200,

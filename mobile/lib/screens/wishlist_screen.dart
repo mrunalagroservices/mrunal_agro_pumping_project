@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../models/product.dart';
 import '../providers/app_state.dart';
 import 'product_detail_screen.dart';
@@ -39,6 +40,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
     final items = state.wishlist;
 
@@ -61,7 +63,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text('Wishlist', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+                  Text(context.tr('wishlist_title'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
                 ],
               ),
             ),
@@ -69,7 +71,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : items.isEmpty
-                      ? const _EmptyWishlist()
+                      ? _EmptyWishlist()
                       : RefreshIndicator(
                           onRefresh: () => state.loadWishlist(),
                           child: ListView.separated(
@@ -176,10 +178,10 @@ class _EmptyWishlist extends StatelessWidget {
           children: [
             const Icon(Icons.favorite_border, size: 48, color: _P.subtext),
             const SizedBox(height: 14),
-            const Text('Your wishlist is empty', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
+            Text(context.tr('wishlist_empty_title'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
             const SizedBox(height: 6),
-            const Text('Tap the heart on any product to save it here.',
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: _P.subtext)),
+            Text(context.tr('wishlist_empty_sub'),
+                textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: _P.subtext)),
           ],
         ),
       ),

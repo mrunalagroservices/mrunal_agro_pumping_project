@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../models/order.dart';
 import '../models/product.dart';
 import '../providers/app_state.dart';
@@ -128,7 +129,7 @@ class _CartScreenState extends State<CartScreen> {
       setState(() { _applyingCoupon = false; _couponError = e.message; });
     } catch (_) {
       if (!mounted) return;
-      setState(() { _applyingCoupon = false; _couponError = 'Could not reach the server.'; });
+      setState(() { _applyingCoupon = false; _couponError = context.tr('common_server_error'); });
     }
   }
 
@@ -144,7 +145,7 @@ class _CartScreenState extends State<CartScreen> {
     if (_entries.isEmpty) return;
     if (!_address.isComplete) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in your full delivery address')),
+        SnackBar(content: Text(context.tr('cart_fill_address'))),
       );
       return;
     }
@@ -182,17 +183,18 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: _P.text,
         elevation: 0,
-        title: Text('My Cart (${_cart.values.fold(0, (a, b) => a + b)})',
+        title: Text(context.tr('cart_title').replaceAll('{n}', '${_cart.values.fold(0, (a, b) => a + b)}'),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
       ),
       body: _entries.isEmpty
-          ? const _EmptyCart()
+          ? _EmptyCart()
           : Column(
               children: [
                 Expanded(
@@ -212,31 +214,31 @@ class _CartScreenState extends State<CartScreen> {
                       const Divider(height: 1, thickness: 1, color: _P.divider),
                       const SizedBox(height: 20),
 
-                      const Text('Deliver to', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                      Text(context.tr('cart_deliver_to'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                       const SizedBox(height: 14),
                       Row(children: [
-                        Expanded(child: _Field(label: 'Full name', controller: _name)),
+                        Expanded(child: _Field(label: context.tr('cart_full_name'), controller: _name)),
                         const SizedBox(width: 10),
-                        Expanded(child: _Field(label: 'Phone', controller: _phone, keyboardType: TextInputType.phone)),
+                        Expanded(child: _Field(label: context.tr('cart_phone'), controller: _phone, keyboardType: TextInputType.phone)),
                       ]),
                       const SizedBox(height: 12),
-                      _Field(label: 'Address line 1', controller: _line1),
+                      _Field(label: context.tr('cart_address_line1'), controller: _line1),
                       const SizedBox(height: 12),
-                      _Field(label: 'Address line 2 (optional)', controller: _line2),
+                      _Field(label: context.tr('cart_address_line2'), controller: _line2),
                       const SizedBox(height: 12),
                       Row(children: [
-                        Expanded(child: _Field(label: 'City', controller: _city)),
+                        Expanded(child: _Field(label: context.tr('cart_city'), controller: _city)),
                         const SizedBox(width: 10),
-                        Expanded(child: _Field(label: 'State', controller: _state)),
+                        Expanded(child: _Field(label: context.tr('cart_state'), controller: _state)),
                       ]),
                       const SizedBox(height: 12),
-                      _Field(label: 'Pincode', controller: _pincode, keyboardType: TextInputType.number),
+                      _Field(label: context.tr('cart_pincode'), controller: _pincode, keyboardType: TextInputType.number),
 
                       const SizedBox(height: 24),
                       const Divider(height: 1, thickness: 1, color: _P.divider),
                       const SizedBox(height: 20),
 
-                      const Text('Coupon', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                      Text(context.tr('cart_coupon'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                       const SizedBox(height: 14),
                       if (_appliedCoupon != null)
                         Container(
@@ -248,7 +250,9 @@ class _CartScreenState extends State<CartScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  '${_appliedCoupon!['code']} applied — you saved ₹${_discount.toStringAsFixed(0)}',
+                                  context.tr('cart_coupon_applied')
+                                      .replaceAll('{code}', '${_appliedCoupon!['code']}')
+                                      .replaceAll('{amount}', _discount.toStringAsFixed(0)),
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.green),
                                 ),
                               ),
@@ -264,7 +268,7 @@ class _CartScreenState extends State<CartScreen> {
                                 controller: _couponController,
                                 textCapitalization: TextCapitalization.characters,
                                 decoration: InputDecoration(
-                                  hintText: 'Enter coupon code',
+                                  hintText: context.tr('cart_enter_coupon'),
                                   hintStyle: const TextStyle(color: _P.subtext),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
@@ -285,7 +289,7 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                                 child: _applyingCoupon
                                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                    : const Text('Apply'),
+                                    : Text(context.tr('cart_apply')),
                               ),
                             ),
                           ],
@@ -299,14 +303,14 @@ class _CartScreenState extends State<CartScreen> {
                       const Divider(height: 1, thickness: 1, color: _P.divider),
                       const SizedBox(height: 20),
 
-                      const Text('Order summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                      Text(context.tr('cart_order_summary'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
                       const SizedBox(height: 14),
-                      _SummaryRow(label: 'Subtotal', value: '₹${_subtotal.toStringAsFixed(0)}'),
+                      _SummaryRow(label: context.tr('cart_subtotal'), value: '₹${_subtotal.toStringAsFixed(0)}'),
                       if (_discount > 0)
-                        _SummaryRow(label: 'Coupon discount', value: '−₹${_discount.toStringAsFixed(0)}', valueColor: _P.green),
+                        _SummaryRow(label: context.tr('cart_coupon_discount'), value: '−₹${_discount.toStringAsFixed(0)}', valueColor: _P.green),
                       const SizedBox(height: 4),
-                      const Text('Delivery charge is calculated on the next step based on payment method.',
-                          style: TextStyle(fontSize: 10, color: _P.subtext)),
+                      Text(context.tr('cart_delivery_next_step'),
+                          style: const TextStyle(fontSize: 10, color: _P.subtext)),
                     ],
                   ),
                 ),
@@ -324,7 +328,7 @@ class _CartScreenState extends State<CartScreen> {
                           children: [
                             Text('₹${(_subtotal - _discount).toStringAsFixed(0)}',
                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
-                            const Text('+ delivery', style: TextStyle(fontSize: 10, color: _P.subtext)),
+                            Text(context.tr('cart_plus_delivery'), style: const TextStyle(fontSize: 10, color: _P.subtext)),
                           ],
                         ),
                       ),
@@ -336,7 +340,7 @@ class _CartScreenState extends State<CartScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        child: const Text('Continue to Pay', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+                        child: Text(context.tr('cart_continue_to_pay'), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
                       ),
                     ],
                   ),
@@ -475,7 +479,7 @@ class _EmptyCart extends StatelessWidget {
           children: [
             const Icon(Icons.shopping_cart_outlined, size: 48, color: _P.subtext),
             const SizedBox(height: 14),
-            const Text('Your cart is empty', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
+            Text(context.tr('shop_cart_empty'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
           ],
         ),
       ),

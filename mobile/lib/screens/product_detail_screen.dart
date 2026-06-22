@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../l10n/tr_extension.dart';
 import '../models/product.dart';
 import '../providers/app_state.dart';
 import 'cart_screen.dart';
@@ -59,7 +60,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() { _loading = false; _error = 'Could not load this product.'; });
+      setState(() { _loading = false; _error = context.tr('product_load_error'); });
     }
   }
 
@@ -88,6 +89,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
     final p = _product;
 
@@ -97,7 +99,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null || p == null
-                ? _ErrorView(message: _error ?? 'Product not found', onRetry: _load)
+                ? _ErrorView(message: _error ?? context.tr('product_not_found'), onRetry: _load)
                 : Column(
                     children: [
                       Padding(
@@ -115,7 +117,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             _CircleIcon(
                               icon: Icons.share_outlined,
                               onTap: () => SharePlus.instance.share(ShareParams(
-                                text: '${p.name} — ₹${p.price.toStringAsFixed(0)} on Mrunal Agro Market',
+                                text: context.tr('product_share_text')
+                                    .replaceAll('{name}', p.name)
+                                    .replaceAll('{price}', p.price.toStringAsFixed(0)),
                               )),
                             ),
                           ],
@@ -186,7 +190,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(height: 18),
 
                             // ── Delivery & services ──────────────────────────
-                            const Text('Delivery & Services', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                            Text(context.tr('product_delivery_services'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                             const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.all(14),
@@ -199,9 +203,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(p.inStock ? 'Free delivery by ${widget.deliveryDate}' : 'Out of stock',
+                                        Text(p.inStock ? context.tr('product_free_delivery_by').replaceAll('{date}', widget.deliveryDate) : context.tr('product_out_of_stock'),
                                             style: const TextStyle(fontWeight: FontWeight.w500, color: _P.text, fontSize: 11)),
-                                        const Text('On orders above ₹499', style: TextStyle(fontSize: 10, color: _P.subtext)),
+                                        Text(context.tr('product_orders_above'), style: const TextStyle(fontSize: 10, color: _P.subtext)),
                                       ],
                                     ),
                                   ),
@@ -209,19 +213,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            const _InfoLine(icon: Icons.storefront_outlined, text: 'Sold by Mrunal Agro'),
-                            const _InfoLine(icon: Icons.payments_outlined, text: 'Cash on Delivery available (+₹100 handling)'),
-                            const _InfoLine(icon: Icons.support_agent_outlined, text: 'Contact support for replacement of damaged or incorrect items'),
+                            _InfoLine(icon: Icons.storefront_outlined, text: context.tr('product_sold_by')),
+                            _InfoLine(icon: Icons.payments_outlined, text: context.tr('product_cod_available')),
+                            _InfoLine(icon: Icons.support_agent_outlined, text: context.tr('product_support_replacement')),
 
                             const SizedBox(height: 18),
                             const Divider(height: 1, thickness: 1, color: _P.divider),
                             const SizedBox(height: 18),
 
                             // ── Product details (real description) ──────────
-                            const Text('Product Details', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                            Text(context.tr('product_details'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                             const SizedBox(height: 8),
                             Text(
-                              p.description.isNotEmpty ? p.description : 'No description provided yet.',
+                              p.description.isNotEmpty ? p.description : context.tr('product_no_description'),
                               style: const TextStyle(fontSize: 12, color: _P.subtext, height: 1.5),
                             ),
 
@@ -232,12 +236,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             // ── Ratings & Reviews ────────────────────────────
                             Row(
                               children: [
-                                const Expanded(
-                                  child: Text('Ratings & Reviews', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                                Expanded(
+                                  child: Text(context.tr('product_ratings_reviews'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
                                 ),
                                 TextButton(
                                   onPressed: _writeReview,
-                                  child: const Text('Write a review', style: TextStyle(fontWeight: FontWeight.w500, color: _P.text)),
+                                  child: Text(context.tr('product_write_review'), style: const TextStyle(fontWeight: FontWeight.w500, color: _P.text)),
                                 ),
                               ],
                             ),
@@ -257,7 +261,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                             const SizedBox(height: 14),
                             if (_reviews.isEmpty)
-                              const Text('No reviews yet — be the first to write one.', style: TextStyle(color: _P.subtext, fontSize: 11))
+                              Text(context.tr('product_no_reviews'), style: const TextStyle(color: _P.subtext, fontSize: 11))
                             else
                               ..._reviews.take(5).map((r) => _ReviewCard(review: r)),
 
@@ -291,7 +295,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   padding: const EdgeInsets.symmetric(vertical: 15),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
-                                child: const Text('Buy Now', style: TextStyle(fontWeight: FontWeight.w500)),
+                                child: Text(context.tr('product_buy_now'), style: const TextStyle(fontWeight: FontWeight.w500)),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -309,7 +313,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   padding: const EdgeInsets.symmetric(vertical: 15),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
-                                child: Text(widget.cartQty > 0 ? 'Add More' : 'Add to Bag', style: const TextStyle(fontWeight: FontWeight.w500)),
+                                child: Text(widget.cartQty > 0 ? context.tr('product_add_more') : context.tr('product_add_to_bag'), style: const TextStyle(fontWeight: FontWeight.w500)),
                               ),
                             ),
                           ],
@@ -407,7 +411,7 @@ class _SimilarProducts extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Similar Products', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+        Text(context.tr('product_similar'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
         const SizedBox(height: 12),
         SizedBox(
           height: 200,
@@ -501,7 +505,7 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center, style: const TextStyle(color: _P.text)),
             const SizedBox(height: 12),
-            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+            OutlinedButton(onPressed: onRetry, child: Text(context.tr('common_retry'))),
           ],
         ),
       ),

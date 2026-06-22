@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'config/theme.dart';
 import 'providers/app_state.dart';
+import 'providers/locale_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_shell.dart';
 
@@ -14,8 +15,11 @@ class MrunalAgroApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AppState()..bootstrap(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppState()..bootstrap()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()..load()),
+      ],
       child: MaterialApp(
         title: 'Mrunal Agro Pumping',
         debugShowCheckedModeBanner: false,

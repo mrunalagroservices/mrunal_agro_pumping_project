@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../models/order.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 import 'order_detail_screen.dart';
 import 'write_review_sheet.dart';
 
@@ -32,23 +34,24 @@ class _StatusInfo {
   _StatusInfo(this.icon, this.color, this.bg, this.headline, this.subtitle);
 }
 
-_StatusInfo _statusInfo(OrderModel o) {
+_StatusInfo _statusInfo(BuildContext context, OrderModel o) {
   switch (o.status) {
     case 'confirmed':
       return _StatusInfo(Icons.check_circle_outline, const Color(0xFF2563EB), const Color(0xFFEFF6FF),
-          'Order Confirmed', 'Your order has been confirmed and is being prepared');
+          context.tr('orders_status_confirmed_headline'), context.tr('orders_status_confirmed_sub'));
     case 'shipped':
       return _StatusInfo(Icons.local_shipping_outlined, const Color(0xFF7C3AED), const Color(0xFFF5F3FF),
-          'Shipped', 'Your order is on its way');
+          context.tr('orders_status_shipped_headline'), context.tr('orders_status_shipped_sub'));
     case 'delivered':
       return _StatusInfo(Icons.inventory_2_outlined, const Color(0xFF15803D), const Color(0xFFF0FDF4),
-          'Delivered', 'On ${_fmtFullDateTime(o.updatedAt)}');
+          context.tr('orders_status_delivered_headline'),
+          context.tr('orders_status_delivered_sub').replaceAll('{date}', _fmtFullDateTime(o.updatedAt)));
     case 'cancelled':
       return _StatusInfo(Icons.cancel_outlined, const Color(0xFFDC2626), const Color(0xFFFEF2F2),
-          'Order Cancelled', 'This order was cancelled');
+          context.tr('orders_status_cancelled_headline'), context.tr('orders_status_cancelled_sub'));
     default:
       return _StatusInfo(Icons.shopping_bag_outlined, const Color(0xFFD97706), const Color(0xFFFFFBEB),
-          'Order Placed', "We've received your order");
+          context.tr('orders_status_placed_headline'), context.tr('orders_status_placed_sub'));
   }
 }
 
@@ -71,6 +74,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
 
     return Scaffold(
@@ -85,12 +89,23 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   : state.orders.isEmpty
                       ? ListView(
                           children: [
-                            const Padding(
-                              padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
-                              child: Text('My Orders',
-                                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                              child: Row(
+                                children: [
+                                  if (Navigator.canPop(context)) ...[
+                                    _CircleBack(onTap: () => Navigator.pop(context)),
+                                    const SizedBox(width: 12),
+                                  ],
+                                  Expanded(
+                                    child: Text(context.tr('orders_my_orders'),
+                                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                                  ),
+                                  const LanguageSwitcher(),
+                                ],
+                              ),
                             ),
-                            const _EmptyOrders(),
+                            _EmptyOrders(),
                           ],
                         )
                       : ListView.separated(
@@ -99,10 +114,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           separatorBuilder: (_, i) => i == 0 ? const SizedBox.shrink() : Container(height: 8, color: _P.tile),
                           itemBuilder: (context, i) {
                             if (i == 0) {
-                              return const Padding(
-                                padding: EdgeInsets.fromLTRB(20, 16, 20, 16),
-                                child: Text('My Orders',
-                                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                              return Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                                child: Row(
+                                  children: [
+                                    if (Navigator.canPop(context)) ...[
+                                      _CircleBack(onTap: () => Navigator.pop(context)),
+                                      const SizedBox(width: 12),
+                                    ],
+                                    Expanded(
+                                      child: Text(context.tr('orders_my_orders'),
+                                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                                    ),
+                                    const LanguageSwitcher(),
+                                  ],
+                                ),
                               );
                             }
                             return _OrderBlock(order: state.orders[i - 1]);
@@ -120,7 +146,7 @@ class _OrderBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final info = _statusInfo(order);
+    final info = _statusInfo(context, order);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Column(
@@ -171,7 +197,7 @@ class _OrderBlock extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () => _needHelp(context),
                 icon: const Icon(Icons.support_agent_outlined, size: 18, color: _P.text),
-                label: const Text('Need Help?', style: TextStyle(color: _P.text, fontWeight: FontWeight.w500)),
+                label: Text(context.tr('orders_need_help'), style: const TextStyle(color: _P.text, fontWeight: FontWeight.w500)),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: _P.divider),
                   padding: const EdgeInsets.symmetric(vertical: 13),
@@ -187,7 +213,7 @@ class _OrderBlock extends StatelessWidget {
 
   void _needHelp(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Contact support@mrunalagro.in for help with this order')),
+      SnackBar(content: Text(context.tr('orders_contact_support'))),
     );
   }
 }
@@ -284,7 +310,7 @@ class _ItemRowState extends State<_ItemRow> {
                           productId: item.productId!, productName: item.productName, initialRating: _hoverRating == 0 ? 5 : _hoverRating);
                       if (result == true) setState(() {});
                     },
-                    child: const Text('Write Review', style: TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w600, fontSize: 11)),
+                    child: Text(context.tr('orders_write_review'), style: const TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w600, fontSize: 11)),
                   ),
                 ],
               ),
@@ -307,10 +333,10 @@ class _EmptyOrders extends StatelessWidget {
         children: [
           const Text('📦', style: TextStyle(fontSize: 46)),
           const SizedBox(height: 14),
-          const Text('No orders yet', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: _P.text)),
+          Text(context.tr('orders_empty_title'), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: _P.text)),
           const SizedBox(height: 6),
-          const Text('Orders you place from Market will appear here.',
-              textAlign: TextAlign.center, style: TextStyle(color: _P.subtext, fontSize: 12)),
+          Text(context.tr('orders_empty_sub'),
+              textAlign: TextAlign.center, style: const TextStyle(color: _P.subtext, fontSize: 12)),
         ],
       ),
     );
@@ -334,11 +360,30 @@ class _ErrorView extends StatelessWidget {
               const SizedBox(height: 14),
               Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: _P.text)),
               const SizedBox(height: 16),
-              OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+              OutlinedButton(onPressed: onRetry, child: Text(context.tr('common_retry'))),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _CircleBack extends StatelessWidget {
+  final VoidCallback onTap;
+  const _CircleBack({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: const BoxDecoration(color: _P.tile, shape: BoxShape.circle),
+        child: const Icon(Icons.arrow_back, size: 20, color: _P.text),
+      ),
     );
   }
 }

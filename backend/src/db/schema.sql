@@ -68,24 +68,37 @@ CREATE INDEX idx_user_saved_coupons_user ON user_saved_coupons(user_id);
 -- ─── Legal documents (Legal → Terms of Service / Privacy Policy / etc.) ───────
 -- One row per document; `sections` is an ordered array of {heading, body}.
 -- Editable from the admin dashboard without an app release.
+-- `title_hi`/`title_mr`/`sections_hi`/`sections_mr` hold the Hindi/Marathi
+-- translations; the API falls back to the English `title`/`sections` when
+-- a translated value is missing.
 CREATE TABLE legal_documents (
-  id         SERIAL PRIMARY KEY,
-  slug       VARCHAR(50) UNIQUE NOT NULL, -- e.g. 'terms-of-service'
-  title      VARCHAR(150) NOT NULL,
-  sections   JSONB NOT NULL DEFAULT '[]', -- [{ "heading": "...", "body": "..." }, ...]
-  sort_order INTEGER NOT NULL DEFAULT 0,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id          SERIAL PRIMARY KEY,
+  slug        VARCHAR(50) UNIQUE NOT NULL, -- e.g. 'terms-of-service'
+  title       VARCHAR(150) NOT NULL,
+  title_hi    VARCHAR(150),
+  title_mr    VARCHAR(150),
+  sections    JSONB NOT NULL DEFAULT '[]', -- [{ "heading": "...", "body": "..." }, ...]
+  sections_hi JSONB NOT NULL DEFAULT '[]',
+  sections_mr JSONB NOT NULL DEFAULT '[]',
+  sort_order  INTEGER NOT NULL DEFAULT 0,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ─── Support FAQ topics (Find support → help bot quick replies) ──────────────
+-- `question_hi`/`question_mr`/`answer_hi`/`answer_mr` hold the translated
+-- copy; the API falls back to the English `question`/`answer` when missing.
 CREATE TABLE faq_topics (
-  id         SERIAL PRIMARY KEY,
-  question   VARCHAR(255) NOT NULL,
-  answer     TEXT NOT NULL,
-  sort_order INTEGER NOT NULL DEFAULT 0,
-  is_active  BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id          SERIAL PRIMARY KEY,
+  question    VARCHAR(255) NOT NULL,
+  question_hi VARCHAR(255),
+  question_mr VARCHAR(255),
+  answer      TEXT NOT NULL,
+  answer_hi   TEXT,
+  answer_mr   TEXT,
+  sort_order  INTEGER NOT NULL DEFAULT 0,
+  is_active   BOOLEAN NOT NULL DEFAULT true,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ─── Farms ────────────────────────────────────────────────────────────────

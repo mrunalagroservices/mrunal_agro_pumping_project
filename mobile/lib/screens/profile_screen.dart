@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 import 'account_settings_screen.dart';
 import 'legal_screen.dart';
 import 'privacy_screen.dart';
@@ -39,12 +41,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _comingSoon(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature — coming soon'), behavior: SnackBarBehavior.floating),
+      SnackBar(content: Text(context.tr('profile_coming_soon').replaceAll('{feature}', feature)), behavior: SnackBarBehavior.floating),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
     final user = state.user;
     final unresolved = state.notifications.where((n) => n.isUnresolvedAlert).length;
@@ -62,9 +65,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // ── Title + bell ─────────────────────────────────────────────
             Row(
               children: [
-                const Text('Profile',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                if (Navigator.canPop(context)) ...[
+                  _CircleIcon(icon: Icons.arrow_back, onTap: () => Navigator.pop(context)),
+                  const SizedBox(width: 12),
+                ],
+                Text(context.tr('profile_title'),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
                 const Spacer(),
+                const LanguageSwitcher(size: 36),
+                const SizedBox(width: 10),
                 _CircleIcon(
                   icon: Icons.notifications_none_rounded,
                   badge: unresolved > 0,
@@ -105,7 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text(user?.name ?? '',
                             style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w500, color: _P.text)),
                         const SizedBox(height: 2),
-                        Text(_roleLabel(user?.role),
+                        Text(_roleLabel(context, user?.role),
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext)),
                       ],
                     ),
@@ -116,11 +125,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _Stat(value: '${state.orders.length}', label: state.orders.length == 1 ? 'Order' : 'Orders'),
+                        _Stat(value: '${state.orders.length}', label: state.orders.length == 1 ? context.tr('profile_order') : context.tr('profile_orders')),
                         const _StatDivider(),
-                        _Stat(value: '${state.farms.length}', label: state.farms.length == 1 ? 'Farm' : 'Farms'),
+                        _Stat(value: '${state.farms.length}', label: state.farms.length == 1 ? context.tr('profile_farm') : context.tr('profile_farms')),
                         const _StatDivider(),
-                        _Stat(value: '$yearsOnApp', label: yearsOnApp == 1 ? 'Year on Mrunal' : 'Years on Mrunal'),
+                        _Stat(value: '$yearsOnApp', label: yearsOnApp == 1 ? context.tr('profile_year_on_app') : context.tr('profile_years_on_app')),
                       ],
                     ),
                   ),
@@ -138,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: _PromoCard(
                       tileBg: const Color(0xFFFFF1F3),
                       emoji: '📦',
-                      label: 'My Orders',
+                      label: context.tr('profile_my_orders'),
                       onTap: widget.onViewOrders ?? () {},
                     ),
                   ),
@@ -147,8 +156,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: _PromoCard(
                       tileBg: const Color(0xFFEFF6EF),
                       emoji: '🌾',
-                      label: 'My Farms',
-                      onTap: () => _comingSoon('Farms overview'),
+                      label: context.tr('profile_my_farms'),
+                      onTap: () => _comingSoon(context.tr('profile_farms_overview')),
                     ),
                   ),
                 ],
@@ -159,22 +168,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // ── Wide promo card ──────────────────────────────────────────
             _WideCard(
               emoji: '🤝',
-              title: 'Be a Dealer',
-              subtitle: "Partner with Mrunal Agro and start selling pumps and farm equipment in your area.",
-              onTap: () => _comingSoon('Be a Dealer'),
+              title: context.tr('profile_be_a_dealer'),
+              subtitle: context.tr('profile_be_a_dealer_sub'),
+              onTap: () => _comingSoon(context.tr('profile_be_a_dealer')),
             ),
             const SizedBox(height: 18),
 
             // ── Menu list ────────────────────────────────────────────────
-            _MenuRow(icon: Icons.settings_outlined, label: 'Account settings', showDot: true, onTap: () {
+            _MenuRow(icon: Icons.settings_outlined, label: context.tr('profile_account_settings'), showDot: true, onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountSettingsScreen()));
             }),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.help_outline, label: 'Get help', onTap: () => _comingSoon('Help center')),
+            _MenuRow(icon: Icons.help_outline, label: context.tr('profile_get_help'), onTap: () => _comingSoon(context.tr('profile_help_center'))),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.person_outline, label: 'View profile', onTap: () => _comingSoon('View profile')),
+            _MenuRow(icon: Icons.person_outline, label: context.tr('profile_view_profile'), onTap: () => _comingSoon(context.tr('profile_view_profile'))),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.front_hand_outlined, label: 'Privacy', onTap: () {
+            _MenuRow(icon: Icons.front_hand_outlined, label: context.tr('profile_privacy'), onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyScreen()));
             }),
 
@@ -182,19 +191,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const Divider(height: 1, thickness: 1, color: _P.divider),
             const SizedBox(height: 14),
 
-            _MenuRow(icon: Icons.group_add_outlined, label: 'Refer a friend', onTap: () => _comingSoon('Referrals')),
+            _MenuRow(icon: Icons.group_add_outlined, label: context.tr('profile_refer_friend'), onTap: () => _comingSoon(context.tr('profile_referrals'))),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.support_agent_outlined, label: 'Find support', onTap: () {
+            _MenuRow(icon: Icons.support_agent_outlined, label: context.tr('profile_find_support'), onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen()));
             }),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.menu_book_outlined, label: 'Legal', onTap: () {
+            _MenuRow(icon: Icons.menu_book_outlined, label: context.tr('profile_legal'), onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const LegalScreen()));
             }),
             const _MenuDivider(),
             _MenuRow(
               icon: Icons.meeting_room_outlined,
-              label: 'Log out',
+              label: context.tr('profile_logout'),
               showChevron: false,
               onTap: () => context.read<AppState>().logout(),
             ),
@@ -204,8 +213,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  String _roleLabel(String? role) {
-    if (role == null || role.isEmpty) return 'Member';
+  String _roleLabel(BuildContext context, String? role) {
+    if (role == null || role.isEmpty) return context.tr('profile_member');
     return role[0].toUpperCase() + role.substring(1);
   }
 }
@@ -272,8 +281,8 @@ class _PromoCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                   decoration: BoxDecoration(color: _P.newBadge, borderRadius: BorderRadius.circular(20)),
-                  child: const Text('NEW',
-                      style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w500, letterSpacing: 0.3)),
+                  child: Text(context.tr('profile_new_badge'),
+                      style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w500, letterSpacing: 0.3)),
                 ),
               ),
               const SizedBox(height: 8),

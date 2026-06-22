@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
 import '../services/api_client.dart';
+import '../widgets/language_switcher.dart';
 
 class _P {
   static const text = Color(0xFF222222);
@@ -36,13 +38,13 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
       setState(() => _coupons = coupons);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _error = 'Could not load your coupons.');
+      setState(() => _error = context.tr('cc_could_not_load'));
     }
   }
 
   void _comingSoon(String f) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$f — coming soon'), behavior: SnackBarBehavior.floating),
+      SnackBar(content: Text(context.tr('profile_coming_soon').replaceAll('{feature}', f)), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -59,40 +61,47 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            Align(alignment: Alignment.topLeft, child: _CircleBack(onTap: () => Navigator.pop(context))),
+            Row(
+              children: [
+                _CircleBack(onTap: () => Navigator.pop(context)),
+                const Spacer(),
+                const LanguageSwitcher(),
+              ],
+            ),
             const SizedBox(height: 18),
-            const Text('Credits and coupons',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+            Text(context.tr('cc_title'),
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
             const SizedBox(height: 28),
 
-            const Text('Gift credit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: _P.text)),
+            Text(context.tr('cc_gift_credit'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: _P.text)),
             const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Current balance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
+                Text(context.tr('cc_current_balance'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
                 const Text('₹0.00', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
               ],
             ),
             const SizedBox(height: 16),
-            _DarkButton(label: 'Add gift card', onTap: () => _comingSoon('Gift cards')),
+            _DarkButton(label: context.tr('cc_add_gift_card'), onTap: () => _comingSoon(context.tr('cc_gift_cards'))),
 
             const SizedBox(height: 28),
             const Divider(height: 1, thickness: 1, color: _P.divider),
             const SizedBox(height: 28),
 
-            const Text('Coupons', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: _P.text)),
+            Text(context.tr('cc_coupons'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: _P.text)),
             const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Your coupons', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
+                Text(context.tr('cc_your_coupons'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
                 Text('${_coupons?.length ?? 0}',
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, decoration: TextDecoration.underline)),
               ],
@@ -108,9 +117,9 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
             if (_coupons == null)
               const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Center(child: CircularProgressIndicator()))
             else if (_coupons!.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                child: Text("You don't have any saved coupons yet.", style: TextStyle(fontSize: 12, color: _P.subtext)),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                child: Text(context.tr('cc_no_coupons'), style: const TextStyle(fontSize: 12, color: _P.subtext)),
               )
             else
               ..._coupons!.map((c) => Padding(
@@ -119,7 +128,7 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
                   )),
 
             const SizedBox(height: 16),
-            _DarkButton(label: 'Add coupon', onTap: _openAddCoupon),
+            _DarkButton(label: context.tr('cc_add_coupon'), onTap: _openAddCoupon),
           ],
         ),
       ),
@@ -139,11 +148,12 @@ class _CouponCard extends StatelessWidget {
     final value = coupon['value'];
     final minOrder = coupon['min_order'];
 
+    final minOrderText = (minOrder != null && minOrder > 0) ? context.tr('cc_min_order').replaceAll('{amount}', '$minOrder') : '';
     final description = expired
-        ? 'This coupon is no longer active.'
+        ? context.tr('cc_coupon_expired')
         : type == 'percent'
-            ? 'Get $value% off${minOrder != null && minOrder > 0 ? ' on orders above ₹$minOrder' : ''}.'
-            : 'Get ₹$value off${minOrder != null && minOrder > 0 ? ' on orders above ₹$minOrder' : ''}.';
+            ? context.tr('cc_coupon_percent_off').replaceAll('{value}', '$value').replaceAll('{minOrder}', minOrderText)
+            : context.tr('cc_coupon_flat_off').replaceAll('{value}', '$value').replaceAll('{minOrder}', minOrderText);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -203,12 +213,13 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
       setState(() { _loading = false; _error = e.message; });
     } catch (_) {
       if (!mounted) return;
-      setState(() { _loading = false; _error = 'Could not reach the server.'; });
+      setState(() { _loading = false; _error = context.tr('cc_could_not_reach_server'); });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + MediaQuery.of(context).viewInsets.bottom),
       child: Column(
@@ -217,8 +228,8 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: Text('Coupons', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+              Expanded(
+                child: Text(context.tr('cc_coupons'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
               ),
               InkWell(
                 onTap: () => Navigator.pop(context, false),
@@ -232,7 +243,7 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
             controller: _controller,
             textCapitalization: TextCapitalization.characters,
             decoration: InputDecoration(
-              hintText: 'Enter a coupon code',
+              hintText: context.tr('cc_enter_code'),
               hintStyle: const TextStyle(color: _P.subtext),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
@@ -259,7 +270,7 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
               ),
               child: _loading
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Apply', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                  : Text(context.tr('cc_apply'), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
             ),
           ),
         ],

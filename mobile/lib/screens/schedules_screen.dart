@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../models/schedule.dart';
 import '../providers/app_state.dart';
+import '../widgets/language_switcher.dart';
 
 class SchedulesScreen extends StatefulWidget {
   const SchedulesScreen({super.key});
@@ -33,15 +35,17 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Schedules', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        title: Text(context.tr('schedules_title'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
         actions: [
+          const LanguageSwitcher(size: 36),
           IconButton(
             icon: const Icon(Icons.add),
-            tooltip: 'Add schedule',
+            tooltip: context.tr('schedules_add_tooltip'),
             onPressed: state.actuators.isEmpty ? null : _showAddSchedule,
           ),
         ],
@@ -73,13 +77,13 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                             children: [
                               Icon(Icons.schedule_outlined, size: 48, color: AppColors.textMuted),
                               const SizedBox(height: 12),
-                              Text('No schedules yet',
-                                  style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                              Text(context.tr('schedules_empty_title'),
+                                  style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
                               const SizedBox(height: 4),
                               Text(
-                                'Tap + to automatically run motors at fixed times.',
+                                context.tr('schedules_empty_sub'),
                                 textAlign: TextAlign.center,
-                                style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
                               ),
                             ],
                           ),
@@ -96,7 +100,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
           ? FloatingActionButton.extended(
               onPressed: _showAddSchedule,
               icon: const Icon(Icons.add),
-              label: const Text('Add schedule'),
+              label: Text(context.tr('schedules_add_tooltip')),
               backgroundColor: AppColors.primary600,
               foregroundColor: Colors.white,
             )
@@ -156,7 +160,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   Text(s.name, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
                   const SizedBox(height: 2),
                   Text(
-                    '${s.actuatorName ?? 'Unknown'} · ${s.displayTime} · ${s.durationMinutes}min',
+                    '${s.actuatorName ?? context.tr('common_unknown')} · ${s.displayTime} · ${s.durationMinutes}min',
                     style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 3),
@@ -193,14 +197,14 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: const Text('Delete schedule'),
-                        content: Text('Delete "${s.name}"?'),
+                        title: Text(context.tr('schedules_delete_title')),
+                        content: Text(context.tr('schedules_delete_confirm').replaceAll('{name}', s.name)),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('common_cancel'))),
                           FilledButton(
                             style: FilledButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
                             onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('Delete'),
+                            child: Text(context.tr('common_delete')),
                           ),
                         ],
                       ),
@@ -258,11 +262,11 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedActuatorId == null) {
-      setState(() => _error = 'Select an actuator');
+      setState(() => _error = context.tr('schedules_select_actuator'));
       return;
     }
     if (_days.isEmpty) {
-      setState(() => _error = 'Select at least one day');
+      setState(() => _error = context.tr('schedules_select_day'));
       return;
     }
     setState(() { _submitting = true; _error = null; });
@@ -285,6 +289,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final state = context.watch<AppState>();
     final inp = InputDecoration(
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -306,7 +311,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
             children: [
               Row(
                 children: [
-                  const Text('Add schedule', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text(context.tr('schedules_add_tooltip'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   const Spacer(),
                   IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
                 ],
@@ -314,13 +319,13 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _nameCtrl,
-                decoration: inp.copyWith(labelText: 'Name'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                decoration: inp.copyWith(labelText: context.tr('schedules_name_label')),
+                validator: (v) => (v == null || v.trim().isEmpty) ? context.tr('common_required') : null,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
                 value: _selectedActuatorId,
-                decoration: inp.copyWith(labelText: 'Actuator / Motor'),
+                decoration: inp.copyWith(labelText: context.tr('schedules_actuator_label')),
                 items: state.actuators.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name))).toList(),
                 onChanged: (v) => setState(() => _selectedActuatorId = v),
               ),
@@ -350,11 +355,11 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   Expanded(
                     child: TextFormField(
                       controller: _durationCtrl,
-                      decoration: inp.copyWith(labelText: 'Duration (min)'),
+                      decoration: inp.copyWith(labelText: context.tr('schedules_duration_label')),
                       keyboardType: TextInputType.number,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Required';
-                        if (int.tryParse(v) == null || int.parse(v) < 1) return 'Invalid';
+                        if (v == null || v.trim().isEmpty) return context.tr('common_required');
+                        if (int.tryParse(v) == null || int.parse(v) < 1) return context.tr('common_invalid');
                         return null;
                       },
                     ),
@@ -362,7 +367,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                 ],
               ),
               const SizedBox(height: 16),
-              const Text('Repeat on', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+              Text(context.tr('schedules_repeat_on'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               Row(
                 children: List.generate(7, (i) {
@@ -414,7 +419,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   ),
                   child: _submitting
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Add schedule', style: TextStyle(fontSize: 13)),
+                      : Text(context.tr('schedules_add_tooltip'), style: const TextStyle(fontSize: 13)),
                 ),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
+import '../l10n/tr_extension.dart';
 import '../screens/points_screen.dart';
 import '../screens/profile_screen.dart';
 
@@ -15,7 +16,7 @@ class TopBarActions extends StatelessWidget {
       children: [
         _CircleIconButton(
           icon: Icons.workspace_premium_outlined,
-          tooltip: 'Points',
+          tooltip: context.tr('widget_points_tooltip'),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const PointsScreen()),
           ),
@@ -23,7 +24,7 @@ class TopBarActions extends StatelessWidget {
         const SizedBox(width: 8),
         _CircleIconButton(
           icon: Icons.person_outline,
-          tooltip: 'My profile',
+          tooltip: context.tr('widget_profile_tooltip'),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const ProfileScreen()),
           ),
