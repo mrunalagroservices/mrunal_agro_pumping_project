@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -57,6 +58,12 @@ const corsOrigin = process.env.NODE_ENV === 'production'
 app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json());
 app.use(morgan('dev'));
+
+// Product images etc. — served cross-origin so the dashboard (different
+// domain) and the mobile app can both load them directly.
+app.use('/static', cors(), express.static(path.join(__dirname, '..', 'public'), {
+  setHeaders: (res) => res.set('Cross-Origin-Resource-Policy', 'cross-origin'),
+}));
 
 app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 

@@ -10,13 +10,25 @@ import {
   Wifi,
   WifiOff,
   AlertTriangle,
+  MapPin,
+  ClipboardList,
+  Package,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import StatCard from "@/components/StatCard";
+import FarmsMap from "@/components/FarmsMap";
 import { httpClient } from "@/lib/api";
 import { socketClient } from "@/lib/socket";
-import { ApiResponse, Alert, Device, Farm, Actuator } from "@/lib/types";
+import { ApiResponse, Alert, Device, Farm, Actuator, Order } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
+
+const STATUS_COLORS: Record<string, string> = {
+  placed:    "bg-amber-100 text-amber-700",
+  confirmed: "bg-blue-100 text-blue-700",
+  shipped:   "bg-purple-100 text-purple-700",
+  delivered: "bg-emerald-100 text-emerald-700",
+  cancelled: "bg-red-100 text-red-600",
+};
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -24,21 +36,24 @@ export default function HomePage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [actuators, setActuators] = useState<Actuator[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
-      const [farmsRes, devicesRes, actuatorsRes, alertsRes] =
+      const [farmsRes, devicesRes, actuatorsRes, alertsRes, ordersRes] =
         await Promise.all([
           httpClient.get<ApiResponse<Farm[]>>("/farms"),
           httpClient.get<ApiResponse<Device[]>>("/devices"),
           httpClient.get<ApiResponse<Actuator[]>>("/actuators"),
           httpClient.get<ApiResponse<Alert[]>>("/alerts?resolved=false"),
+          httpClient.get<ApiResponse<Order[]>>("/orders/mine").catch(() => ({ success: true, data: [] as Order[] })),
         ]);
       setFarms(farmsRes.data);
       setDevices(devicesRes.data);
       setActuators(actuatorsRes.data);
       setAlerts(alertsRes.data);
+      setOrders(ordersRes.data);
     } finally {
       setLoading(false);
     }
@@ -88,6 +103,9 @@ export default function HomePage() {
   const activeMotors = actuators.filter(
     (a) => a.current_state === "on"
   ).length;
+  const activeFarmIds = new Set(
+    actuators.filter((a) => a.current_state === "on").map((a) => a.farm_id)
+  );
 
   return (
     <DashboardShell breadcrumb={[]}>
@@ -209,6 +227,93 @@ export default function HomePage() {
                       </p>
                     </div>
                   </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+                <h2 className="font-semibold text-slate-800 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-slate-400" /> Farm Map
+                </h2>
+                <Link
+                  href="/map"
+                  className="text-sm text-primary-700 font-medium hover:underline"
+                >
+                  View full map
+                </Link>
+              </div>
+              {farms.filter((f) => f.latitude != null && f.longitude != null).length === 0 ? (
+                <p className="px-5 py-8 text-sm text-slate-500 text-center">
+                  No farm locations pinned yet.{" "}
+                  <Link href="/map" className="text-primary-700 underline">
+                    Add one
+                  </Link>
+                </p>
+              ) : (
+                <div className="h-56">
+                  <FarmsMap farms={farms} activeFarmIds={activeFarmIds} />
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+                <h2 className="font-semibold text-slate-800 flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4 text-slate-400" /> My Orders
+                </h2>
+                <Link
+                  href="/orders"
+                  className="text-sm text-primary-700 font-medium hover:underline"
+                >
+                  View all
+                </Link>
+              </div>
+              <div className="divide-y divide-slate-100">
+                {orders.length === 0 && (
+                  <div className="px-5 py-8 text-center">
+                    <Package className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">
+                      No orders yet.{" "}
+                      <Link href="/shop" className="text-primary-700 underline">
+                        Go to Market
+                      </Link>
+                    </p>
+                  </div>
+                )}
+                {orders.slice(0, 4).map((o) => (
+                  <Link
+                    key={o.id}
+                    href="/orders"
+                    className="flex items-center justify-between px-5 py-3 hover:bg-slate-50"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-slate-800">
+                          Order #{o.id}
+                        </p>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${
+                            STATUS_COLORS[o.status] || "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {o.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        {new Date(o.created_at).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-800 shrink-0">
+                      ₹{Number(o.total).toLocaleString("en-IN")}
+                    </p>
+                  </Link>
                 ))}
               </div>
             </div>
