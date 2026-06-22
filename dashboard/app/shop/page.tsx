@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ShoppingCart, Search, Star, X, Plus, Minus, Truck,
+  ShoppingCart, Search, Star, X, Plus, Minus,
   Heart, ChevronDown, ChevronUp, SlidersHorizontal, Package, Trash2, ClipboardList,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
@@ -37,57 +37,6 @@ function fmtCount(n: number) { return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : 
 function deliveryDate() {
   const t = new Date(); t.setDate(t.getDate() + 1);
   return t.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
-}
-
-// ── Product Detail Modal ───────────────────────────────────────────────────────
-function ProductModal({ product: p, inCart, onClose, onAdd, onRemove }: {
-  product: Product; inCart: number; onClose: () => void; onAdd: () => void; onRemove: () => void;
-}) {
-  const disc = p.original_price > p.price ? Math.round((1 - p.price / p.original_price) * 100) : 0;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="h-56 relative overflow-hidden">
-          <PImg src={p.image_url} alt={p.name} className="w-full h-full" />
-          <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow hover:bg-white">
-            <X className="w-4 h-4 text-slate-600" />
-          </button>
-          {disc > 0 && <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg">{disc}% off</span>}
-        </div>
-        <div className="p-5">
-          {p.is_best_seller && <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-full mb-3">★ Best Seller</span>}
-          <h3 className="text-xl font-bold text-slate-800 mb-1">{p.name}</h3>
-          <p className="text-xs text-slate-400 mb-3">{p.unit} · {p.category}</p>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="flex items-center gap-0.5 bg-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-              <Star className="w-2.5 h-2.5 fill-white" /> {p.rating}
-            </span>
-            <span className="text-xs text-slate-400">{fmtCount(p.review_count)} ratings</span>
-          </div>
-          <div className="flex items-baseline gap-3 mb-4">
-            <span className="text-2xl font-bold text-emerald-600">₹{p.price}</span>
-            <span className="text-base text-slate-400 line-through">₹{p.original_price}</span>
-          </div>
-          {p.description && <p className="text-sm text-slate-600 mb-5 leading-relaxed">{p.description}</p>}
-          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 mb-4">
-            <Truck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <p className="text-xs text-emerald-700 font-medium">Delivered by <strong>{deliveryDate()}</strong></p>
-          </div>
-          {inCart > 0 ? (
-            <div className="flex items-center justify-between border-2 border-emerald-500 rounded-xl px-4 py-3">
-              <button onClick={onRemove} className="text-emerald-600 hover:text-emerald-800 font-bold text-xl leading-none">−</button>
-              <span className="font-bold text-emerald-700">{inCart} in cart</span>
-              <button onClick={onAdd} className="text-emerald-600 hover:text-emerald-800 font-bold text-xl leading-none">+</button>
-            </div>
-          ) : (
-            <button onClick={onAdd} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
-              <ShoppingCart className="w-4 h-4" /> Add to Cart
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // ── Filter Section ─────────────────────────────────────────────────────────────
@@ -255,7 +204,6 @@ export default function ShopPage() {
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState("popular");
   const [search, setSearch] = useState("");
-  const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const searchLogTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -374,7 +322,7 @@ export default function ShopPage() {
         <button onClick={() => setMobileFilterOpen(true)} className="lg:hidden flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-full text-sm font-medium bg-white text-slate-600 shadow-sm">
           <SlidersHorizontal className="w-4 h-4" /> Filter
         </button>
-        <button onClick={() => router.push("/settings?tab=orders")}
+        <button onClick={() => router.push("/orders")}
           className="flex items-center gap-2 px-4 py-2.5 border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-semibold rounded-full hover:bg-emerald-100 transition-colors">
           <ClipboardList className="w-4 h-4" /> My Orders
         </button>
@@ -471,7 +419,7 @@ export default function ShopPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filtered.map((p) => (
                   <ProductCard key={p.id} product={p} inCart={cartQty(p.id)} wishlisted={wishlist.has(p.id)}
-                    onOpen={() => setDetailProduct(p)}
+                    onOpen={() => router.push(`/shop/${p.id}`)}
                     onAdd={(e) => { e.stopPropagation(); addToCart(p); }}
                     onRemove={(e) => { e.stopPropagation(); removeFromCart(p.id); }}
                     onWishlist={(e) => { e.stopPropagation(); toggleWishlist(p.id); }}
@@ -481,11 +429,6 @@ export default function ShopPage() {
             )}
           </div>
         </div>
-      )}
-
-      {detailProduct && (
-        <ProductModal product={detailProduct} inCart={cartQty(detailProduct.id)} onClose={() => setDetailProduct(null)}
-          onAdd={() => addToCart(detailProduct)} onRemove={() => removeFromCart(detailProduct.id)} />
       )}
     </DashboardShell>
   );

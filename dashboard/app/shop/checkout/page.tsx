@@ -58,7 +58,7 @@ function SuccessScreen({ orderId, total, onContinue }: { orderId: number; total:
         <button onClick={onContinue} className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full transition-colors">
           Continue Shopping
         </button>
-        <button onClick={() => window.location.href = "/settings?tab=orders"} className="px-8 py-3 border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-bold rounded-full transition-colors">
+        <button onClick={() => window.location.href = "/orders"} className="px-8 py-3 border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-bold rounded-full transition-colors">
           View My Orders
         </button>
       </div>
