@@ -10,9 +10,9 @@ class _P {
 }
 
 const _methods = [
-  ('cod', 'Cash on delivery', 'Pay when your order arrives'),
-  ('upi', 'UPI', 'Pay instantly via UPI app'),
-  ('card', 'Card', 'Visa, Mastercard, RuPay'),
+  ('cod', 'Cash on delivery', 'Pay when your order arrives', true),
+  ('upi', 'UPI', 'Pay instantly via UPI app', false),
+  ('card', 'Card', 'Visa, Mastercard, RuPay', false),
 ];
 
 class PaymentMethodScreen extends StatefulWidget {
@@ -76,30 +76,40 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 itemCount: _methods.length,
                 separatorBuilder: (_, __) => const Divider(height: 1, thickness: 1, color: _P.divider, indent: 20, endIndent: 20),
                 itemBuilder: (context, i) {
-                  final (value, label, subtitle) = _methods[i];
-                  return InkWell(
-                    onTap: _saving ? null : () => _select(value),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
-                                const SizedBox(height: 2),
-                                Text(subtitle, style: const TextStyle(fontSize: 11, color: _P.subtext)),
-                              ],
+                  final (value, label, subtitle, enabled) = _methods[i];
+                  return Opacity(
+                    opacity: enabled ? 1 : 0.5,
+                    child: InkWell(
+                      onTap: !enabled || _saving ? null : () => _select(value),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
+                                  const SizedBox(height: 2),
+                                  Text(subtitle, style: const TextStyle(fontSize: 11, color: _P.subtext)),
+                                ],
+                              ),
                             ),
-                          ),
-                          Radio<String>(
-                            value: value,
-                            groupValue: selected,
-                            onChanged: _saving ? null : (v) => _select(v!),
-                            activeColor: _P.text,
-                          ),
-                        ],
+                            if (!enabled)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(color: _P.divider, borderRadius: BorderRadius.circular(20)),
+                                child: const Text('Coming soon', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: _P.subtext)),
+                              )
+                            else
+                              Radio<String>(
+                                value: value,
+                                groupValue: selected,
+                                onChanged: _saving ? null : (v) => _select(v!),
+                                activeColor: _P.text,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   );

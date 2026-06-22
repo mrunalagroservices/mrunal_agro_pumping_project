@@ -74,11 +74,9 @@ export default function CheckoutPage() {
   const [selectedSavedId, setSelectedSavedId] = useState<string | null>(null);
   const [addr, setAddr] = useState<Address>(BLANK);
   const [showAddrForm, setShowAddrForm] = useState(false);
-  const [payMethod, setPayMethod] = useState<PayMethod>("cod");
-  const [cardNum, setCardNum] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [upiId, setUpiId] = useState("");
+  // Card/UPI are temporarily disabled pending Razorpay integration — COD is
+  // the only completable payment method for now.
+  const payMethod: PayMethod = "cod";
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<null | { code: string; type: "percent" | "flat"; value: number; discount: number }>(null);
   const [couponError, setCouponError] = useState("");
@@ -116,7 +114,7 @@ export default function CheckoutPage() {
   }
 
   const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0);
-  const deliveryCharge = payMethod !== "cod" ? (shopSettings?.delivery_charge_online ?? 100) : 0;
+  const deliveryCharge = 0;
   const discount = appliedCoupon?.discount ?? 0;
   const total = Math.max(0, subtotal + deliveryCharge - discount);
 
@@ -141,7 +139,7 @@ export default function CheckoutPage() {
   }
 
   const addrComplete = addr.name && addr.phone.replace(/\D/g, "").length >= 7 && addr.line1 && addr.city && addr.state && addr.pincode.length === 6;
-  const payComplete = payMethod === "cod" || (payMethod === "upi" && upiId.includes("@")) || (payMethod === "card" && cardNum.replace(/\s/g, "").length === 16 && cardExpiry && cardCvv.length >= 3);
+  const payComplete = true; // only COD is selectable right now
 
   async function placeOrder() {
     setPlaceError("");
@@ -284,7 +282,7 @@ export default function CheckoutPage() {
             <Truck className="w-5 h-5 text-emerald-600 shrink-0" />
             <div>
               <p className="text-sm font-bold text-emerald-800">Delivery by {deliveryDate()}</p>
-              <p className="text-xs text-emerald-600">COD: Free · Online payment: ₹{shopSettings?.delivery_charge_online ?? 100} delivery charge</p>
+              <p className="text-xs text-emerald-600">Cash on Delivery · Free</p>
             </div>
           </div>
         </div>
@@ -296,59 +294,37 @@ export default function CheckoutPage() {
               <h2 className="font-bold text-slate-800">Choose how to pay</h2>
             </div>
             <div className="p-4 space-y-3">
-              {/* COD */}
-              <label className={`flex items-center gap-3 border-2 rounded-xl p-3.5 cursor-pointer transition-colors ${payMethod === "cod" ? "border-emerald-500 bg-emerald-50" : "border-slate-200 hover:border-slate-300"}`}>
-                <input type="radio" className="accent-emerald-600 w-4 h-4" checked={payMethod === "cod"} onChange={() => setPayMethod("cod")} />
+              {/* COD — the only completable option right now */}
+              <label className="flex items-center gap-3 border-2 border-emerald-500 bg-emerald-50 rounded-xl p-3.5 cursor-pointer">
+                <input type="radio" className="accent-emerald-600 w-4 h-4" checked readOnly />
                 <Banknote className="w-5 h-5 text-emerald-600 shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-slate-800">Cash on Delivery</p>
                   <p className="text-xs text-emerald-600 font-medium">Free delivery · Pay when you receive</p>
                 </div>
-                {payMethod === "cod" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
               </label>
 
-              {/* Card */}
-              <div className={`border-2 rounded-xl cursor-pointer transition-colors ${payMethod === "card" ? "border-emerald-500 bg-emerald-50" : "border-slate-200 hover:border-slate-300"}`}>
-                <label className="flex items-center gap-3 p-3.5 cursor-pointer" onClick={() => setPayMethod("card")}>
-                  <input type="radio" className="accent-emerald-600 w-4 h-4" checked={payMethod === "card"} onChange={() => setPayMethod("card")} />
-                  <CreditCard className="w-5 h-5 text-blue-600 shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-800">Debit / Credit Card</p>
-                    <p className="text-xs text-slate-500">Visa, Mastercard, RuPay · +₹{shopSettings?.delivery_charge_online ?? 100} delivery</p>
-                  </div>
-                  {payMethod === "card" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-                </label>
-                {payMethod === "card" && (
-                  <div className="px-4 pb-4 space-y-2" onClick={(e) => e.stopPropagation()}>
-                    <input className={inp} value={cardNum} maxLength={19}
-                      onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 16); setCardNum(v.replace(/(.{4})/g, "$1 ").trim()); }}
-                      placeholder="1234 5678 9012 3456" />
-                    <div className="grid grid-cols-2 gap-2">
-                      <input className={inp} value={cardExpiry} maxLength={5}
-                        onChange={(e) => { let v = e.target.value.replace(/\D/g, ""); if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2); setCardExpiry(v); }}
-                        placeholder="MM/YY" />
-                      <input className={inp} type="password" value={cardCvv} maxLength={4} onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ""))} placeholder="CVV" />
-                    </div>
-                  </div>
-                )}
+              {/* Card — disabled until Razorpay is wired in */}
+              <div className="flex items-center gap-3 border-2 border-slate-100 bg-slate-50 rounded-xl p-3.5 opacity-60 cursor-not-allowed">
+                <input type="radio" className="w-4 h-4" disabled />
+                <CreditCard className="w-5 h-5 text-slate-400 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-slate-500">Debit / Credit Card</p>
+                  <p className="text-xs text-slate-400">Visa, Mastercard, RuPay</p>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-200 px-2 py-1 rounded-full">Coming soon</span>
               </div>
 
-              {/* UPI */}
-              <div className={`border-2 rounded-xl cursor-pointer transition-colors ${payMethod === "upi" ? "border-emerald-500 bg-emerald-50" : "border-slate-200 hover:border-slate-300"}`}>
-                <label className="flex items-center gap-3 p-3.5 cursor-pointer" onClick={() => setPayMethod("upi")}>
-                  <input type="radio" className="accent-emerald-600 w-4 h-4" checked={payMethod === "upi"} onChange={() => setPayMethod("upi")} />
-                  <Smartphone className="w-5 h-5 text-purple-600 shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-800">UPI / GPay / PhonePe</p>
-                    <p className="text-xs text-slate-500">+₹{shopSettings?.delivery_charge_online ?? 100} delivery charge</p>
-                  </div>
-                  {payMethod === "upi" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-                </label>
-                {payMethod === "upi" && (
-                  <div className="px-4 pb-4" onClick={(e) => e.stopPropagation()}>
-                    <input className={inp} value={upiId} onChange={(e) => setUpiId(e.target.value)} placeholder="yourname@upi" />
-                  </div>
-                )}
+              {/* UPI — disabled until Razorpay is wired in */}
+              <div className="flex items-center gap-3 border-2 border-slate-100 bg-slate-50 rounded-xl p-3.5 opacity-60 cursor-not-allowed">
+                <input type="radio" className="w-4 h-4" disabled />
+                <Smartphone className="w-5 h-5 text-slate-400 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-slate-500">UPI / GPay / PhonePe</p>
+                  <p className="text-xs text-slate-400">Pay with any UPI app</p>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-200 px-2 py-1 rounded-full">Coming soon</span>
               </div>
             </div>
           </div>
