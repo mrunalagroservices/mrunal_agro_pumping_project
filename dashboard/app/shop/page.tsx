@@ -133,19 +133,6 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
         <button onClick={onWishlist} className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-sm transition-colors ${wishlisted ? "bg-red-50" : "bg-white/80 hover:bg-white"}`}>
           <Heart className={`w-3.5 h-3.5 ${wishlisted ? "fill-red-500 text-red-500" : "text-slate-400"}`} />
         </button>
-        <div className="absolute bottom-0 inset-x-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-          {inCart > 0 ? (
-            <div className="flex items-center justify-between bg-white/95 backdrop-blur rounded-xl px-3 py-2 shadow-lg border border-emerald-100">
-              <button onClick={onRemove}><Minus className="w-3.5 h-3.5 text-emerald-600" /></button>
-              <span className="text-sm font-bold text-emerald-700">{inCart}</span>
-              <button onClick={onAdd}><Plus className="w-3.5 h-3.5 text-emerald-600" /></button>
-            </div>
-          ) : (
-            <button onClick={onAdd} className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-lg transition-colors">
-              + Add to Cart
-            </button>
-          )}
-        </div>
       </div>
       <div className="p-3 flex flex-col flex-1">
         <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">{p.category}</p>
