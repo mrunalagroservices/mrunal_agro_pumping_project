@@ -1,7 +1,6 @@
--- Sets image_url for the 14 products with real images now committed under
+-- Sets image_url for all 15 products with real images committed under
 -- backend/public/products/, served at https://<backend-host>/static/products/<file>.
--- Safe to re-run. "Drip Irrigation Kit" intentionally excluded — the source
--- image supplied for it was a broken 1x1 placeholder GIF, not a real photo.
+-- Safe to re-run.
 
 UPDATE products SET image_url = 'https://mrunal-agro-pumping-project.onrender.com/static/products/hybrid-tomato-seeds.webp' WHERE name = 'Hybrid Tomato Seeds';
 UPDATE products SET image_url = 'https://mrunal-agro-pumping-project.onrender.com/static/products/onion-seeds-nasik-red.webp' WHERE name = 'Onion Seeds (Nasik Red)';
@@ -17,3 +16,4 @@ UPDATE products SET image_url = 'https://mrunal-agro-pumping-project.onrender.co
 UPDATE products SET image_url = 'https://mrunal-agro-pumping-project.onrender.com/static/products/mancozeb-fungicide.webp' WHERE name = 'Mancozeb Fungicide';
 UPDATE products SET image_url = 'https://mrunal-agro-pumping-project.onrender.com/static/products/hdpe-mulch-film.webp' WHERE name = 'HDPE Mulch Film';
 UPDATE products SET image_url = 'https://mrunal-agro-pumping-project.onrender.com/static/products/ph-soil-testing-kit.webp' WHERE name = 'pH Soil Testing Kit';
+UPDATE products SET image_url = 'https://mrunal-agro-pumping-project.onrender.com/static/products/drip-irrigation-kit.webp' WHERE name = 'Drip Irrigation Kit';
