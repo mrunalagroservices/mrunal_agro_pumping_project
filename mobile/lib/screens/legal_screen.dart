@@ -5,13 +5,7 @@ import '../models/legal_document.dart';
 import '../providers/app_state.dart';
 import '../providers/locale_provider.dart';
 import '../widgets/language_switcher.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-}
+import '../config/theme.dart';
 
 class LegalScreen extends StatefulWidget {
   const LegalScreen({super.key});
@@ -54,46 +48,75 @@ class _LegalScreenState extends State<LegalScreen> {
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
                   Expanded(
-                    child: Text(context.tr('legal_title'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                    child: Text(
+                      context.tr('legal_title'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.text,
+                      ),
+                    ),
                   ),
                   const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
-            const Divider(height: 1, thickness: 1, color: _P.divider),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
             Expanded(
               child: state.isLoadingLegal && docs.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : docs.isEmpty
-                      ? Center(child: Text(context.tr('legal_could_not_load_docs'), style: const TextStyle(color: _P.subtext)))
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-                          itemCount: docs.length,
-                          separatorBuilder: (_, _) => const Divider(height: 1, thickness: 1, color: _P.divider),
-                          itemBuilder: (context, i) {
-                            final doc = docs[i];
-                            return InkWell(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => LegalDocScreen(slug: doc.slug, title: doc.title)),
+                  ? Center(
+                      child: Text(
+                        context.tr('legal_could_not_load_docs'),
+                        style: const TextStyle(color: AppColors.subtext),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+                      itemCount: docs.length,
+                      separatorBuilder: (_, _) => const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: AppColors.divider,
+                      ),
+                      itemBuilder: (context, i) {
+                        final doc = docs[i];
+                        return InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => LegalDocScreen(
+                                slug: doc.slug,
+                                title: doc.title,
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(doc.title,
-                                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    doc.title,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.text,
                                     ),
-                                    const Icon(Icons.chevron_right, color: _P.subtext),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: AppColors.subtext,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -124,7 +147,10 @@ class _LegalDocScreenState extends State<LegalDocScreen> {
 
   Future<void> _load(String lang) async {
     _loadedLang = lang;
-    final doc = await context.read<AppState>().fetchLegalDocument(widget.slug, lang: lang);
+    final doc = await context.read<AppState>().fetchLegalDocument(
+      widget.slug,
+      lang: lang,
+    );
     if (!mounted) return;
     setState(() {
       _doc = doc;
@@ -150,36 +176,66 @@ class _LegalDocScreenState extends State<LegalDocScreen> {
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
                   Expanded(
-                    child: Text(widget.title,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                    child: Text(
+                      widget.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.text,
+                      ),
+                    ),
                   ),
                   const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
-            const Divider(height: 1, thickness: 1, color: _P.divider),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _doc == null
-                      ? Center(child: Text(context.tr('legal_could_not_load_doc'), style: const TextStyle(color: _P.subtext)))
-                      : ListView(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
-                          children: [
-                            if (_doc!.updatedAt.isNotEmpty)
-                              Text(_formatUpdated(context, _doc!.updatedAt), style: const TextStyle(fontSize: 11, color: _P.subtext)),
-                            const SizedBox(height: 16),
-                            for (final section in _doc!.sections) ...[
-                              Text(section.heading,
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
-                              const SizedBox(height: 6),
-                              Text(section.body,
-                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.45)),
-                              const SizedBox(height: 18),
-                            ],
-                          ],
-                        ),
+                  ? Center(
+                      child: Text(
+                        context.tr('legal_could_not_load_doc'),
+                        style: const TextStyle(color: AppColors.subtext),
+                      ),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+                      children: [
+                        if (_doc!.updatedAt.isNotEmpty)
+                          Text(
+                            _formatUpdated(context, _doc!.updatedAt),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.subtext,
+                            ),
+                          ),
+                        const SizedBox(height: 16),
+                        for (final section in _doc!.sections) ...[
+                          Text(
+                            section.heading,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.text,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            section.body,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.subtext,
+                              height: 1.45,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                        ],
+                      ],
+                    ),
             ),
           ],
         ),
@@ -190,8 +246,23 @@ class _LegalDocScreenState extends State<LegalDocScreen> {
   String _formatUpdated(BuildContext context, String iso) {
     final d = DateTime.tryParse(iso);
     if (d == null) return '';
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return context.tr('legal_last_updated').replaceAll('{date}', '${d.day} ${months[d.month - 1]} ${d.year}');
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return context
+        .tr('legal_last_updated')
+        .replaceAll('{date}', '${d.day} ${months[d.month - 1]} ${d.year}');
   }
 }
 
@@ -207,8 +278,11 @@ class _CircleBack extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: const Icon(Icons.arrow_back, size: 20, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_back, size: 20, color: AppColors.text),
       ),
     );
   }

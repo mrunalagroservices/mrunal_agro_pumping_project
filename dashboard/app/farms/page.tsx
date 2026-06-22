@@ -370,7 +370,7 @@ export default function FarmsPage() {
           <button
             onClick={() => setTab("farms")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              tab === "farms" ? "bg-white text-primary-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              tab === "farms" ? "bg-white text-accent-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
             }`}
           >
             <Cpu className="w-4 h-4" />
@@ -410,7 +410,7 @@ export default function FarmsPage() {
             </button>
             <button
               onClick={() => { resetFarmForm(); setShowFarmModal(true); }}
-              className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+              className="flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
             >
               <Plus className="w-4 h-4" /> Add farm
             </button>
@@ -490,12 +490,12 @@ export default function FarmsPage() {
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                                 {farmDevices.map((d) => (
                                   <Link key={d.id} href={`/devices/${d.id}`}
-                                    className="flex items-start justify-between p-3 rounded-lg border border-slate-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors">
+                                    className="flex items-start justify-between p-3 rounded-lg border border-slate-100 hover:border-accent-200 hover:bg-accent-50/30 transition-colors">
                                     <div className="min-w-0">
                                       <p className="font-medium text-slate-800 text-sm truncate">{d.name}</p>
                                       <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
                                         <span className="flex items-center gap-1"><Gauge className="w-3.5 h-3.5 text-sky-500" />{d.sensor_count ?? 0}</span>
-                                        <span className="flex items-center gap-1"><Power className="w-3.5 h-3.5 text-primary-500" />{d.actuator_count ?? 0}</span>
+                                        <span className="flex items-center gap-1"><Power className="w-3.5 h-3.5 text-accent-500" />{d.actuator_count ?? 0}</span>
                                       </div>
                                     </div>
                                     {d.status === "online" ? (
@@ -512,7 +512,7 @@ export default function FarmsPage() {
                               </div>
                             )}
                             <button onClick={() => openAddDevice(farm.id)}
-                              className="flex items-center gap-1.5 text-xs font-medium text-primary-700 hover:text-primary-800 hover:bg-primary-50 px-3 py-1.5 rounded-lg border border-dashed border-primary-300 transition-colors">
+                              className="flex items-center gap-1.5 text-xs font-medium text-accent-700 hover:text-accent-800 hover:bg-accent-50 px-3 py-1.5 rounded-lg border border-dashed border-accent-300 transition-colors">
                               <Plus className="w-3.5 h-3.5" /> Add device to this farm
                             </button>
                           </div>
@@ -530,12 +530,12 @@ export default function FarmsPage() {
                       <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {unassigned.map((d) => (
                           <Link key={d.id} href={`/devices/${d.id}`}
-                            className="flex items-start justify-between p-3 rounded-lg border border-slate-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors">
+                            className="flex items-start justify-between p-3 rounded-lg border border-slate-100 hover:border-accent-200 hover:bg-accent-50/30 transition-colors">
                             <div className="min-w-0">
                               <p className="font-medium text-slate-800 text-sm truncate">{d.name}</p>
                               <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
                                 <span className="flex items-center gap-1"><Gauge className="w-3.5 h-3.5 text-sky-500" />{d.sensor_count ?? 0}</span>
-                                <span className="flex items-center gap-1"><Power className="w-3.5 h-3.5 text-primary-500" />{d.actuator_count ?? 0}</span>
+                                <span className="flex items-center gap-1"><Power className="w-3.5 h-3.5 text-accent-500" />{d.actuator_count ?? 0}</span>
                               </div>
                             </div>
                             {d.status === "online" ? (
@@ -879,20 +879,20 @@ export default function FarmsPage() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
               <input type="text" required value={farmName} onChange={(e) => setFarmName(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                 placeholder="North Field" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-sm font-medium text-slate-700">Location (optional)</label>
                 <button type="button" onClick={useCurrentLocation} disabled={locating}
-                  className="flex items-center gap-1 text-xs font-medium text-primary-700 hover:underline disabled:opacity-60">
+                  className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline disabled:opacity-60">
                   {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
                   Use current location
                 </button>
               </div>
               <input type="text" value={farmLocation} onChange={(e) => setFarmLocation(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                 placeholder="Village, Taluka, District" />
               {locationError && <p className="text-xs text-red-600 mt-1">{locationError}</p>}
             </div>
@@ -900,18 +900,18 @@ export default function FarmsPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Latitude (optional)</label>
                 <input type="number" step="any" value={farmLat} onChange={(e) => setFarmLat(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                   placeholder="18.5204" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Longitude (optional)</label>
                 <input type="number" step="any" value={farmLng} onChange={(e) => setFarmLng(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                   placeholder="73.8567" />
               </div>
             </div>
             <button type="submit" disabled={farmSubmitting}
-              className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
+              className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {farmSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Add farm
             </button>
@@ -926,13 +926,13 @@ export default function FarmsPage() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
               <input type="text" required value={devName} onChange={(e) => setDevName(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                 placeholder="Field Gateway 1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Farm (optional)</label>
               <select value={devFarmId} onChange={(e) => setDevFarmId(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="">Unassigned</option>
                 {farms.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
@@ -941,10 +941,10 @@ export default function FarmsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-1">Relay count</label>
               <input type="number" min={1} max={16} required value={devRelayCount}
                 onChange={(e) => setDevRelayCount(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500" />
             </div>
             <button type="submit" disabled={devSubmitting}
-              className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
+              className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {devSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Add device
             </button>
@@ -976,7 +976,7 @@ export default function FarmsPage() {
               </div>
             </div>
             <button onClick={closeDeviceModal}
-              className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors">
+              className="w-full bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors">
               Done
             </button>
           </div>
@@ -1043,20 +1043,20 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
           <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
             placeholder="North Field" />
         </div>
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="block text-sm font-medium text-slate-700">Location (optional)</label>
             <button type="button" onClick={useCurrentLocation} disabled={locating}
-              className="flex items-center gap-1 text-xs font-medium text-primary-700 hover:underline disabled:opacity-60">
+              className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline disabled:opacity-60">
               {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
               Use current location
             </button>
           </div>
           <input type="text" value={location} onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
             placeholder="Village, Taluka, District" />
           {locationError && <p className="text-xs text-red-600 mt-1">{locationError}</p>}
         </div>
@@ -1064,18 +1064,18 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Latitude</label>
             <input type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               placeholder="18.5204" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Longitude</label>
             <input type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               placeholder="73.8567" />
           </div>
         </div>
         <button type="submit" disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
+          className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
           {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
           Save changes
         </button>

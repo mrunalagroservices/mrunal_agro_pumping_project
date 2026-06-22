@@ -62,7 +62,7 @@ class ActuatorTile extends StatelessWidget {
                       actuator.isOn
                           ? context.tr('widget_running')
                           : (deviceOnline ? context.tr('widget_off') : context.tr('widget_device_offline')),
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                      style: TextStyle(color: AppColors.subtext, fontSize: 11),
                     ),
                   ],
                 ),
@@ -78,7 +78,7 @@ class ActuatorTile extends StatelessWidget {
           else
             Switch(
               value: actuator.isOn,
-              activeTrackColor: AppColors.primary600,
+              activeTrackColor: AppColors.success,
               onChanged: (_) => onToggle(),
             ),
         ],

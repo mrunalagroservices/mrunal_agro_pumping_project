@@ -76,7 +76,7 @@ export default function AlertsPage() {
             onClick={() => setFilter(f)}
             className={`text-sm font-medium px-3 py-1.5 rounded-lg capitalize transition-colors ${
               filter === f
-                ? "bg-primary-600 text-white"
+                ? "bg-accent-600 text-white"
                 : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
             }`}
           >

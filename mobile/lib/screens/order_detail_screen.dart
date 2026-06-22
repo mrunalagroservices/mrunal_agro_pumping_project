@@ -5,17 +5,22 @@ import '../models/order.dart';
 import '../providers/app_state.dart';
 import 'product_detail_screen.dart';
 import 'write_review_sheet.dart';
+import '../config/theme.dart';
 
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const card = Color(0xFFF7F7F7);
-  static const tile = Color(0xFFF2F2F2);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-}
-
-const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const _months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 IconData _statusIcon(String status) {
   switch (status) {
@@ -78,9 +83,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     super.dispose();
   }
 
-  String _date(DateTime d) => '${_dow(d.weekday)} ${d.day} ${_months[d.month - 1]}';
-  String _time(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
-  String _dow(int w) => const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][w - 1];
+  String _date(DateTime d) =>
+      '${_dow(d.weekday)} ${d.day} ${_months[d.month - 1]}';
+  String _time(DateTime d) =>
+      '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+  String _dow(int w) =>
+      const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][w - 1];
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +121,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 child: SizedBox(
                   height: 280,
                   child: images.isEmpty
-                      ? Container(color: _P.tile, child: const Center(child: Text('🌿', style: TextStyle(fontSize: 62))))
+                      ? Container(
+                          color: AppColors.chip,
+                          child: const Center(
+                            child: Text('🌿', style: TextStyle(fontSize: 62)),
+                          ),
+                        )
                       : Stack(
                           children: [
                             PageView.builder(
@@ -124,8 +137,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 images[i],
                                 fit: BoxFit.cover,
                                 width: double.infinity,
-                                errorBuilder: (_, __, ___) =>
-                                    Container(color: _P.tile, child: const Center(child: Text('🌿', style: TextStyle(fontSize: 62)))),
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: AppColors.chip,
+                                  child: const Center(
+                                    child: Text(
+                                      '🌿',
+                                      style: TextStyle(fontSize: 62),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                             if (images.length > 1)
@@ -138,12 +158,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   children: List.generate(images.length, (i) {
                                     final active = i == _page;
                                     return AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                      ),
                                       width: active ? 8 : 6,
                                       height: active ? 8 : 6,
                                       decoration: BoxDecoration(
-                                        color: active ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                                        color: active
+                                            ? Colors.white
+                                            : Colors.white.withValues(
+                                                alpha: 0.5,
+                                              ),
                                         shape: BoxShape.circle,
                                       ),
                                     );
@@ -163,11 +191,31 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.tr('order_detail_number').replaceAll('{id}', '${o.id}'),
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                  Text(
+                    context
+                        .tr('order_detail_number')
+                        .replaceAll('{id}', '${o.id}'),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.text,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(context.tr('order_detail_placed_on').replaceAll('{date}', '${o.createdAt.day} ${_months[o.createdAt.month - 1]} ${o.createdAt.year}'),
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
+                  Text(
+                    context
+                        .tr('order_detail_placed_on')
+                        .replaceAll(
+                          '{date}',
+                          '${o.createdAt.day} ${_months[o.createdAt.month - 1]} ${o.createdAt.year}',
+                        ),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.subtext,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -177,8 +225,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(color: o.statusBg, borderRadius: BorderRadius.circular(14)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: o.statusBg,
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 child: Row(
                   children: [
                     Icon(_statusIcon(o.status), color: o.statusColor, size: 22),
@@ -187,10 +241,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_statusHeadline(context, o.status), style: TextStyle(color: o.statusColor, fontWeight: FontWeight.w500, fontSize: 13)),
-                          if (o.status == 'delivered' || o.status == 'shipped' || o.status == 'cancelled') ...[
+                          Text(
+                            _statusHeadline(context, o.status),
+                            style: TextStyle(
+                              color: o.statusColor,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                            ),
+                          ),
+                          if (o.status == 'delivered' ||
+                              o.status == 'shipped' ||
+                              o.status == 'cancelled') ...[
                             const SizedBox(height: 2),
-                            Text(_date(o.updatedAt), style: TextStyle(color: o.statusColor.withValues(alpha: 0.8), fontSize: 11)),
+                            Text(
+                              _date(o.updatedAt),
+                              style: TextStyle(
+                                color: o.statusColor.withValues(alpha: 0.8),
+                                fontSize: 11,
+                              ),
+                            ),
                           ],
                         ],
                       ),
@@ -205,7 +274,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
-                decoration: BoxDecoration(color: _P.card, borderRadius: BorderRadius.circular(18)),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceMuted,
+                  borderRadius: BorderRadius.circular(18),
+                ),
                 child: IntrinsicHeight(
                   child: Row(
                     children: [
@@ -215,25 +287,67 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(context.tr('order_detail_ordered_label'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                              Text(
+                                context.tr('order_detail_ordered_label'),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.text,
+                                ),
+                              ),
                               const SizedBox(height: 6),
-                              Text(_date(o.createdAt), style: const TextStyle(fontSize: 14, color: _P.text)),
-                              Text(_time(o.createdAt), style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                              Text(
+                                _date(o.createdAt),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.text,
+                                ),
+                              ),
+                              Text(
+                                _time(o.createdAt),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.subtext,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
-                      const VerticalDivider(width: 1, thickness: 1, color: _P.divider),
+                      const VerticalDivider(
+                        width: 1,
+                        thickness: 1,
+                        color: AppColors.divider,
+                      ),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(context.tr('payment_title'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                              Text(
+                                context.tr('payment_title'),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.text,
+                                ),
+                              ),
                               const SizedBox(height: 6),
-                              Text(o.paymentMethod.toUpperCase(), style: const TextStyle(fontSize: 14, color: _P.text)),
-                              Text('₹${o.total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, color: _P.subtext)),
+                              Text(
+                                o.paymentMethod.toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.text,
+                                ),
+                              ),
+                              Text(
+                                '₹${o.total.toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.subtext,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -251,17 +365,40 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.location_on_outlined, size: 26, color: _P.text),
+                  const Icon(
+                    Icons.location_on_outlined,
+                    size: 26,
+                    color: AppColors.text,
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(context.tr('order_detail_delivery_address'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                        Text(
+                          context.tr('order_detail_delivery_address'),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.text,
+                          ),
+                        ),
                         const SizedBox(height: 3),
-                        Text('${o.deliveryAddress.name} · ${o.deliveryAddress.phone}',
-                            style: const TextStyle(fontSize: 13, color: _P.subtext)),
-                        Text(o.deliveryAddress.oneLine, style: const TextStyle(fontSize: 13, color: _P.subtext, height: 1.3)),
+                        Text(
+                          '${o.deliveryAddress.name} · ${o.deliveryAddress.phone}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.subtext,
+                          ),
+                        ),
+                        Text(
+                          o.deliveryAddress.oneLine,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.subtext,
+                            height: 1.3,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -270,63 +407,122 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
             const SizedBox(height: 24),
 
-            const Divider(height: 1, thickness: 1, color: _P.divider, indent: 20, endIndent: 20),
+            const Divider(
+              height: 1,
+              thickness: 1,
+              color: AppColors.divider,
+              indent: 20,
+              endIndent: 20,
+            ),
             const SizedBox(height: 22),
 
             // ── Order details ────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(context.tr('order_detail_title'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+              child: Text(
+                context.tr('order_detail_title'),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.text,
+                ),
+              ),
             ),
             const SizedBox(height: 14),
 
-            ...o.items.map((item) => Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              width: 52,
-                              height: 52,
-                              color: _P.tile,
-                              child: item.productImage != null && item.productImage!.isNotEmpty
-                                  ? Image.network(item.productImage!, fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => const Center(child: Text('🌿', style: TextStyle(fontSize: 20))))
-                                  : const Center(child: Text('🌿', style: TextStyle(fontSize: 20))),
-                            ),
+            ...o.items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            width: 52,
+                            height: 52,
+                            color: AppColors.chip,
+                            child:
+                                item.productImage != null &&
+                                    item.productImage!.isNotEmpty
+                                ? Image.network(
+                                    item.productImage!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Center(
+                                      child: Text(
+                                        '🌿',
+                                        style: TextStyle(fontSize: 20),
+                                      ),
+                                    ),
+                                  )
+                                : const Center(
+                                    child: Text(
+                                      '🌿',
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                  ),
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(item.productName,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _P.text)),
-                                Text(context.tr('order_detail_qty').replaceAll('{unit}', item.unit ?? '').replaceAll('{qty}', '${item.qty}'),
-                                    style: const TextStyle(fontSize: 11, color: _P.subtext)),
-                              ],
-                            ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.productName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.text,
+                                ),
+                              ),
+                              Text(
+                                context
+                                    .tr('order_detail_qty')
+                                    .replaceAll('{unit}', item.unit ?? '')
+                                    .replaceAll('{qty}', '${item.qty}'),
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.subtext,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text('₹${(item.price * item.qty).toStringAsFixed(0)}',
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _P.text)),
-                        ],
-                      ),
-                      if (o.status == 'delivered' && item.productId != null) ...[
-                        const SizedBox(height: 10),
-                        _RatingBox(productId: item.productId!, productName: item.productName),
+                        ),
+                        Text(
+                          '₹${(item.price * item.qty).toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.text,
+                          ),
+                        ),
                       ],
+                    ),
+                    if (o.status == 'delivered' && item.productId != null) ...[
+                      const SizedBox(height: 10),
+                      _RatingBox(
+                        productId: item.productId!,
+                        productName: item.productName,
+                      ),
                     ],
-                  ),
-                )),
+                  ],
+                ),
+              ),
+            ),
 
             const SizedBox(height: 6),
-            const Divider(height: 1, thickness: 1, color: _P.divider, indent: 20, endIndent: 20),
+            const Divider(
+              height: 1,
+              thickness: 1,
+              color: AppColors.divider,
+              indent: 20,
+              endIndent: 20,
+            ),
             const SizedBox(height: 14),
 
             // ── Summary ──────────────────────────────────────────────────
@@ -334,21 +530,47 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  _SummaryRow(label: context.tr('cart_subtotal'), value: '₹${o.subtotal.toStringAsFixed(0)}'),
+                  _SummaryRow(
+                    label: context.tr('cart_subtotal'),
+                    value: '₹${o.subtotal.toStringAsFixed(0)}',
+                  ),
                   if (o.discount > 0)
-                    _SummaryRow(label: '${context.tr('order_detail_discount')}${o.couponCode != null ? ' (${o.couponCode})' : ''}',
-                        value: '−₹${o.discount.toStringAsFixed(0)}', valueColor: const Color(0xFF15803D)),
-                  _SummaryRow(label: context.tr('order_detail_delivery_label'), value: o.deliveryCharge == 0 ? context.tr('payment_free') : '₹${o.deliveryCharge.toStringAsFixed(0)}'),
+                    _SummaryRow(
+                      label:
+                          '${context.tr('order_detail_discount')}${o.couponCode != null ? ' (${o.couponCode})' : ''}',
+                      value: '−₹${o.discount.toStringAsFixed(0)}',
+                      valueColor: const Color(0xFF15803D),
+                    ),
+                  _SummaryRow(
+                    label: context.tr('order_detail_delivery_label'),
+                    value: o.deliveryCharge == 0
+                        ? context.tr('payment_free')
+                        : '₹${o.deliveryCharge.toStringAsFixed(0)}',
+                  ),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 10),
-                    child: Divider(height: 1, thickness: 1, color: _P.divider),
+                    child: Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppColors.divider,
+                    ),
                   ),
-                  _SummaryRow(label: context.tr('order_detail_total'), value: '₹${o.total.toStringAsFixed(0)}', bold: true),
+                  _SummaryRow(
+                    label: context.tr('order_detail_total'),
+                    value: '₹${o.total.toStringAsFixed(0)}',
+                    bold: true,
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
-            const Divider(height: 1, thickness: 1, color: _P.divider, indent: 20, endIndent: 20),
+            const Divider(
+              height: 1,
+              thickness: 1,
+              color: AppColors.divider,
+              indent: 20,
+              endIndent: 20,
+            ),
             const SizedBox(height: 22),
 
             // ── You may also like ────────────────────────────────────────
@@ -366,21 +588,33 @@ class _SummaryRow extends StatelessWidget {
   final String value;
   final bool bold;
   final Color? valueColor;
-  const _SummaryRow({required this.label, required this.value, this.bold = false, this.valueColor});
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.bold = false,
+    this.valueColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     final style = TextStyle(
       fontSize: bold ? 17 : 15,
       fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
-      color: valueColor ?? _P.text,
+      color: valueColor ?? AppColors.text,
     );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: bold ? 17 : 15, fontWeight: bold ? FontWeight.w600 : FontWeight.w400, color: _P.text)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: bold ? 17 : 15,
+              fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
+              color: AppColors.text,
+            ),
+          ),
           Text(value, style: style),
         ],
       ),
@@ -400,8 +634,11 @@ class _CircleBack extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: const Icon(Icons.arrow_back, size: 22, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_back, size: 22, color: AppColors.text),
       ),
     );
   }
@@ -423,8 +660,15 @@ class _RatingBoxState extends State<_RatingBox> {
 
   Future<void> _quickRate(int star) async {
     if (_submitting) return;
-    setState(() { _rating = star; _submitting = true; });
-    final err = await context.read<AppState>().submitReview(widget.productId, star, null);
+    setState(() {
+      _rating = star;
+      _submitting = true;
+    });
+    final err = await context.read<AppState>().submitReview(
+      widget.productId,
+      star,
+      null,
+    );
     if (!mounted) return;
     setState(() => _submitting = false);
     if (err != null) {
@@ -436,7 +680,10 @@ class _RatingBoxState extends State<_RatingBox> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(color: const Color(0xFFF5F3FF), borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F3FF),
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Row(
         children: [
           ...List.generate(5, (i) {
@@ -444,19 +691,32 @@ class _RatingBoxState extends State<_RatingBox> {
             return InkWell(
               onTap: () => _quickRate(star),
               child: Icon(
-                star <= _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                star <= _rating
+                    ? Icons.star_rounded
+                    : Icons.star_border_rounded,
                 size: 20,
-                color: const Color(0xFFE61E4D),
+                color: AppColors.accent,
               ),
             );
           }),
           const Spacer(),
           TextButton(
             onPressed: () async {
-              await showWriteReviewSheet(context,
-                  productId: widget.productId, productName: widget.productName, initialRating: _rating == 0 ? 5 : _rating);
+              await showWriteReviewSheet(
+                context,
+                productId: widget.productId,
+                productName: widget.productName,
+                initialRating: _rating == 0 ? 5 : _rating,
+              );
             },
-            child: Text(context.tr('orders_write_review'), style: const TextStyle(color: Color(0xFFE61E4D), fontWeight: FontWeight.w600, fontSize: 11)),
+            child: Text(
+              context.tr('orders_write_review'),
+              style: const TextStyle(
+                color: AppColors.accent,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+            ),
           ),
         ],
       ),
@@ -476,7 +736,9 @@ class _YouMayAlsoLike extends StatelessWidget {
     final orderedIds = items.map((i) => i.productId).whereType<int>().toSet();
     final categories = items.map((i) => i.category).whereType<String>().toSet();
     final suggestions = allProducts
-        .where((p) => categories.contains(p.category) && !orderedIds.contains(p.id))
+        .where(
+          (p) => categories.contains(p.category) && !orderedIds.contains(p.id),
+        )
         .toList();
     if (suggestions.isEmpty) return const SizedBox.shrink();
 
@@ -485,7 +747,14 @@ class _YouMayAlsoLike extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.tr('order_detail_you_may_like'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+          Text(
+            context.tr('order_detail_you_may_like'),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              color: AppColors.text,
+            ),
+          ),
           const SizedBox(height: 14),
           SizedBox(
             height: 200,
@@ -509,17 +778,24 @@ class _YouMayAlsoLike extends StatelessWidget {
                   ),
                   child: Container(
                     width: 140,
-                    decoration: BoxDecoration(border: Border.all(color: _P.divider), borderRadius: BorderRadius.circular(14)),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.divider),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(14),
+                          ),
                           child: Container(
                             height: 100,
                             width: double.infinity,
                             color: p.iconBg,
-                            child: Center(child: Icon(p.icon, size: 40, color: p.iconColor)),
+                            child: Center(
+                              child: Icon(p.icon, size: 40, color: p.iconColor),
+                            ),
                           ),
                         ),
                         Padding(
@@ -527,10 +803,25 @@ class _YouMayAlsoLike extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: _P.text)),
+                              Text(
+                                p.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.text,
+                                ),
+                              ),
                               const SizedBox(height: 4),
-                              Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: _P.text)),
+                              Text(
+                                '₹${p.price.toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.text,
+                                ),
+                              ),
                             ],
                           ),
                         ),

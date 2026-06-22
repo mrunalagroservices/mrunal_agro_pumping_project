@@ -21,11 +21,11 @@ class PointsScreen extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: AppColors.primary100,
+                  color: AppColors.accentBg,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.workspace_premium_outlined,
-                    color: AppColors.primary700, size: 36),
+                    color: AppColors.accent, size: 36),
               ),
               const SizedBox(height: 16),
               Text(
@@ -36,7 +36,7 @@ class PointsScreen extends StatelessWidget {
               Text(
                 context.tr('points_coming_soon_sub'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.subtext),
               ),
             ],
           ),

@@ -10,6 +10,22 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Brand accent ("Rausch") — buttons, links, nav highlighting, focus
+        // rings. Matches the mobile app's AppColors.accent (#FF385C).
+        accent: {
+          50: "#fff0f3",
+          100: "#ffe4e9",
+          200: "#ffc2cd",
+          300: "#ff9dad",
+          400: "#ff6b85",
+          500: "#ff4d6d",
+          600: "#ff385c",
+          700: "#e61e4d",
+          800: "#c2123c",
+          900: "#9f0f32",
+        },
+        // Kept as a semantic "on/running" color for actuator status —
+        // not used for branding (see ActuatorCard, Analytics device dots).
         primary: {
           50: "#f0fdf4",
           100: "#dcfce7",

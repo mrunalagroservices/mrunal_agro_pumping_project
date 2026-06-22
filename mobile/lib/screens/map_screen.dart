@@ -89,13 +89,13 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             ),
             if (farm.location != null) ...[
               const SizedBox(height: 6),
-              Text(farm.location!, style: TextStyle(color: AppColors.textSecondary)),
+              Text(farm.location!, style: TextStyle(color: AppColors.subtext)),
             ],
             const SizedBox(height: 12),
             Text(
               (isActive ? context.tr('map_pump_running') : context.tr('map_idle'))
                   .replaceAll('{n}', '${farm.deviceCount}'),
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+              style: TextStyle(color: AppColors.subtext, fontSize: 11),
             ),
           ],
         ),
@@ -203,7 +203,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: selected ? AppColors.primary600 : Colors.white,
+                            color: selected ? AppColors.success : Colors.white,
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
@@ -220,7 +220,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: isActive ? AppColors.primary500 : AppColors.slate400,
+                                  color: isActive ? AppColors.success : AppColors.subtext,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -228,7 +228,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                               Text(
                                 farm.name,
                                 style: TextStyle(
-                                  color: selected ? Colors.white : AppColors.textPrimary,
+                                  color: selected ? Colors.white : AppColors.text,
                                   fontWeight: FontWeight.w500,
                                   fontSize: 11,
                                 ),
@@ -279,7 +279,7 @@ class _LiveFarmMarkerState extends State<_LiveFarmMarker> with SingleTickerProvi
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.active ? AppColors.primary600 : AppColors.slate400;
+    final color = widget.active ? AppColors.success : AppColors.subtext;
     final dotSize = widget.selected ? 22.0 : 18.0;
 
     return Column(
@@ -298,7 +298,7 @@ class _LiveFarmMarkerState extends State<_LiveFarmMarker> with SingleTickerProvi
                     width: 18 + 36 * t,
                     height: 18 + 36 * t,
                     decoration: BoxDecoration(
-                      color: AppColors.primary600.withValues(alpha: (1 - t) * 0.35),
+                      color: AppColors.success.withValues(alpha: (1 - t) * 0.35),
                       shape: BoxShape.circle,
                     ),
                   );
@@ -340,7 +340,7 @@ class _LiveFarmMarkerState extends State<_LiveFarmMarker> with SingleTickerProvi
             style: TextStyle(
               fontSize: 8,
               fontWeight: FontWeight.w600,
-              color: widget.selected ? AppColors.primary700 : const Color(0xFF1e293b),
+              color: widget.selected ? AppColors.accent : const Color(0xFF1e293b),
             ),
           ),
         ),
@@ -360,7 +360,7 @@ class _PulsingDot extends StatelessWidget {
       width: 12,
       height: 12,
       decoration: BoxDecoration(
-        color: active ? AppColors.primary600 : AppColors.offGray,
+        color: active ? AppColors.success : AppColors.subtext,
         shape: BoxShape.circle,
       ),
     );

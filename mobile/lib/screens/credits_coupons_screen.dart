@@ -4,14 +4,7 @@ import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
 import '../services/api_client.dart';
 import '../widgets/language_switcher.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-  static const fieldBorder = Color(0xFFB0B0B0);
-}
+import '../config/theme.dart';
 
 class CreditsCouponsScreen extends StatefulWidget {
   const CreditsCouponsScreen({super.key});
@@ -44,7 +37,12 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
 
   void _comingSoon(String f) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.tr('profile_coming_soon').replaceAll('{feature}', f)), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(
+          context.tr('profile_coming_soon').replaceAll('{feature}', f),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -53,7 +51,9 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => const _AddCouponSheet(),
     );
     if (saved == true) _load();
@@ -76,34 +76,86 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
               ],
             ),
             const SizedBox(height: 18),
-            Text(context.tr('cc_title'),
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+            Text(
+              context.tr('cc_title'),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w500,
+                color: AppColors.text,
+                letterSpacing: -0.3,
+              ),
+            ),
             const SizedBox(height: 28),
 
-            Text(context.tr('cc_gift_credit'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: _P.text)),
+            Text(
+              context.tr('cc_gift_credit'),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: AppColors.text,
+              ),
+            ),
             const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(context.tr('cc_current_balance'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
-                const Text('₹0.00', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
+                Text(
+                  context.tr('cc_current_balance'),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.text,
+                  ),
+                ),
+                const Text(
+                  '₹0.00',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.text,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
-            _DarkButton(label: context.tr('cc_add_gift_card'), onTap: () => _comingSoon(context.tr('cc_gift_cards'))),
+            _DarkButton(
+              label: context.tr('cc_add_gift_card'),
+              onTap: () => _comingSoon(context.tr('cc_gift_cards')),
+            ),
 
             const SizedBox(height: 28),
-            const Divider(height: 1, thickness: 1, color: _P.divider),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
             const SizedBox(height: 28),
 
-            Text(context.tr('cc_coupons'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: _P.text)),
+            Text(
+              context.tr('cc_coupons'),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: AppColors.text,
+              ),
+            ),
             const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(context.tr('cc_your_coupons'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
-                Text('${_coupons?.length ?? 0}',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, decoration: TextDecoration.underline)),
+                Text(
+                  context.tr('cc_your_coupons'),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.text,
+                  ),
+                ),
+                Text(
+                  '${_coupons?.length ?? 0}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.text,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 14),
@@ -111,24 +163,44 @@ class _CreditsCouponsScreenState extends State<CreditsCouponsScreen> {
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(
+                    color: Color(0xFFDC2626),
+                    fontSize: 11,
+                  ),
+                ),
               ),
 
             if (_coupons == null)
-              const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Center(child: CircularProgressIndicator()))
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Center(child: CircularProgressIndicator()),
+              )
             else if (_coupons!.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                child: Text(context.tr('cc_no_coupons'), style: const TextStyle(fontSize: 12, color: _P.subtext)),
+                child: Text(
+                  context.tr('cc_no_coupons'),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.subtext,
+                  ),
+                ),
               )
             else
-              ..._coupons!.map((c) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _CouponCard(coupon: c),
-                  )),
+              ..._coupons!.map(
+                (c) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _CouponCard(coupon: c),
+                ),
+              ),
 
             const SizedBox(height: 16),
-            _DarkButton(label: context.tr('cc_add_coupon'), onTap: _openAddCoupon),
+            _DarkButton(
+              label: context.tr('cc_add_coupon'),
+              onTap: _openAddCoupon,
+            ),
           ],
         ),
       ),
@@ -148,12 +220,20 @@ class _CouponCard extends StatelessWidget {
     final value = coupon['value'];
     final minOrder = coupon['min_order'];
 
-    final minOrderText = (minOrder != null && minOrder > 0) ? context.tr('cc_min_order').replaceAll('{amount}', '$minOrder') : '';
+    final minOrderText = (minOrder != null && minOrder > 0)
+        ? context.tr('cc_min_order').replaceAll('{amount}', '$minOrder')
+        : '';
     final description = expired
         ? context.tr('cc_coupon_expired')
         : type == 'percent'
-            ? context.tr('cc_coupon_percent_off').replaceAll('{value}', '$value').replaceAll('{minOrder}', minOrderText)
-            : context.tr('cc_coupon_flat_off').replaceAll('{value}', '$value').replaceAll('{minOrder}', minOrderText);
+        ? context
+              .tr('cc_coupon_percent_off')
+              .replaceAll('{value}', '$value')
+              .replaceAll('{minOrder}', minOrderText)
+        : context
+              .tr('cc_coupon_flat_off')
+              .replaceAll('{value}', '$value')
+              .replaceAll('{minOrder}', minOrderText);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -170,9 +250,22 @@ class _CouponCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(code, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _P.text)),
+                Text(
+                  code,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.text,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(description, style: const TextStyle(fontSize: 11, color: _P.subtext)),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.subtext,
+                  ),
+                ),
               ],
             ),
           ),
@@ -203,17 +296,26 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
   Future<void> _apply() async {
     final code = _controller.text.trim();
     if (code.isEmpty) return;
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await context.read<AppState>().saveCoupon(code);
       if (!mounted) return;
       Navigator.pop(context, true);
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() { _loading = false; _error = e.message; });
+      setState(() {
+        _loading = false;
+        _error = e.message;
+      });
     } catch (_) {
       if (!mounted) return;
-      setState(() { _loading = false; _error = context.tr('cc_could_not_reach_server'); });
+      setState(() {
+        _loading = false;
+        _error = context.tr('cc_could_not_reach_server');
+      });
     }
   }
 
@@ -221,7 +323,12 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
   Widget build(BuildContext context) {
     context.watchLocale();
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        24 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,12 +336,23 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
           Row(
             children: [
               Expanded(
-                child: Text(context.tr('cc_coupons'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                child: Text(
+                  context.tr('cc_coupons'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.text,
+                  ),
+                ),
               ),
               InkWell(
                 onTap: () => Navigator.pop(context, false),
                 borderRadius: BorderRadius.circular(20),
-                child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, color: _P.text)),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.close, color: AppColors.text),
+                ),
               ),
             ],
           ),
@@ -244,17 +362,32 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
             textCapitalization: TextCapitalization.characters,
             decoration: InputDecoration(
               hintText: context.tr('cc_enter_code'),
-              hintStyle: const TextStyle(color: _P.subtext),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
-              focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: _P.text, width: 1.5)),
+              hintStyle: const TextStyle(color: AppColors.subtext),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.fieldBorder),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.fieldBorder),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                borderSide: BorderSide(color: AppColors.text, width: 1.5),
+              ),
             ),
             onSubmitted: (_) => _apply(),
           ),
           if (_error != null) ...[
             const SizedBox(height: 10),
-            Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
+            Text(
+              _error!,
+              style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11),
+            ),
           ],
           const SizedBox(height: 20),
           SizedBox(
@@ -262,15 +395,30 @@ class _AddCouponSheetState extends State<_AddCouponSheet> {
             child: ElevatedButton(
               onPressed: _loading ? null : _apply,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _P.text,
+                backgroundColor: AppColors.text,
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: const Color(0xFFDDDDDD),
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: _loading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(context.tr('cc_apply'), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      context.tr('cc_apply'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -291,12 +439,17 @@ class _DarkButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _P.text,
+          backgroundColor: AppColors.text,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
-        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+        child: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+        ),
       ),
     );
   }
@@ -314,8 +467,11 @@ class _CircleBack extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: const Icon(Icons.arrow_back, size: 20, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_back, size: 20, color: AppColors.text),
       ),
     );
   }

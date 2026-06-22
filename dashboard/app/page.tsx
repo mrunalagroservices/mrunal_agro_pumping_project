@@ -132,8 +132,8 @@ export default function HomePage() {
               icon={Power}
               label="Active motors"
               value={activeMotors}
-              textColor="text-primary-700"
-              bgLight="bg-primary-50"
+              textColor="text-accent-700"
+              bgLight="bg-accent-50"
             />
             <StatCard
               icon={Bell}
@@ -150,7 +150,7 @@ export default function HomePage() {
                 <h2 className="font-semibold text-slate-800">Devices</h2>
                 <Link
                   href="/devices"
-                  className="text-sm text-primary-700 font-medium hover:underline"
+                  className="text-sm text-accent-700 font-medium hover:underline"
                 >
                   View all
                 </Link>
@@ -159,7 +159,7 @@ export default function HomePage() {
                 {devices.length === 0 && (
                   <p className="px-5 py-4 text-sm text-slate-500">
                     No devices yet.{" "}
-                    <Link href="/devices" className="text-primary-700 underline">
+                    <Link href="/devices" className="text-accent-700 underline">
                       Add one
                     </Link>
                   </p>
@@ -197,7 +197,7 @@ export default function HomePage() {
                 <h2 className="font-semibold text-slate-800">Open alerts</h2>
                 <Link
                   href="/alerts"
-                  className="text-sm text-primary-700 font-medium hover:underline"
+                  className="text-sm text-accent-700 font-medium hover:underline"
                 >
                   View all
                 </Link>
@@ -240,7 +240,7 @@ export default function HomePage() {
                 </h2>
                 <Link
                   href="/map"
-                  className="text-sm text-primary-700 font-medium hover:underline"
+                  className="text-sm text-accent-700 font-medium hover:underline"
                 >
                   View full map
                 </Link>
@@ -248,7 +248,7 @@ export default function HomePage() {
               {farms.filter((f) => f.latitude != null && f.longitude != null).length === 0 ? (
                 <p className="px-5 py-8 text-sm text-slate-500 text-center">
                   No farm locations pinned yet.{" "}
-                  <Link href="/map" className="text-primary-700 underline">
+                  <Link href="/map" className="text-accent-700 underline">
                     Add one
                   </Link>
                 </p>
@@ -266,7 +266,7 @@ export default function HomePage() {
                 </h2>
                 <Link
                   href="/orders"
-                  className="text-sm text-primary-700 font-medium hover:underline"
+                  className="text-sm text-accent-700 font-medium hover:underline"
                 >
                   View all
                 </Link>
@@ -277,7 +277,7 @@ export default function HomePage() {
                     <Package className="w-8 h-8 text-slate-200 mx-auto mb-2" />
                     <p className="text-sm text-slate-500">
                       No orders yet.{" "}
-                      <Link href="/shop" className="text-primary-700 underline">
+                      <Link href="/shop" className="text-accent-700 underline">
                         Go to Market
                       </Link>
                     </p>

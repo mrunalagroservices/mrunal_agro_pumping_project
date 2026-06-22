@@ -64,7 +64,7 @@ export default function ActuatorCard({
                 ? `Max ${actuator.max_runtime_minutes} min`
                 : "0 = run until stopped"
             }
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
           />
         </div>
       )}
@@ -82,7 +82,7 @@ export default function ActuatorCard({
         className={`mt-4 w-full flex items-center justify-center gap-2 font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60 ${
           isOn
             ? "bg-red-50 text-red-600 hover:bg-red-100"
-            : "bg-primary-600 text-white hover:bg-primary-700"
+            : "bg-accent-600 text-white hover:bg-accent-700"
         }`}
       >
         {submitting ? (

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../config/theme.dart';
 import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
 import 'alerts_screen.dart';
@@ -82,8 +83,8 @@ class _BottomBar extends StatelessWidget {
     required this.messagesBadge,
   });
 
-  static const _selected = Color(0xFFFF385C);
-  static const _unselected = Color(0xFF717171);
+  static const _selected = AppColors.accent;
+  static const _unselected = AppColors.subtext;
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +99,7 @@ class _BottomBar extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFEBEBEB), width: 1)),
+        border: Border(top: BorderSide(color: AppColors.divider, width: 1)),
       ),
       child: SafeArea(
         top: false,
@@ -171,7 +172,7 @@ class _IconWithBadge extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF385C),
+              color: AppColors.accent,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.white, width: 1.5),
             ),

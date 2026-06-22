@@ -29,8 +29,8 @@ const menuItems: MenuItem[] = [
     icon: LayoutDashboard,
     label: "Dashboard",
     href: "/",
-    textColor: "text-primary-700",
-    bgLight: "bg-primary-50",
+    textColor: "text-accent-700",
+    bgLight: "bg-accent-50",
   },
   {
     icon: Warehouse,

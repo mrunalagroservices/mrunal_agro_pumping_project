@@ -4,14 +4,7 @@ import '../l10n/tr_extension.dart';
 import '../models/user.dart';
 import '../providers/app_state.dart';
 import '../widgets/language_switcher.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-  static const fieldBorder = Color(0xFFB0B0B0);
-}
+import '../config/theme.dart';
 
 String _maskPhone(BuildContext context, String? phone) {
   if (phone == null || phone.isEmpty) return context.tr('pinfo_not_provided');
@@ -53,8 +46,16 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   late TextEditingController _phone;
   late TextEditingController _email;
 
-  late TextEditingController _resLine1, _resLine2, _resCity, _resState, _resPincode;
-  late TextEditingController _postLine1, _postLine2, _postCity, _postState, _postPincode;
+  late TextEditingController _resLine1,
+      _resLine2,
+      _resCity,
+      _resState,
+      _resPincode;
+  late TextEditingController _postLine1,
+      _postLine2,
+      _postCity,
+      _postState,
+      _postPincode;
   late TextEditingController _emName, _emPhone, _emRelationship;
 
   @override
@@ -62,8 +63,12 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     super.initState();
     final user = context.read<AppState>().user;
     final parts = (user?.name ?? '').trim().split(' ');
-    _firstName = TextEditingController(text: parts.isNotEmpty ? parts.first : '');
-    _lastName = TextEditingController(text: parts.length > 1 ? parts.sublist(1).join(' ') : '');
+    _firstName = TextEditingController(
+      text: parts.isNotEmpty ? parts.first : '',
+    );
+    _lastName = TextEditingController(
+      text: parts.length > 1 ? parts.sublist(1).join(' ') : '',
+    );
     _preferred = TextEditingController(text: user?.preferredFirstName ?? '');
     _phone = TextEditingController(text: user?.phone ?? '');
     _email = TextEditingController(text: user?.email ?? '');
@@ -85,16 +90,32 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     final emergency = user?.emergencyContact;
     _emName = TextEditingController(text: emergency?.name ?? '');
     _emPhone = TextEditingController(text: emergency?.phone ?? '');
-    _emRelationship = TextEditingController(text: emergency?.relationship ?? '');
+    _emRelationship = TextEditingController(
+      text: emergency?.relationship ?? '',
+    );
   }
 
   @override
   void dispose() {
     for (final c in [
-      _firstName, _lastName, _preferred, _phone, _email,
-      _resLine1, _resLine2, _resCity, _resState, _resPincode,
-      _postLine1, _postLine2, _postCity, _postState, _postPincode,
-      _emName, _emPhone, _emRelationship,
+      _firstName,
+      _lastName,
+      _preferred,
+      _phone,
+      _email,
+      _resLine1,
+      _resLine2,
+      _resCity,
+      _resState,
+      _resPincode,
+      _postLine1,
+      _postLine2,
+      _postCity,
+      _postState,
+      _postPincode,
+      _emName,
+      _emPhone,
+      _emRelationship,
     ]) {
       c.dispose();
     }
@@ -103,12 +124,20 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   void _comingSoon(String f) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.tr('profile_coming_soon').replaceAll('{feature}', f)), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(
+          context.tr('profile_coming_soon').replaceAll('{feature}', f),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
   Future<bool> _commit(Future<String?> Function() action) async {
-    setState(() { _saving = true; _error = null; });
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
     final err = await action();
     if (!mounted) return false;
     setState(() {
@@ -119,49 +148,76 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   }
 
   Future<void> _saveName() async {
-    final fullName = [_firstName.text.trim(), _lastName.text.trim()].where((s) => s.isNotEmpty).join(' ');
-    final ok = await _commit(() => context.read<AppState>().updateProfile(name: fullName));
+    final fullName = [
+      _firstName.text.trim(),
+      _lastName.text.trim(),
+    ].where((s) => s.isNotEmpty).join(' ');
+    final ok = await _commit(
+      () => context.read<AppState>().updateProfile(name: fullName),
+    );
     if (ok) setState(() => _editingName = false);
   }
 
   Future<void> _savePreferred() async {
-    final ok = await _commit(() => context.read<AppState>().updateProfile(preferredFirstName: _preferred.text.trim()));
+    final ok = await _commit(
+      () => context.read<AppState>().updateProfile(
+        preferredFirstName: _preferred.text.trim(),
+      ),
+    );
     if (ok) setState(() => _editingPreferred = false);
   }
 
   Future<void> _savePhone() async {
-    final ok = await _commit(() => context.read<AppState>().updateProfile(phone: _phone.text.trim()));
+    final ok = await _commit(
+      () => context.read<AppState>().updateProfile(phone: _phone.text.trim()),
+    );
     if (ok) setState(() => _editingPhone = false);
   }
 
   Future<void> _saveEmail() async {
-    final ok = await _commit(() => context.read<AppState>().updateProfile(email: _email.text.trim()));
+    final ok = await _commit(
+      () => context.read<AppState>().updateProfile(email: _email.text.trim()),
+    );
     if (ok) setState(() => _editingEmail = false);
   }
 
   Future<void> _saveResidential() async {
     final addr = PostalLikeAddress(
-      line1: _resLine1.text.trim(), line2: _resLine2.text.trim(),
-      city: _resCity.text.trim(), state: _resState.text.trim(), pincode: _resPincode.text.trim(),
+      line1: _resLine1.text.trim(),
+      line2: _resLine2.text.trim(),
+      city: _resCity.text.trim(),
+      state: _resState.text.trim(),
+      pincode: _resPincode.text.trim(),
     );
-    final ok = await _commit(() => context.read<AppState>().updateProfile(residentialAddress: addr));
+    final ok = await _commit(
+      () => context.read<AppState>().updateProfile(residentialAddress: addr),
+    );
     if (ok) setState(() => _editingResidential = false);
   }
 
   Future<void> _savePostal() async {
     final addr = PostalLikeAddress(
-      line1: _postLine1.text.trim(), line2: _postLine2.text.trim(),
-      city: _postCity.text.trim(), state: _postState.text.trim(), pincode: _postPincode.text.trim(),
+      line1: _postLine1.text.trim(),
+      line2: _postLine2.text.trim(),
+      city: _postCity.text.trim(),
+      state: _postState.text.trim(),
+      pincode: _postPincode.text.trim(),
     );
-    final ok = await _commit(() => context.read<AppState>().updateProfile(postalAddress: addr));
+    final ok = await _commit(
+      () => context.read<AppState>().updateProfile(postalAddress: addr),
+    );
     if (ok) setState(() => _editingPostal = false);
   }
 
   Future<void> _saveEmergency() async {
     final contact = EmergencyContact(
-      name: _emName.text.trim(), phone: _emPhone.text.trim(), relationship: _emRelationship.text.trim(),
+      name: _emName.text.trim(),
+      phone: _emPhone.text.trim(),
+      relationship: _emRelationship.text.trim(),
     );
-    final ok = await _commit(() => context.read<AppState>().updateProfile(emergencyContact: contact));
+    final ok = await _commit(
+      () => context.read<AppState>().updateProfile(emergencyContact: contact),
+    );
     if (ok) setState(() => _editingEmergency = false);
   }
 
@@ -184,8 +240,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               ],
             ),
             const SizedBox(height: 18),
-            Text(context.tr('pinfo_title'),
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+            Text(
+              context.tr('pinfo_title'),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w500,
+                color: AppColors.text,
+                letterSpacing: -0.3,
+              ),
+            ),
             const SizedBox(height: 24),
 
             if (_error != null)
@@ -193,8 +256,17 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(12)),
-                  child: Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(
+                      color: Color(0xFFDC2626),
+                      fontSize: 11,
+                    ),
+                  ),
                 ),
               ),
 
@@ -206,21 +278,44 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 if (_editingName) {
                   final parts = (user?.name ?? '').trim().split(' ');
                   _firstName.text = parts.isNotEmpty ? parts.first : '';
-                  _lastName.text = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+                  _lastName.text = parts.length > 1
+                      ? parts.sublist(1).join(' ')
+                      : '';
                 }
                 _editingName = !_editingName;
               }),
-              collapsed: Text(user?.name.isNotEmpty == true ? user!.name : context.tr('pinfo_not_provided'),
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
+              collapsed: Text(
+                user?.name.isNotEmpty == true
+                    ? user!.name
+                    : context.tr('pinfo_not_provided'),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.subtext,
+                ),
+              ),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.tr('pinfo_legal_name_hint'),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
+                  Text(
+                    context.tr('pinfo_legal_name_hint'),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.subtext,
+                      height: 1.3,
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  _OutlinedField(label: context.tr('pinfo_first_name_id'), controller: _firstName),
+                  _OutlinedField(
+                    label: context.tr('pinfo_first_name_id'),
+                    controller: _firstName,
+                  ),
                   const SizedBox(height: 12),
-                  _OutlinedField(label: context.tr('pinfo_last_name_id'), controller: _lastName),
+                  _OutlinedField(
+                    label: context.tr('pinfo_last_name_id'),
+                    controller: _lastName,
+                  ),
                   const SizedBox(height: 16),
                   _SaveButton(loading: _saving, onTap: _saveName),
                 ],
@@ -233,18 +328,31 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               label: context.tr('pinfo_preferred_name'),
               editing: _editingPreferred,
               onToggle: () => setState(() {
-                if (_editingPreferred) _preferred.text = user?.preferredFirstName ?? '';
+                if (_editingPreferred)
+                  _preferred.text = user?.preferredFirstName ?? '';
                 _editingPreferred = !_editingPreferred;
               }),
-              actionLabelWhenCollapsed: (user?.preferredFirstName?.isNotEmpty ?? false) ? context.tr('pinfo_edit') : context.tr('pinfo_add'),
+              actionLabelWhenCollapsed:
+                  (user?.preferredFirstName?.isNotEmpty ?? false)
+                  ? context.tr('pinfo_edit')
+                  : context.tr('pinfo_add'),
               collapsed: Text(
-                (user?.preferredFirstName?.isNotEmpty ?? false) ? user!.preferredFirstName! : context.tr('pinfo_not_provided'),
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext),
+                (user?.preferredFirstName?.isNotEmpty ?? false)
+                    ? user!.preferredFirstName!
+                    : context.tr('pinfo_not_provided'),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.subtext,
+                ),
               ),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _OutlinedField(label: context.tr('pinfo_preferred_name'), controller: _preferred),
+                  _OutlinedField(
+                    label: context.tr('pinfo_preferred_name'),
+                    controller: _preferred,
+                  ),
                   const SizedBox(height: 16),
                   _SaveButton(loading: _saving, onTap: _savePreferred),
                 ],
@@ -260,11 +368,22 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 if (_editingPhone) _phone.text = user?.phone ?? '';
                 _editingPhone = !_editingPhone;
               }),
-              collapsed: Text(_maskPhone(context, user?.phone), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
+              collapsed: Text(
+                _maskPhone(context, user?.phone),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.subtext,
+                ),
+              ),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _OutlinedField(label: context.tr('pinfo_phone'), controller: _phone, keyboardType: TextInputType.phone),
+                  _OutlinedField(
+                    label: context.tr('pinfo_phone'),
+                    controller: _phone,
+                    keyboardType: TextInputType.phone,
+                  ),
                   const SizedBox(height: 16),
                   _SaveButton(loading: _saving, onTap: _savePhone),
                 ],
@@ -283,24 +402,47 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               collapsed: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user != null ? _maskEmail(user.email) : '', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext)),
+                  Text(
+                    user != null ? _maskEmail(user.email) : '',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.subtext,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   OutlinedButton(
-                    onPressed: () => _comingSoon(context.tr('pinfo_email_confirmation')),
+                    onPressed: () =>
+                        _comingSoon(context.tr('pinfo_email_confirmation')),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: _P.text,
+                      foregroundColor: AppColors.text,
                       side: const BorderSide(color: Color(0xFFDDDDDD)),
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    child: Text(context.tr('pinfo_confirm'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                    child: Text(
+                      context.tr('pinfo_confirm'),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _OutlinedField(label: context.tr('pinfo_email'), controller: _email, keyboardType: TextInputType.emailAddress),
+                  _OutlinedField(
+                    label: context.tr('pinfo_email'),
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
                   const SizedBox(height: 16),
                   _SaveButton(loading: _saving, onTap: _saveEmail),
                 ],
@@ -323,14 +465,29 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 }
                 _editingResidential = !_editingResidential;
               }),
-              actionLabelWhenCollapsed: (user?.residentialAddress?.isEmpty ?? true) ? context.tr('pinfo_add') : context.tr('pinfo_edit'),
+              actionLabelWhenCollapsed:
+                  (user?.residentialAddress?.isEmpty ?? true)
+                  ? context.tr('pinfo_add')
+                  : context.tr('pinfo_edit'),
               collapsed: Text(
-                (user?.residentialAddress?.isEmpty ?? true) ? context.tr('pinfo_not_provided') : user!.residentialAddress!.oneLine,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3),
+                (user?.residentialAddress?.isEmpty ?? true)
+                    ? context.tr('pinfo_not_provided')
+                    : user!.residentialAddress!.oneLine,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.subtext,
+                  height: 1.3,
+                ),
               ),
               expanded: _AddressFields(
-                line1: _resLine1, line2: _resLine2, city: _resCity, state: _resState, pincode: _resPincode,
-                saving: _saving, onSave: _saveResidential,
+                line1: _resLine1,
+                line2: _resLine2,
+                city: _resCity,
+                state: _resState,
+                pincode: _resPincode,
+                saving: _saving,
+                onSave: _saveResidential,
               ),
             ),
             const _SectionDivider(),
@@ -350,14 +507,28 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 }
                 _editingPostal = !_editingPostal;
               }),
-              actionLabelWhenCollapsed: (user?.postalAddress?.isEmpty ?? true) ? context.tr('pinfo_add') : context.tr('pinfo_edit'),
+              actionLabelWhenCollapsed: (user?.postalAddress?.isEmpty ?? true)
+                  ? context.tr('pinfo_add')
+                  : context.tr('pinfo_edit'),
               collapsed: Text(
-                (user?.postalAddress?.isEmpty ?? true) ? context.tr('pinfo_not_provided') : user!.postalAddress!.oneLine,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3),
+                (user?.postalAddress?.isEmpty ?? true)
+                    ? context.tr('pinfo_not_provided')
+                    : user!.postalAddress!.oneLine,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.subtext,
+                  height: 1.3,
+                ),
               ),
               expanded: _AddressFields(
-                line1: _postLine1, line2: _postLine2, city: _postCity, state: _postState, pincode: _postPincode,
-                saving: _saving, onSave: _savePostal,
+                line1: _postLine1,
+                line2: _postLine2,
+                city: _postCity,
+                state: _postState,
+                pincode: _postPincode,
+                saving: _saving,
+                onSave: _savePostal,
               ),
             ),
             const _SectionDivider(),
@@ -375,22 +546,40 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 }
                 _editingEmergency = !_editingEmergency;
               }),
-              actionLabelWhenCollapsed: (user?.emergencyContact?.isEmpty ?? true) ? context.tr('pinfo_add') : context.tr('pinfo_edit'),
+              actionLabelWhenCollapsed:
+                  (user?.emergencyContact?.isEmpty ?? true)
+                  ? context.tr('pinfo_add')
+                  : context.tr('pinfo_edit'),
               collapsed: Text(
                 (user?.emergencyContact?.isEmpty ?? true)
                     ? context.tr('pinfo_not_provided')
                     : '${user!.emergencyContact!.name} · ${user.emergencyContact!.phone}'
-                        '${(user.emergencyContact!.relationship?.isNotEmpty ?? false) ? ' (${user.emergencyContact!.relationship})' : ''}',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3),
+                          '${(user.emergencyContact!.relationship?.isNotEmpty ?? false) ? ' (${user.emergencyContact!.relationship})' : ''}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.subtext,
+                  height: 1.3,
+                ),
               ),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _OutlinedField(label: context.tr('pinfo_contact_name'), controller: _emName),
+                  _OutlinedField(
+                    label: context.tr('pinfo_contact_name'),
+                    controller: _emName,
+                  ),
                   const SizedBox(height: 12),
-                  _OutlinedField(label: context.tr('pinfo_phone'), controller: _emPhone, keyboardType: TextInputType.phone),
+                  _OutlinedField(
+                    label: context.tr('pinfo_phone'),
+                    controller: _emPhone,
+                    keyboardType: TextInputType.phone,
+                  ),
                   const SizedBox(height: 12),
-                  _OutlinedField(label: context.tr('pinfo_relationship'), controller: _emRelationship),
+                  _OutlinedField(
+                    label: context.tr('pinfo_relationship'),
+                    controller: _emRelationship,
+                  ),
                   const SizedBox(height: 16),
                   _SaveButton(loading: _saving, onTap: _saveEmergency),
                 ],
@@ -431,10 +620,19 @@ class _EditableSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.text,
+                ),
+              ),
             ),
             _LinkButton(
-              label: editing ? context.tr('pinfo_cancel') : (actionLabelWhenCollapsed ?? context.tr('pinfo_edit')),
+              label: editing
+                  ? context.tr('pinfo_cancel')
+                  : (actionLabelWhenCollapsed ?? context.tr('pinfo_edit')),
               onTap: onToggle,
             ),
           ],
@@ -457,10 +655,16 @@ class _EditableSection extends StatelessWidget {
               ),
             ),
             child: !editing
-                ? KeyedSubtree(key: const ValueKey('collapsed'), child: collapsed)
+                ? KeyedSubtree(
+                    key: const ValueKey('collapsed'),
+                    child: collapsed,
+                  )
                 : KeyedSubtree(
                     key: const ValueKey('expanded'),
-                    child: Padding(padding: const EdgeInsets.only(top: 12), child: expanded),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: expanded,
+                    ),
                   ),
           ),
         ),
@@ -475,7 +679,7 @@ class _SectionDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 24),
-      child: Divider(height: 1, thickness: 1, color: _P.divider),
+      child: Divider(height: 1, thickness: 1, color: AppColors.divider),
     );
   }
 }
@@ -486,8 +690,13 @@ class _AddressFields extends StatelessWidget {
   final VoidCallback onSave;
 
   const _AddressFields({
-    required this.line1, required this.line2, required this.city,
-    required this.state, required this.pincode, required this.saving, required this.onSave,
+    required this.line1,
+    required this.line2,
+    required this.city,
+    required this.state,
+    required this.pincode,
+    required this.saving,
+    required this.onSave,
   });
 
   @override
@@ -495,15 +704,25 @@ class _AddressFields extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _OutlinedField(label: context.tr('pinfo_address_line1'), controller: line1),
+        _OutlinedField(
+          label: context.tr('pinfo_address_line1'),
+          controller: line1,
+        ),
         const SizedBox(height: 12),
-        _OutlinedField(label: context.tr('pinfo_address_line2'), controller: line2),
+        _OutlinedField(
+          label: context.tr('pinfo_address_line2'),
+          controller: line2,
+        ),
         const SizedBox(height: 12),
         _OutlinedField(label: context.tr('pinfo_city'), controller: city),
         const SizedBox(height: 12),
         _OutlinedField(label: context.tr('pinfo_state'), controller: state),
         const SizedBox(height: 12),
-        _OutlinedField(label: context.tr('pinfo_pincode'), controller: pincode, keyboardType: TextInputType.number),
+        _OutlinedField(
+          label: context.tr('pinfo_pincode'),
+          controller: pincode,
+          keyboardType: TextInputType.number,
+        ),
         const SizedBox(height: 16),
         _SaveButton(loading: saving, onTap: onSave),
       ],
@@ -544,7 +763,7 @@ class _LinkButtonState extends State<_LinkButton> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: _P.text,
+              color: AppColors.text,
               decoration: TextDecoration.underline,
             ),
           ),
@@ -558,21 +777,41 @@ class _OutlinedField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final TextInputType? keyboardType;
-  const _OutlinedField({required this.label, required this.controller, this.keyboardType});
+  const _OutlinedField({
+    required this.label,
+    required this.controller,
+    this.keyboardType,
+  });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text),
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: AppColors.text,
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 12, color: _P.subtext),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _P.fieldBorder)),
-        focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: _P.text, width: 1.5)),
+        labelStyle: const TextStyle(fontSize: 12, color: AppColors.subtext),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.fieldBorder),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.fieldBorder),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderSide: BorderSide(color: AppColors.text, width: 1.5),
+        ),
       ),
     );
   }
@@ -590,14 +829,29 @@ class _SaveButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: loading ? null : onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _P.text,
+          backgroundColor: AppColors.text,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
         child: loading
-            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-            : Text(context.tr('pinfo_save'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Text(
+                context.tr('pinfo_save'),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
       ),
     );
   }
@@ -615,8 +869,11 @@ class _CircleBack extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: const Icon(Icons.arrow_back, size: 22, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_back, size: 22, color: AppColors.text),
       ),
     );
   }

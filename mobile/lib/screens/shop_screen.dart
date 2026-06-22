@@ -7,6 +7,7 @@ import '../widgets/language_switcher.dart';
 import 'cart_screen.dart';
 import 'product_detail_screen.dart';
 import 'wishlist_screen.dart';
+import '../config/theme.dart';
 
 /// Maps a category name from the backend to its translation key, falling
 /// back to the raw name for categories without a known translation.
@@ -22,14 +23,6 @@ String categoryLabel(BuildContext context, String category) {
   };
   final key = keys[category];
   return key != null ? context.tr(key) : category;
-}
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const circleBtn = Color(0xFFF2F2F2);
-  static const pillActive = Color(0xFF222222);
-  static const pillInactive = Color(0xFFF2F2F2);
 }
 
 class ShopScreen extends StatefulWidget {
@@ -73,14 +66,16 @@ class _ShopScreenState extends State<ShopScreen> {
   List<Product> get _allProducts => context.read<AppState>().products;
 
   double _cartTotal(List<Product> all) => _cart.entries.fold(0, (sum, e) {
-        final p = all.firstWhere((p) => p.id == e.key, orElse: () => all.first);
-        return sum + p.price * e.value;
-      });
+    final p = all.firstWhere((p) => p.id == e.key, orElse: () => all.first);
+    return sum + p.price * e.value;
+  });
 
   List<Product> _filtered(List<Product> all) {
     return all.where((p) {
-      final matchCat = _selectedCategory == 'All' || p.category == _selectedCategory;
-      final matchSearch = _searchQuery.isEmpty ||
+      final matchCat =
+          _selectedCategory == 'All' || p.category == _selectedCategory;
+      final matchSearch =
+          _searchQuery.isEmpty ||
           p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           p.category.toLowerCase().contains(_searchQuery.toLowerCase());
       return matchCat && matchSearch;
@@ -90,7 +85,20 @@ class _ShopScreenState extends State<ShopScreen> {
   String get _deliveryDate {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${days[tomorrow.weekday - 1]}, ${tomorrow.day} ${months[tomorrow.month - 1]}';
   }
 
@@ -99,13 +107,19 @@ class _ShopScreenState extends State<ShopScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(context.tr('shop_added_to_cart').replaceAll('{name}', p.name)),
+        content: Text(
+          context.tr('shop_added_to_cart').replaceAll('{name}', p.name),
+        ),
         duration: const Duration(seconds: 1),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: _P.text,
+        backgroundColor: AppColors.text,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        action: SnackBarAction(label: context.tr('shop_view_cart'), textColor: Colors.white, onPressed: _showCart),
+        action: SnackBarAction(
+          label: context.tr('shop_view_cart'),
+          textColor: Colors.white,
+          onPressed: _showCart,
+        ),
       ),
     );
   }
@@ -113,7 +127,9 @@ class _ShopScreenState extends State<ShopScreen> {
   void _showCart() {
     ScaffoldMessenger.of(context).clearSnackBars();
     if (_cart.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.tr('shop_cart_empty'))));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.tr('shop_cart_empty'))));
       return;
     }
     Navigator.push(
@@ -155,7 +171,19 @@ class _ShopScreenState extends State<ShopScreen> {
     final state = context.watch<AppState>();
     final all = state.products;
     final filtered = _filtered(all);
-    final cats = ['All', ...(_categories.isNotEmpty ? _categories : const ['Seeds', 'Fertilizers', 'Irrigation', 'Tools', 'Pesticides', 'Others'])];
+    final cats = [
+      'All',
+      ...(_categories.isNotEmpty
+          ? _categories
+          : const [
+              'Seeds',
+              'Fertilizers',
+              'Irrigation',
+              'Tools',
+              'Pesticides',
+              'Others',
+            ]),
+    ];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -163,168 +191,253 @@ class _ShopScreenState extends State<ShopScreen> {
         child: state.isLoadingProducts && all.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : state.productsError != null && all.isEmpty
-                ? _ErrorView(message: state.productsError!, onRetry: () => state.loadProducts())
-                : RefreshIndicator(
-                    onRefresh: () => state.loadProducts(),
-                    child: CustomScrollView(
-                      slivers: [
-                        // ── Header: title + wishlist + cart ─────────────────
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(context.tr('nav_market'),
-                                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+            ? _ErrorView(
+                message: state.productsError!,
+                onRetry: () => state.loadProducts(),
+              )
+            : RefreshIndicator(
+                onRefresh: () => state.loadProducts(),
+                child: CustomScrollView(
+                  slivers: [
+                    // ── Header: title + wishlist + cart ─────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                context.tr('nav_market'),
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.text,
+                                  letterSpacing: -0.3,
                                 ),
-                                const LanguageSwitcher(size: 40),
-                                const SizedBox(width: 10),
-                                _CircleIconBtn(
-                                  icon: Icons.favorite_border,
-                                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WishlistScreen())),
-                                ),
-                                const SizedBox(width: 10),
-                                _CartIcon(count: _cartCount, onTap: _showCart),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // ── Search bar ──────────────────────────────────────
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                            child: TextField(
-                              controller: _searchCtrl,
-                              onChanged: (v) => setState(() => _searchQuery = v),
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
-                              decoration: InputDecoration(
-                                hintText: context.tr('shop_search_hint'),
-                                hintStyle: const TextStyle(fontSize: 12, color: _P.subtext),
-                                prefixIcon: const Icon(Icons.search, color: _P.subtext, size: 20),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.close, size: 18, color: _P.subtext),
-                                        onPressed: () {
-                                          _searchCtrl.clear();
-                                          setState(() => _searchQuery = '');
-                                        },
-                                      )
-                                    : null,
-                                filled: true,
-                                fillColor: _P.pillInactive,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
                               ),
                             ),
-                          ),
+                            const LanguageSwitcher(size: 40),
+                            const SizedBox(width: 10),
+                            _CircleIconBtn(
+                              icon: Icons.favorite_border,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const WishlistScreen(),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            _CartIcon(count: _cartCount, onTap: _showCart),
+                          ],
                         ),
+                      ),
+                    ),
 
-                        // ── Category pills ──────────────────────────────────
-                        SliverToBoxAdapter(
-                          child: SizedBox(
-                            height: 56,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                              itemCount: cats.length,
-                              separatorBuilder: (_, __) => const SizedBox(width: 8),
-                              itemBuilder: (context, i) {
-                                final cat = cats[i];
-                                final active = cat == _selectedCategory;
-                                return GestureDetector(
-                                  onTap: () => setState(() => _selectedCategory = cat),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-                                    decoration: BoxDecoration(
-                                      color: active ? _P.pillActive : _P.pillInactive,
-                                      borderRadius: BorderRadius.circular(24),
+                    // ── Search bar ──────────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                        child: TextField(
+                          controller: _searchCtrl,
+                          onChanged: (v) => setState(() => _searchQuery = v),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.text,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: context.tr('shop_search_hint'),
+                            hintStyle: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.subtext,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              color: AppColors.subtext,
+                              size: 20,
+                            ),
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.close,
+                                      size: 18,
+                                      color: AppColors.subtext,
                                     ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      categoryLabel(context, cat),
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: active ? Colors.white : _P.text),
-                                    ),
-                                  ),
-                                );
-                              },
+                                    onPressed: () {
+                                      _searchCtrl.clear();
+                                      setState(() => _searchQuery = '');
+                                    },
+                                  )
+                                : null,
+                            filled: true,
+                            fillColor: AppColors.chip,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 0,
+                              horizontal: 16,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide.none,
                             ),
                           ),
                         ),
+                      ),
+                    ),
 
-                        // ── Delivery info banner ─────────────────────────────
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                              decoration: BoxDecoration(color: _P.pillInactive, borderRadius: BorderRadius.circular(14)),
-                              child: Row(
+                    // ── Category pills ──────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 56,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                          itemCount: cats.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (context, i) {
+                            final cat = cats[i];
+                            final active = cat == _selectedCategory;
+                            return GestureDetector(
+                              onTap: () =>
+                                  setState(() => _selectedCategory = cat),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 9,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: active
+                                      ? AppColors.text
+                                      : AppColors.chip,
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  categoryLabel(context, cat),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: active
+                                        ? Colors.white
+                                        : AppColors.text,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    // ── Delivery info banner ─────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.chip,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.local_shipping_outlined,
+                                color: AppColors.text,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  context
+                                      .tr('shop_free_delivery')
+                                      .replaceAll('{date}', _deliveryDate),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.text,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ── Results count ───────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                        child: Text(
+                          context
+                              .tr('shop_n_products')
+                              .replaceAll('{n}', '${filtered.length}'),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.subtext,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ── Product grid ────────────────────────────────────
+                    filtered.isEmpty
+                        ? SliverFillRemaining(
+                            child: Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.local_shipping_outlined, color: _P.text, size: 20),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      context.tr('shop_free_delivery').replaceAll('{date}', _deliveryDate),
-                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _P.text),
+                                  const Icon(
+                                    Icons.search_off_outlined,
+                                    size: 44,
+                                    color: AppColors.subtext,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    context.tr('shop_no_products'),
+                                    style: const TextStyle(
+                                      color: AppColors.text,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w400,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                        ),
-
-                        // ── Results count ───────────────────────────────────
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                            child: Text(
-                              context.tr('shop_n_products').replaceAll('{n}', '${filtered.length}'),
-                              style: const TextStyle(fontSize: 11, color: _P.subtext, fontWeight: FontWeight.w400),
-                            ),
-                          ),
-                        ),
-
-                        // ── Product grid ────────────────────────────────────
-                        filtered.isEmpty
-                            ? SliverFillRemaining(
-                                child: Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.search_off_outlined, size: 44, color: _P.subtext),
-                                      const SizedBox(height: 12),
-                                      Text(context.tr('shop_no_products'), style: const TextStyle(color: _P.text, fontSize: 13, fontWeight: FontWeight.w400)),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : SliverPadding(
-                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                                sliver: SliverGrid(
-                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          )
+                        : SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                            sliver: SliverGrid(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
                                     crossAxisSpacing: 14,
                                     mainAxisSpacing: 18,
                                     childAspectRatio: 0.74,
                                   ),
-                                  delegate: SliverChildBuilderDelegate(
-                                    (ctx, i) => _ProductCard(
-                                      product: filtered[i],
-                                      wishlisted: state.isWishlisted(filtered[i].id),
-                                      onTap: () => _openProduct(filtered[i]),
-                                      onToggleWishlist: () => state.toggleWishlist(filtered[i].id),
-                                    ),
-                                    childCount: filtered.length,
+                              delegate: SliverChildBuilderDelegate(
+                                (ctx, i) => _ProductCard(
+                                  product: filtered[i],
+                                  wishlisted: state.isWishlisted(
+                                    filtered[i].id,
                                   ),
+                                  onTap: () => _openProduct(filtered[i]),
+                                  onToggleWishlist: () =>
+                                      state.toggleWishlist(filtered[i].id),
                                 ),
+                                childCount: filtered.length,
                               ),
-                      ],
-                    ),
-                  ),
+                            ),
+                          ),
+                  ],
+                ),
+              ),
       ),
 
       // Floating cart bar
@@ -332,26 +445,63 @@ class _ShopScreenState extends State<ShopScreen> {
           ? GestureDetector(
               onTap: _showCart,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: const BoxDecoration(color: _P.text, borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                decoration: const BoxDecoration(
+                  color: AppColors.text,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                ),
                 child: SafeArea(
                   top: false,
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(8)),
-                        child: Text(context.tr('shop_n_items').replaceAll('{n}', '$_cartCount'),
-                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          context
+                              .tr('shop_n_items')
+                              .replaceAll('{n}', '$_cartCount'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(context.tr('shop_view_cart'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 13)),
+                        child: Text(
+                          context.tr('shop_view_cart'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
-                      Text('₹${_cartTotal(all).toStringAsFixed(0)}',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 13)),
+                      Text(
+                        '₹${_cartTotal(all).toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                     ],
                   ),
                 ),
@@ -375,8 +525,11 @@ class _CircleIconBtn extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: Icon(icon, color: _P.text, size: 21),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: AppColors.text, size: 21),
       ),
     );
   }
@@ -395,22 +548,45 @@ class _CartIcon extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
         child: Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
-            const Icon(Icons.shopping_cart_outlined, color: _P.text, size: 22),
+            const Icon(
+              Icons.shopping_cart_outlined,
+              color: AppColors.text,
+              size: 22,
+            ),
             if (count > 0)
               Positioned(
                 top: 1,
                 right: 3,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                  decoration: const BoxDecoration(color: Color(0xFFE61E4D), shape: BoxShape.circle),
-                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                  child: Text('$count', textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w500)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Text(
+                    '$count',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -453,9 +629,16 @@ class _ProductCard extends StatelessWidget {
                     width: double.infinity,
                     color: p.iconBg,
                     child: p.imageUrl != null
-                        ? Image.network(p.imageUrl!, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Center(child: Icon(p.icon, size: 48, color: p.iconColor)))
-                        : Center(child: Icon(p.icon, size: 48, color: p.iconColor)),
+                        ? Image.network(
+                            p.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Center(
+                              child: Icon(p.icon, size: 48, color: p.iconColor),
+                            ),
+                          )
+                        : Center(
+                            child: Icon(p.icon, size: 48, color: p.iconColor),
+                          ),
                   ),
                 ),
                 Positioned(
@@ -466,9 +649,17 @@ class _ProductCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       padding: const EdgeInsets.all(5),
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: Icon(wishlisted ? Icons.favorite : Icons.favorite_border,
-                          size: 16, color: wishlisted ? const Color(0xFFE61E4D) : _P.subtext),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        wishlisted ? Icons.favorite : Icons.favorite_border,
+                        size: 16,
+                        color: wishlisted
+                            ? AppColors.accent
+                            : AppColors.subtext,
+                      ),
                     ),
                   ),
                 ),
@@ -481,18 +672,44 @@ class _ProductCard extends StatelessWidget {
           if (p.reviewCount > 0)
             Row(
               children: [
-                Text(p.rating.toStringAsFixed(1), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: _P.text)),
+                Text(
+                  p.rating.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.text,
+                  ),
+                ),
                 const SizedBox(width: 3),
-                const Icon(Icons.star_rounded, size: 13, color: Color(0xFF15803D)),
+                const Icon(
+                  Icons.star_rounded,
+                  size: 13,
+                  color: Color(0xFF15803D),
+                ),
                 const SizedBox(width: 6),
-                Text(_fmtCount(p.reviewCount), style: const TextStyle(fontSize: 10, color: _P.subtext)),
+                Text(
+                  _fmtCount(p.reviewCount),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.subtext,
+                  ),
+                ),
               ],
             ),
           const SizedBox(height: 3),
 
           // ── Name ─────────────────────────────────────────────────────────
-          Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _P.text, height: 1.3)),
+          Text(
+            p.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w400,
+              color: AppColors.text,
+              height: 1.3,
+            ),
+          ),
           const SizedBox(height: 4),
 
           // ── Price row ────────────────────────────────────────────────────
@@ -501,11 +718,31 @@ class _ProductCard extends StatelessWidget {
             spacing: 6,
             children: [
               if (p.discountPercent > 0)
-                Text('₹${p.originalPrice.toStringAsFixed(0)}',
-                    style: const TextStyle(fontSize: 10, color: _P.subtext, decoration: TextDecoration.lineThrough)),
-              Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _P.text)),
+                Text(
+                  '₹${p.originalPrice.toStringAsFixed(0)}',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.subtext,
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+              Text(
+                '₹${p.price.toStringAsFixed(0)}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.text,
+                ),
+              ),
               if (p.discountPercent > 0)
-                Text('${p.discountPercent}% OFF', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFFEA580C))),
+                Text(
+                  '${p.discountPercent}% OFF',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFFEA580C),
+                  ),
+                ),
             ],
           ),
         ],
@@ -534,9 +771,16 @@ class _ErrorView extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline, size: 40, color: Color(0xFFDC2626)),
             const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: _P.text)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.text),
+            ),
             const SizedBox(height: 12),
-            OutlinedButton(onPressed: onRetry, child: Text(context.tr('common_retry'))),
+            OutlinedButton(
+              onPressed: onRetry,
+              child: Text(context.tr('common_retry')),
+            ),
           ],
         ),
       ),

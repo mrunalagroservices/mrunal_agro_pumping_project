@@ -64,7 +64,7 @@ class AnalysisScreen extends StatelessWidget {
                   child: Center(
                     child: Text(
                       context.tr('analysis_no_actuators'),
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: const TextStyle(color: AppColors.subtext),
                     ),
                   ),
                 ),
@@ -79,11 +79,11 @@ class AnalysisScreen extends StatelessWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.primary600.withValues(alpha: 0.12),
+                        color: AppColors.success.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(_iconFor(entry.key),
-                          color: AppColors.primary600, size: 20),
+                          color: AppColors.success, size: 20),
                     ),
                     title: Text(_labelFor(context, entry.key),
                         style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -96,11 +96,11 @@ class AnalysisScreen extends StatelessWidget {
                           context.tr('analysis_n_running').replaceAll('{n}', '$running'),
                           style: const TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: AppColors.primary600),
+                              color: AppColors.success),
                         ),
                         Text(
                           context.tr('analysis_n_off').replaceAll('{n}', '${entry.value.length - running}'),
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 10),
+                          style: TextStyle(color: AppColors.subtext, fontSize: 10),
                         ),
                       ],
                     ),
@@ -118,7 +118,7 @@ class AnalysisScreen extends StatelessWidget {
                   child: Center(
                     child: Text(
                       context.tr('analysis_no_farms'),
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: const TextStyle(color: AppColors.subtext),
                     ),
                   ),
                 ),
@@ -141,8 +141,8 @@ class AnalysisScreen extends StatelessWidget {
                       children: [
                         StatusDot(
                           color: active
-                              ? AppColors.primary600
-                              : AppColors.offGray,
+                              ? AppColors.success
+                              : AppColors.subtext,
                           size: 8,
                         ),
                         const SizedBox(width: 6),
@@ -150,8 +150,8 @@ class AnalysisScreen extends StatelessWidget {
                           active ? context.tr('dashboard_status_running') : context.tr('dashboard_status_idle'),
                           style: TextStyle(
                             color: active
-                                ? AppColors.primary600
-                                : AppColors.textSecondary,
+                                ? AppColors.success
+                                : AppColors.subtext,
                             fontWeight: FontWeight.w500,
                             fontSize: 11,
                           ),

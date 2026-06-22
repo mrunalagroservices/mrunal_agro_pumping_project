@@ -193,7 +193,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500";
+  const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500";
 
   const breadcrumb = device
     ? [
@@ -380,7 +380,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-slate-800">Actuators (motors / pumps / valves)</h3>
             <button onClick={() => setShowActuatorModal(true)}
-              className="flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:underline">
+              className="flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:underline">
               <Plus className="w-4 h-4" /> Add actuator
             </button>
           </div>
@@ -496,7 +496,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-slate-800">Sensors</h3>
             <button onClick={() => setShowSensorModal(true)}
-              className="flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:underline">
+              className="flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:underline">
               <Plus className="w-4 h-4" /> Add sensor
             </button>
           </div>
@@ -552,7 +552,7 @@ function AddSensorModal({ deviceId, farmId, onClose, onCreated }: { deviceId: nu
   const [maxThreshold, setMaxThreshold] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
-  const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500";
+  const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500";
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault(); setSubmitting(true);
@@ -610,7 +610,7 @@ function AddSensorModal({ deviceId, farmId, onClose, onCreated }: { deviceId: nu
           </div>
         </div>
         <button type="submit" disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
+          className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
           {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
           Add sensor
         </button>
@@ -631,7 +631,7 @@ function AddActuatorModal({ deviceId, farmId, relayCount, existingChannels, onCl
   const [maxRuntime, setMaxRuntime] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
-  const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500";
+  const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500";
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault(); setSubmitting(true);
@@ -682,7 +682,7 @@ function AddActuatorModal({ deviceId, farmId, relayCount, existingChannels, onCl
             <input type="number" min={0} value={maxRuntime} onChange={(e) => setMaxRuntime(e.target.value)} className={inp} placeholder="e.g. 120" />
           </div>
           <button type="submit" disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
+            className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
             Add actuator
           </button>

@@ -26,7 +26,7 @@ export default function DashboardShell({
   if (isLoading || !isAuthenticated) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-accent-600" />
       </div>
     );
   }

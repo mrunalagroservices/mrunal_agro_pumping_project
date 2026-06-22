@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 12),
                     Text(
                       context.tr('login_subtitle'),
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: AppColors.subtext),
                     ),
                     const SizedBox(height: 32),
                     TextField(
@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: Text(
                           _error!,
-                          style: const TextStyle(color: AppColors.offlineRed),
+                          style: const TextStyle(color: AppColors.danger),
                         ),
                       ),
                     ],

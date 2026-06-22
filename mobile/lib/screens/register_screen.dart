@@ -106,7 +106,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   child: Text(
                     _error!,
-                    style: const TextStyle(color: AppColors.offlineRed),
+                    style: const TextStyle(color: AppColors.danger),
                   ),
                 ),
               ],

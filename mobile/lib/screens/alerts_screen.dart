@@ -7,15 +7,7 @@ import '../widgets/language_switcher.dart';
 import 'account_settings_screen.dart';
 import 'notifications_screen.dart';
 import 'orders_screen.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-  static const pillActive = Color(0xFF222222);
-  static const pillInactive = Color(0xFFF2F2F2);
-}
+import '../config/theme.dart';
 
 class AlertsScreen extends StatefulWidget {
   final String title;
@@ -57,22 +49,30 @@ class _AlertsScreenState extends State<AlertsScreen> {
     }
     final query = _searchController.text.trim().toLowerCase();
     if (query.isNotEmpty) {
-      result = result.where((n) =>
-          n.title.toLowerCase().contains(query) || n.message.toLowerCase().contains(query));
+      result = result.where(
+        (n) =>
+            n.title.toLowerCase().contains(query) ||
+            n.message.toLowerCase().contains(query),
+      );
     }
     return result.toList();
   }
 
   Future<void> _openItem(NotificationItem item) async {
     if (item.isOrder) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen()));
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const OrdersScreen()),
+      );
       return;
     }
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => _DetailSheet(item: item),
     );
   }
@@ -96,15 +96,31 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        Text(widget.title,
-                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                        Text(
+                          widget.title,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.text,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         InkWell(
                           borderRadius: BorderRadius.circular(20),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationsScreen(),
+                            ),
+                          ),
                           child: const Padding(
                             padding: EdgeInsets.all(4),
-                            child: Icon(Icons.notifications_off_outlined, size: 22, color: _P.text),
+                            child: Icon(
+                              Icons.notifications_off_outlined,
+                              size: 22,
+                              color: AppColors.text,
+                            ),
                           ),
                         ),
                       ],
@@ -119,7 +135,12 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   const SizedBox(width: 10),
                   _CircleIcon(
                     icon: Icons.settings_outlined,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountSettingsScreen())),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AccountSettingsScreen(),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -132,15 +153,29 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   controller: _searchController,
                   autofocus: true,
                   onChanged: (_) => setState(() {}),
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.text,
+                  ),
                   decoration: InputDecoration(
                     hintText: context.tr('alerts_search_hint'),
-                    hintStyle: const TextStyle(color: _P.subtext),
-                    prefixIcon: const Icon(Icons.search, color: _P.subtext, size: 20),
+                    hintStyle: const TextStyle(color: AppColors.subtext),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: AppColors.subtext,
+                      size: 20,
+                    ),
                     filled: true,
-                    fillColor: _P.pillInactive,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                    fillColor: AppColors.chip,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 0,
+                      horizontal: 16,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
               ),
@@ -150,16 +185,31 @@ class _AlertsScreenState extends State<AlertsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Row(
                 children: [
-                  _Pill(label: context.tr('category_all'), value: 'all', current: _filter, onTap: (v) => setState(() => _filter = v)),
+                  _Pill(
+                    label: context.tr('category_all'),
+                    value: 'all',
+                    current: _filter,
+                    onTap: (v) => setState(() => _filter = v),
+                  ),
                   const SizedBox(width: 8),
-                  _Pill(label: context.tr('nav_farm'), value: 'farm', current: _filter, onTap: (v) => setState(() => _filter = v)),
+                  _Pill(
+                    label: context.tr('nav_farm'),
+                    value: 'farm',
+                    current: _filter,
+                    onTap: (v) => setState(() => _filter = v),
+                  ),
                   const SizedBox(width: 8),
-                  _Pill(label: context.tr('nav_market'), value: 'market', current: _filter, onTap: (v) => setState(() => _filter = v)),
+                  _Pill(
+                    label: context.tr('nav_market'),
+                    value: 'market',
+                    current: _filter,
+                    onTap: (v) => setState(() => _filter = v),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 8),
-            const Divider(height: 1, thickness: 1, color: _P.divider),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
 
             Expanded(
               child: RefreshIndicator(
@@ -167,18 +217,26 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 child: state.isLoadingNotifications
                     ? const Center(child: CircularProgressIndicator())
                     : state.notificationsError != null
-                        ? _ErrorView(message: state.notificationsError!, onRetry: () => context.read<AppState>().loadNotifications())
-                        : filtered.isEmpty
-                            ? _EmptyView()
-                            : ListView.separated(
-                                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                                itemCount: filtered.length,
-                                separatorBuilder: (_, __) => const Divider(height: 1, thickness: 1, color: _P.divider),
-                                itemBuilder: (context, i) => _MessageRow(
-                                  item: filtered[i],
-                                  onTap: () => _openItem(filtered[i]),
-                                ),
-                              ),
+                    ? _ErrorView(
+                        message: state.notificationsError!,
+                        onRetry: () =>
+                            context.read<AppState>().loadNotifications(),
+                      )
+                    : filtered.isEmpty
+                    ? _EmptyView()
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) => const Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: AppColors.divider,
+                        ),
+                        itemBuilder: (context, i) => _MessageRow(
+                          item: filtered[i],
+                          onTap: () => _openItem(filtered[i]),
+                        ),
+                      ),
               ),
             ),
           ],
@@ -191,7 +249,12 @@ class _AlertsScreenState extends State<AlertsScreen> {
 class _Pill extends StatelessWidget {
   final String label, value, current;
   final void Function(String) onTap;
-  const _Pill({required this.label, required this.value, required this.current, required this.onTap});
+  const _Pill({
+    required this.label,
+    required this.value,
+    required this.current,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +264,7 @@ class _Pill extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
-          color: active ? _P.pillActive : _P.pillInactive,
+          color: active ? AppColors.text : AppColors.chip,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Text(
@@ -209,7 +272,7 @@ class _Pill extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w400,
-            color: active ? Colors.white : _P.text,
+            color: active ? Colors.white : AppColors.text,
           ),
         ),
       ),
@@ -232,12 +295,20 @@ const _alertMessageKeyMap = {
 
 String _orderStatusLabel(BuildContext context, String status) {
   switch (status) {
-    case 'placed': return context.tr('notif_status_placed');
-    case 'confirmed': return context.tr('notif_status_confirmed');
-    case 'shipped': return context.tr('notif_status_shipped');
-    case 'delivered': return context.tr('notif_status_delivered');
-    case 'cancelled': return context.tr('notif_status_cancelled');
-    default: return status.isEmpty ? '' : status[0].toUpperCase() + status.substring(1);
+    case 'placed':
+      return context.tr('notif_status_placed');
+    case 'confirmed':
+      return context.tr('notif_status_confirmed');
+    case 'shipped':
+      return context.tr('notif_status_shipped');
+    case 'delivered':
+      return context.tr('notif_status_delivered');
+    case 'cancelled':
+      return context.tr('notif_status_cancelled');
+    default:
+      return status.isEmpty
+          ? ''
+          : status[0].toUpperCase() + status.substring(1);
   }
 }
 
@@ -245,7 +316,9 @@ String _titleFor(BuildContext context, NotificationItem item) {
   final key = item.titleKey;
   if (key == null) return item.title;
   var result = context.tr(key);
-  (item.titleParams ?? const {}).forEach((k, v) => result = result.replaceAll('{$k}', '$v'));
+  (item.titleParams ?? const {}).forEach(
+    (k, v) => result = result.replaceAll('{$k}', '$v'),
+  );
   return result;
 }
 
@@ -256,7 +329,10 @@ String _messageFor(BuildContext context, NotificationItem item) {
 
   if (item.isOrder) {
     final statusWord = _orderStatusLabel(context, '${params['status'] ?? ''}');
-    return context.tr(key).replaceAll('{status}', statusWord).replaceAll('{total}', '${params['total'] ?? ''}');
+    return context
+        .tr(key)
+        .replaceAll('{status}', statusWord)
+        .replaceAll('{total}', '${params['total'] ?? ''}');
   }
   if (item.isIrrigation) return context.tr(key);
 
@@ -265,7 +341,12 @@ String _messageFor(BuildContext context, NotificationItem item) {
   var result = context.tr(mappedKey);
   params.forEach((k, v) {
     if (k == 'breach') {
-      result = result.replaceAll('{breach}', v == 'above' ? context.tr('notif_breach_above') : context.tr('notif_breach_below'));
+      result = result.replaceAll(
+        '{breach}',
+        v == 'above'
+            ? context.tr('notif_breach_above')
+            : context.tr('notif_breach_below'),
+      );
     } else {
       result = result.replaceAll('{$k}', '$v');
     }
@@ -274,9 +355,15 @@ String _messageFor(BuildContext context, NotificationItem item) {
 }
 
 String _statusLabel(BuildContext context, NotificationItem item) {
-  if (item.isAlert) return item.status == 'resolved' ? context.tr('alerts_resolved') : context.tr('alerts_ongoing');
+  if (item.isAlert)
+    return item.status == 'resolved'
+        ? context.tr('alerts_resolved')
+        : context.tr('alerts_ongoing');
   if (item.isOrder) return _orderStatusLabel(context, item.status);
-  if (item.isIrrigation) return item.status == 'completed' ? context.tr('notif_status_completed') : context.tr('notif_status_aborted');
+  if (item.isIrrigation)
+    return item.status == 'completed'
+        ? context.tr('notif_status_completed')
+        : context.tr('notif_status_aborted');
   final s = item.status;
   return s.isEmpty ? '' : s[0].toUpperCase() + s.substring(1);
 }
@@ -298,7 +385,10 @@ class _MessageRow extends StatelessWidget {
             Container(
               width: 56,
               height: 56,
-              decoration: const BoxDecoration(color: _P.text, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: AppColors.text,
+                shape: BoxShape.circle,
+              ),
               alignment: Alignment.center,
               child: Icon(_iconFor(item), color: Colors.white, size: 24),
             ),
@@ -314,11 +404,22 @@ class _MessageRow extends StatelessWidget {
                           _titleFor(context, item),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.text,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(_dayLabel(context, item.createdAt), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _P.subtext)),
+                      Text(
+                        _dayLabel(context, item.createdAt),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.subtext,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -326,12 +427,20 @@ class _MessageRow extends StatelessWidget {
                     _messageFor(context, item),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.text,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     _statusLabel(context, item),
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.subtext,
+                    ),
                   ),
                 ],
               ),
@@ -353,7 +462,20 @@ class _MessageRow extends StatelessWidget {
       return '$h:$m ${dt.hour >= 12 ? 'PM' : 'AM'}';
     }
     if (diff == 1) return context.tr('alerts_yesterday');
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${dt.day} ${months[dt.month - 1]}';
   }
 }
@@ -398,7 +520,10 @@ class _DetailSheetState extends State<_DetailSheet> {
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: const BoxDecoration(color: _P.text, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                    color: AppColors.text,
+                    shape: BoxShape.circle,
+                  ),
                   alignment: Alignment.center,
                   child: Icon(_iconFor(item), color: Colors.white, size: 20),
                 ),
@@ -407,10 +532,23 @@ class _DetailSheetState extends State<_DetailSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(_titleFor(context, item), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
                       Text(
-                        item.isAlert ? (item.severity ?? '').toUpperCase() : _statusLabel(context, item),
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: _P.subtext),
+                        _titleFor(context, item),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.text,
+                        ),
+                      ),
+                      Text(
+                        item.isAlert
+                            ? (item.severity ?? '').toUpperCase()
+                            : _statusLabel(context, item),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.subtext,
+                        ),
                       ),
                     ],
                   ),
@@ -418,12 +556,23 @@ class _DetailSheetState extends State<_DetailSheet> {
                 InkWell(
                   onTap: () => Navigator.pop(context),
                   borderRadius: BorderRadius.circular(20),
-                  child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, color: _P.text)),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.close, color: AppColors.text),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 18),
-            Text(_messageFor(context, item), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, height: 1.4)),
+            Text(
+              _messageFor(context, item),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: AppColors.text,
+                height: 1.4,
+              ),
+            ),
             const SizedBox(height: 20),
             if (item.isAlert && item.status != 'resolved')
               SizedBox(
@@ -431,18 +580,36 @@ class _DetailSheetState extends State<_DetailSheet> {
                 child: ElevatedButton(
                   onPressed: _resolving ? null : _resolve,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _P.text,
+                    backgroundColor: AppColors.text,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   child: _resolving
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : Text(context.tr('alerts_mark_resolved'), style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 14)),
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          context.tr('alerts_mark_resolved'),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                          ),
+                        ),
                 ),
               )
             else if (item.isAlert)
-              Text(context.tr('alerts_marked_resolved'), style: const TextStyle(fontSize: 12, color: _P.subtext)),
+              Text(
+                context.tr('alerts_marked_resolved'),
+                style: const TextStyle(fontSize: 12, color: AppColors.subtext),
+              ),
           ],
         ),
       ),
@@ -463,8 +630,11 @@ class _CircleIcon extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: Icon(icon, size: 22, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 22, color: AppColors.text),
       ),
     );
   }
@@ -481,14 +651,25 @@ class _EmptyView extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 80, 20, 20),
           child: Column(
             children: [
-              const Icon(Icons.notifications_none_outlined, size: 44, color: _P.subtext),
+              const Icon(
+                Icons.notifications_none_outlined,
+                size: 44,
+                color: AppColors.subtext,
+              ),
               const SizedBox(height: 14),
-              Text(context.tr('alerts_no_messages'), style: const TextStyle(color: _P.text, fontSize: 15, fontWeight: FontWeight.w400)),
+              Text(
+                context.tr('alerts_no_messages'),
+                style: const TextStyle(
+                  color: AppColors.text,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
                 context.tr('alerts_empty_sub'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: _P.subtext, fontSize: 12),
+                style: const TextStyle(color: AppColors.subtext, fontSize: 12),
               ),
             ],
           ),
@@ -519,7 +700,10 @@ class _ErrorView extends StatelessWidget {
               children: [
                 Text(message, style: const TextStyle(color: Color(0xFFDC2626))),
                 const SizedBox(height: 10),
-                TextButton(onPressed: onRetry, child: Text(context.tr('common_retry'))),
+                TextButton(
+                  onPressed: onRetry,
+                  child: Text(context.tr('common_retry')),
+                ),
               ],
             ),
           ),

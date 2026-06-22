@@ -59,9 +59,9 @@ class _CircleIconButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.cardBorder),
+            border: Border.all(color: AppColors.divider),
           ),
-          child: Icon(icon, size: 20, color: AppColors.textPrimary),
+          child: Icon(icon, size: 20, color: AppColors.text),
         ),
       ),
     );

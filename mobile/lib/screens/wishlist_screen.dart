@@ -4,13 +4,7 @@ import '../l10n/tr_extension.dart';
 import '../models/product.dart';
 import '../providers/app_state.dart';
 import 'product_detail_screen.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-}
+import '../config/theme.dart';
 
 class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key});
@@ -34,7 +28,20 @@ class _WishlistScreenState extends State<WishlistScreen> {
   String get _deliveryDate {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${days[tomorrow.weekday - 1]}, ${tomorrow.day} ${months[tomorrow.month - 1]}';
   }
 
@@ -57,13 +64,28 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     onTap: () => Navigator.pop(context),
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      width: 40, height: 40,
-                      decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-                      child: const Icon(Icons.arrow_back, size: 19, color: _P.text),
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        color: AppColors.chip,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        size: 19,
+                        color: AppColors.text,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(context.tr('wishlist_title'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+                  Text(
+                    context.tr('wishlist_title'),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.text,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -71,30 +93,34 @@ class _WishlistScreenState extends State<WishlistScreen> {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : items.isEmpty
-                      ? _EmptyWishlist()
-                      : RefreshIndicator(
-                          onRefresh: () => state.loadWishlist(),
-                          child: ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                            itemCount: items.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1, thickness: 1, color: _P.divider),
-                            itemBuilder: (context, i) => _WishlistRow(
-                              product: items[i],
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ProductDetailScreen(
-                                    productId: items[i].id,
-                                    deliveryDate: _deliveryDate,
-                                    onAddToCart: () {},
-                                    cartQty: 0,
-                                  ),
-                                ),
+                  ? _EmptyWishlist()
+                  : RefreshIndicator(
+                      onRefresh: () => state.loadWishlist(),
+                      child: ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                        itemCount: items.length,
+                        separatorBuilder: (_, __) => const Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: AppColors.divider,
+                        ),
+                        itemBuilder: (context, i) => _WishlistRow(
+                          product: items[i],
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ProductDetailScreen(
+                                productId: items[i].id,
+                                deliveryDate: _deliveryDate,
+                                onAddToCart: () {},
+                                cartQty: 0,
                               ),
-                              onRemove: () => state.toggleWishlist(items[i].id),
                             ),
                           ),
+                          onRemove: () => state.toggleWishlist(items[i].id),
                         ),
+                      ),
+                    ),
             ),
           ],
         ),
@@ -107,7 +133,11 @@ class _WishlistRow extends StatelessWidget {
   final Product product;
   final VoidCallback onTap;
   final VoidCallback onRemove;
-  const _WishlistRow({required this.product, required this.onTap, required this.onRemove});
+  const _WishlistRow({
+    required this.product,
+    required this.onTap,
+    required this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -122,11 +152,17 @@ class _WishlistRow extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                width: 76, height: 76,
+                width: 76,
+                height: 76,
                 color: p.iconBg,
                 child: p.imageUrl != null
-                    ? Image.network(p.imageUrl!, fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Center(child: Icon(p.icon, size: 32, color: p.iconColor)))
+                    ? Image.network(
+                        p.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Center(
+                          child: Icon(p.icon, size: 32, color: p.iconColor),
+                        ),
+                      )
                     : Center(child: Icon(p.icon, size: 32, color: p.iconColor)),
               ),
             ),
@@ -135,18 +171,45 @@ class _WishlistRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _P.text)),
+                  Text(
+                    p.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.text,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(p.unit, style: const TextStyle(fontSize: 10, color: _P.subtext)),
+                  Text(
+                    p.unit,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.subtext,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _P.text)),
+                      Text(
+                        '₹${p.price.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.text,
+                        ),
+                      ),
                       if (p.discountPercent > 0) ...[
                         const SizedBox(width: 6),
-                        Text('₹${p.originalPrice.toStringAsFixed(0)}',
-                            style: const TextStyle(fontSize: 10, color: Color(0xFFB0B0B0), decoration: TextDecoration.lineThrough)),
+                        Text(
+                          '₹${p.originalPrice.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFFB0B0B0),
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -156,7 +219,10 @@ class _WishlistRow extends StatelessWidget {
             InkWell(
               onTap: onRemove,
               borderRadius: BorderRadius.circular(16),
-              child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.favorite, color: Color(0xFFE61E4D), size: 22)),
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(Icons.favorite, color: AppColors.accent, size: 22),
+              ),
             ),
           ],
         ),
@@ -176,12 +242,26 @@ class _EmptyWishlist extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.favorite_border, size: 48, color: _P.subtext),
+            const Icon(
+              Icons.favorite_border,
+              size: 48,
+              color: AppColors.subtext,
+            ),
             const SizedBox(height: 14),
-            Text(context.tr('wishlist_empty_title'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: _P.text)),
+            Text(
+              context.tr('wishlist_empty_title'),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                color: AppColors.text,
+              ),
+            ),
             const SizedBox(height: 6),
-            Text(context.tr('wishlist_empty_sub'),
-                textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: _P.subtext)),
+            Text(
+              context.tr('wishlist_empty_sub'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11, color: AppColors.subtext),
+            ),
           ],
         ),
       ),

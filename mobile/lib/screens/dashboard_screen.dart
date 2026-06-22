@@ -87,8 +87,8 @@ class DashboardScreen extends StatelessWidget {
                           MarkerLayer(
                             markers: farmsWithLocation.map((farm) {
                               final color = state.isFarmActive(farm.id)
-                                  ? AppColors.primary600
-                                  : AppColors.offGray;
+                                  ? AppColors.success
+                                  : AppColors.subtext;
                               return Marker(
                                 point: LatLng(farm.latitude!, farm.longitude!),
                                 width: 80,
@@ -124,14 +124,14 @@ class DashboardScreen extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.map_outlined, size: 14, color: AppColors.primary700),
+                              const Icon(Icons.map_outlined, size: 14, color: AppColors.accent),
                               const SizedBox(width: 4),
                               Text(
                                 context.tr('dashboard_view_live_map'),
                                 style: const TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.primary700,
+                                  color: AppColors.accent,
                                 ),
                               ),
                             ],
@@ -189,7 +189,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     child: Text(
                       state.dashboardError!,
-                      style: const TextStyle(color: AppColors.offlineRed),
+                      style: const TextStyle(color: AppColors.danger),
                     ),
                   ),
                 ),
@@ -204,7 +204,7 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: _StatCard(
                         icon: Icons.agriculture_outlined,
-                        color: AppColors.primary600,
+                        color: AppColors.success,
                         label: context.tr('dashboard_stat_farms'),
                         value: '${state.farms.length}',
                       ),
@@ -213,7 +213,7 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: _StatCard(
                         icon: Icons.developer_board_outlined,
-                        color: AppColors.primary600,
+                        color: AppColors.success,
                         label: context.tr('dashboard_stat_online'),
                         value: '$onlineDevices/${state.devices.length}',
                       ),
@@ -222,7 +222,7 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: _StatCard(
                         icon: Icons.water_drop_outlined,
-                        color: AppColors.primary600,
+                        color: AppColors.success,
                         label: context.tr('dashboard_stat_running'),
                         value: '$activeActuators/${state.actuators.length}',
                       ),
@@ -232,8 +232,8 @@ class DashboardScreen extends StatelessWidget {
                       child: _StatCard(
                         icon: Icons.bolt_outlined,
                         color: activeActuators > 0
-                            ? AppColors.primary600
-                            : AppColors.offGray,
+                            ? AppColors.success
+                            : AppColors.subtext,
                         label: context.tr('dashboard_stat_status'),
                         value: activeActuators > 0
                             ? context.tr('dashboard_status_running')
@@ -255,7 +255,7 @@ class DashboardScreen extends StatelessWidget {
                       child: _QuickLinkCard(
                         icon: Icons.agriculture_outlined,
                         iconBg: const Color(0xFFDCFCE7),
-                        iconColor: AppColors.primary700,
+                        iconColor: AppColors.accent,
                         title: context.tr('dashboard_farms_devices'),
                         subtitle: context.tr('dashboard_farms_devices_sub'),
                         onTap: () => Navigator.push(

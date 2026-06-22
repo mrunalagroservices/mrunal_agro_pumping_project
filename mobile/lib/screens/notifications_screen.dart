@@ -6,13 +6,7 @@ import '../models/user.dart';
 import '../providers/app_state.dart';
 import '../widgets/language_switcher.dart';
 import 'personal_info_screen.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-}
+import '../config/theme.dart';
 
 class _Category {
   final String key;
@@ -24,7 +18,11 @@ class _Section {
   final String titleKey;
   final String descriptionKey;
   final List<_Category> categories;
-  const _Section({required this.titleKey, required this.descriptionKey, required this.categories});
+  const _Section({
+    required this.titleKey,
+    required this.descriptionKey,
+    required this.categories,
+  });
 }
 
 const _offerSections = [
@@ -47,7 +45,13 @@ const _offerSections = [
   ),
 ];
 
-const _offerCategoryKeys = ['promo_offers', 'farming_tips', 'news_updates', 'feedback_requests', 'service_alerts'];
+const _offerCategoryKeys = [
+  'promo_offers',
+  'farming_tips',
+  'news_updates',
+  'feedback_requests',
+  'service_alerts',
+];
 
 const _accountSections = [
   _Section(
@@ -68,9 +72,7 @@ const _accountSections = [
   _Section(
     titleKey: 'notif_section_support_title',
     descriptionKey: 'notif_section_support_desc',
-    categories: [
-      _Category('support_messages', 'notif_cat_support_messages'),
-    ],
+    categories: [_Category('support_messages', 'notif_cat_support_messages')],
   ),
 ];
 
@@ -81,7 +83,8 @@ class NotificationsScreen extends StatefulWidget {
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> with SingleTickerProviderStateMixin {
+class _NotificationsScreenState extends State<NotificationsScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabs;
   late final TapGestureRecognizer _phoneSettingsLink;
 
@@ -90,7 +93,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
     super.initState();
     _tabs = TabController(length: 2, vsync: this);
     _phoneSettingsLink = TapGestureRecognizer()
-      ..onTap = () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PersonalInfoScreen()));
+      ..onTap = () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
+      );
   }
 
   @override
@@ -110,11 +116,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => _NotificationEditSheet(category: category, initial: _prefsFor(category.key)),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _NotificationEditSheet(
+        category: category,
+        initial: _prefsFor(category.key),
+      ),
     );
     if (result == null || !mounted) return;
-    final err = await context.read<AppState>().updateNotificationPref(category.key, result);
+    final err = await context.read<AppState>().updateNotificationPref(
+      category.key,
+      result,
+    );
     if (!mounted) return;
     if (err != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
@@ -128,19 +142,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
         title: Text(context.tr('notif_unsub_dialog_title')),
         content: Text(context.tr('notif_unsub_dialog_body')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('notif_cancel'))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.tr('notif_unsubscribe'))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.tr('notif_cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(context.tr('notif_unsubscribe')),
+          ),
         ],
       ),
     );
     if (confirmed != true || !mounted) return;
 
     final user = context.read<AppState>().user;
-    final merged = Map<String, ChannelPrefs>.from(user?.notificationPreferences ?? {});
+    final merged = Map<String, ChannelPrefs>.from(
+      user?.notificationPreferences ?? {},
+    );
     for (final key in _offerCategoryKeys) {
       merged[key] = const ChannelPrefs();
     }
-    final err = await context.read<AppState>().updateProfile(notificationPreferences: merged);
+    final err = await context.read<AppState>().updateProfile(
+      notificationPreferences: merged,
+    );
     if (!mounted) return;
     if (err != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
@@ -149,8 +173,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
 
   String get _allOffersStatus {
     final user = context.watch<AppState>().user;
-    final prefsList = _offerCategoryKeys.map((k) => user?.notificationPreferences[k] ?? const ChannelPrefs());
-    if (prefsList.every((p) => !p.anyOn)) return context.tr('notif_status_all_off');
+    final prefsList = _offerCategoryKeys.map(
+      (k) => user?.notificationPreferences[k] ?? const ChannelPrefs(),
+    );
+    if (prefsList.every((p) => !p.anyOn))
+      return context.tr('notif_status_all_off');
     final allDefaultOn = prefsList.every((p) => p.sms && !p.email && !p.push);
     if (allDefaultOn) return context.tr('notif_status_on_sms');
     return context.tr('notif_status_custom');
@@ -163,7 +190,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
       if (p.sms) context.tr('notif_channel_sms'),
     ];
     if (channels.isEmpty) return context.tr('notif_status_off');
-    return context.tr('notif_status_on').replaceAll('{channels}', channels.join(context.tr('notif_and')));
+    return context
+        .tr('notif_status_on')
+        .replaceAll('{channels}', channels.join(context.tr('notif_and')));
   }
 
   @override
@@ -193,8 +222,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(context.tr('notif_title'),
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                child: Text(
+                  context.tr('notif_title'),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.text,
+                    letterSpacing: -0.3,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -202,19 +238,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
               controller: _tabs,
               isScrollable: true,
               tabAlignment: TabAlignment.start,
-              labelColor: _P.text,
-              unselectedLabelColor: _P.subtext,
-              indicatorColor: _P.text,
+              labelColor: AppColors.text,
+              unselectedLabelColor: AppColors.subtext,
+              indicatorColor: AppColors.text,
               indicatorSize: TabBarIndicatorSize.label,
               labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-              unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+              labelStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+              ),
               tabs: [
                 Tab(text: context.tr('notif_tab_offers')),
                 Tab(text: context.tr('notif_tab_account')),
               ],
             ),
-            const Divider(height: 1, thickness: 1, color: _P.divider),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
             Expanded(
               child: TabBarView(
                 controller: _tabs,
@@ -222,27 +264,59 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                   ListView(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     children: [
-                      for (final section in _offerSections) ..._buildSection(section),
+                      for (final section in _offerSections)
+                        ..._buildSection(section),
                       const SizedBox(height: 8),
-                      Text(context.tr('notif_unsubscribe_title'),
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                      Text(
+                        context.tr('notif_unsubscribe_title'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.text,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(context.tr('notif_unsubscribe_sub'),
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
+                      Text(
+                        context.tr('notif_unsubscribe_sub'),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.subtext,
+                          height: 1.3,
+                        ),
+                      ),
                       const SizedBox(height: 14),
-                      _CategoryRow(label: context.tr('notif_all_offers'), status: _allOffersStatus, onTap: _unsubscribeAll),
+                      _CategoryRow(
+                        label: context.tr('notif_all_offers'),
+                        status: _allOffersStatus,
+                        onTap: _unsubscribeAll,
+                      ),
                       const SizedBox(height: 24),
                       Text.rich(
                         TextSpan(
-                          style: const TextStyle(fontSize: 11, color: _P.subtext, height: 1.4),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.subtext,
+                            height: 1.4,
+                          ),
                           children: [
-                            TextSpan(text: context.tr('notif_consent_marketing').replaceAll('{phone}', maskedPhone)),
+                            TextSpan(
+                              text: context
+                                  .tr('notif_consent_marketing')
+                                  .replaceAll('{phone}', maskedPhone),
+                            ),
                             TextSpan(
                               text: context.tr('notif_update_phone_link'),
-                              style: const TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline, color: _P.text),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                decoration: TextDecoration.underline,
+                                color: AppColors.text,
+                              ),
                               recognizer: _phoneSettingsLink,
                             ),
-                            TextSpan(text: context.tr('notif_on_personal_info_page')),
+                            TextSpan(
+                              text: context.tr('notif_on_personal_info_page'),
+                            ),
                           ],
                         ),
                       ),
@@ -251,19 +325,34 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                   ListView(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     children: [
-                      for (final section in _accountSections) ..._buildSection(section),
+                      for (final section in _accountSections)
+                        ..._buildSection(section),
                       const SizedBox(height: 8),
                       Text.rich(
                         TextSpan(
-                          style: const TextStyle(fontSize: 11, color: _P.subtext, height: 1.4),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.subtext,
+                            height: 1.4,
+                          ),
                           children: [
-                            TextSpan(text: context.tr('notif_consent_account').replaceAll('{phone}', maskedPhone)),
+                            TextSpan(
+                              text: context
+                                  .tr('notif_consent_account')
+                                  .replaceAll('{phone}', maskedPhone),
+                            ),
                             TextSpan(
                               text: context.tr('notif_update_phone_link'),
-                              style: const TextStyle(fontWeight: FontWeight.w500, decoration: TextDecoration.underline, color: _P.text),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                decoration: TextDecoration.underline,
+                                color: AppColors.text,
+                              ),
                               recognizer: _phoneSettingsLink,
                             ),
-                            TextSpan(text: context.tr('notif_on_personal_info_page')),
+                            TextSpan(
+                              text: context.tr('notif_on_personal_info_page'),
+                            ),
                           ],
                         ),
                       ),
@@ -280,9 +369,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
 
   List<Widget> _buildSection(_Section section) {
     return [
-      Text(context.tr(section.titleKey), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+      Text(
+        context.tr(section.titleKey),
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: AppColors.text,
+        ),
+      ),
       const SizedBox(height: 4),
-      Text(context.tr(section.descriptionKey), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.3)),
+      Text(
+        context.tr(section.descriptionKey),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: AppColors.subtext,
+          height: 1.3,
+        ),
+      ),
       const SizedBox(height: 14),
       for (final cat in section.categories)
         Padding(
@@ -294,7 +398,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
           ),
         ),
       const SizedBox(height: 10),
-      const Divider(height: 1, thickness: 1, color: _P.divider),
+      const Divider(height: 1, thickness: 1, color: AppColors.divider),
       const SizedBox(height: 20),
     ];
   }
@@ -304,7 +408,11 @@ class _CategoryRow extends StatelessWidget {
   final String label;
   final String status;
   final VoidCallback onTap;
-  const _CategoryRow({required this.label, required this.status, required this.onTap});
+  const _CategoryRow({
+    required this.label,
+    required this.status,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -315,9 +423,23 @@ class _CategoryRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.text,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(status, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext)),
+              Text(
+                status,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.subtext,
+                ),
+              ),
             ],
           ),
         ),
@@ -353,7 +475,12 @@ class _EditLinkState extends State<_EditLink> {
           duration: const Duration(milliseconds: 120),
           child: Text(
             context.tr('notif_edit'),
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text, decoration: TextDecoration.underline),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.text,
+              decoration: TextDecoration.underline,
+            ),
           ),
         ),
       ),
@@ -393,13 +520,22 @@ class _NotificationEditSheetState extends State<_NotificationEditSheet> {
             Row(
               children: [
                 Expanded(
-                  child: Text(context.tr(widget.category.labelKey),
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+                  child: Text(
+                    context.tr(widget.category.labelKey),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.text,
+                    ),
+                  ),
                 ),
                 InkWell(
                   onTap: () => Navigator.pop(context, _prefs),
                   borderRadius: BorderRadius.circular(20),
-                  child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, color: _P.text)),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.close, color: AppColors.text),
+                  ),
                 ),
               ],
             ),
@@ -407,19 +543,22 @@ class _NotificationEditSheetState extends State<_NotificationEditSheet> {
             _ChannelToggle(
               label: context.tr('notif_channel_email'),
               value: _prefs.email,
-              onChanged: (v) => setState(() => _prefs = _prefs.copyWith(email: v)),
+              onChanged: (v) =>
+                  setState(() => _prefs = _prefs.copyWith(email: v)),
             ),
-            const Divider(height: 28, thickness: 1, color: _P.divider),
+            const Divider(height: 28, thickness: 1, color: AppColors.divider),
             _ChannelToggle(
               label: context.tr('notif_channel_push_full'),
               value: _prefs.push,
-              onChanged: (v) => setState(() => _prefs = _prefs.copyWith(push: v)),
+              onChanged: (v) =>
+                  setState(() => _prefs = _prefs.copyWith(push: v)),
             ),
-            const Divider(height: 28, thickness: 1, color: _P.divider),
+            const Divider(height: 28, thickness: 1, color: AppColors.divider),
             _ChannelToggle(
               label: context.tr('notif_channel_sms'),
               value: _prefs.sms,
-              onChanged: (v) => setState(() => _prefs = _prefs.copyWith(sms: v)),
+              onChanged: (v) =>
+                  setState(() => _prefs = _prefs.copyWith(sms: v)),
             ),
           ],
         ),
@@ -432,18 +571,31 @@ class _ChannelToggle extends StatelessWidget {
   final String label;
   final bool value;
   final ValueChanged<bool> onChanged;
-  const _ChannelToggle({required this.label, required this.value, required this.onChanged});
+  const _ChannelToggle({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text))),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.text,
+            ),
+          ),
+        ),
         Switch(
           value: value,
           onChanged: onChanged,
           thumbColor: const WidgetStatePropertyAll(Colors.white),
-          activeTrackColor: _P.text,
+          activeTrackColor: AppColors.text,
         ),
       ],
     );
@@ -462,8 +614,11 @@ class _CircleBack extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: const Icon(Icons.arrow_back, size: 20, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_back, size: 20, color: AppColors.text),
       ),
     );
   }

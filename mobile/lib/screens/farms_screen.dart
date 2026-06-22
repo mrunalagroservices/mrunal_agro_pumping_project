@@ -97,7 +97,7 @@ class _FarmsTab extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(12)),
-                child: Text(state.dashboardError!, style: const TextStyle(color: AppColors.offlineRed)),
+                child: Text(state.dashboardError!, style: const TextStyle(color: AppColors.danger)),
               ),
             ),
           ]);
@@ -108,7 +108,7 @@ class _FarmsTab extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               child: Center(
                 child: Text(context.tr('farms_empty'),
-                    style: const TextStyle(color: AppColors.textSecondary)),
+                    style: const TextStyle(color: AppColors.subtext)),
               ),
             ),
           ]);
@@ -145,9 +145,9 @@ class _ElectricityTab extends StatelessWidget {
           // Summary row
           Row(
             children: [
-              Expanded(child: _SummaryCard(icon: Icons.bolt, color: const Color(0xFF10B981), count: onlineCount, label: context.tr('farms_power_on'))),
+              Expanded(child: _SummaryCard(icon: Icons.bolt, color: AppColors.success, count: onlineCount, label: context.tr('farms_power_on'))),
               const SizedBox(width: 10),
-              Expanded(child: _SummaryCard(icon: Icons.bolt_outlined, color: AppColors.offGray, count: offlineCount, label: context.tr('farms_no_power'))),
+              Expanded(child: _SummaryCard(icon: Icons.bolt_outlined, color: AppColors.subtext, count: offlineCount, label: context.tr('farms_no_power'))),
             ],
           ),
           const SizedBox(height: 12),
@@ -162,7 +162,7 @@ class _ElectricityTab extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.battery_charging_full_outlined, size: 16, color: Color(0xFFD97706)),
+                const Icon(Icons.battery_charging_full_outlined, size: 16, color: AppColors.warning),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -177,7 +177,7 @@ class _ElectricityTab extends StatelessWidget {
           if (state.devices.isEmpty)
             Center(child: Padding(
               padding: const EdgeInsets.all(32),
-              child: Text(context.tr('farms_no_devices'), style: const TextStyle(color: AppColors.textSecondary)),
+              child: Text(context.tr('farms_no_devices'), style: const TextStyle(color: AppColors.subtext)),
             ))
           else
             ...state.farms.map((farm) {
@@ -221,7 +221,7 @@ class _ElectricityTab extends StatelessWidget {
                                   ),
                                   child: Icon(
                                     hasPower ? Icons.bolt : Icons.bolt_outlined,
-                                    color: hasPower ? const Color(0xFF10B981) : AppColors.textMuted,
+                                    color: hasPower ? AppColors.success : AppColors.subtext,
                                     size: 20,
                                   ),
                                 ),
@@ -244,12 +244,12 @@ class _ElectricityTab extends StatelessWidget {
                                               style: TextStyle(
                                                 fontSize: 8,
                                                 fontWeight: FontWeight.w600,
-                                                color: hasPower ? const Color(0xFF059669) : AppColors.textMuted,
+                                                color: hasPower ? AppColors.success : AppColors.subtext,
                                               ),
                                             ),
                                           ),
                                           const SizedBox(width: 6),
-                                          Text(_timeSince(context, d.lastSeenAt), style: TextStyle(fontSize: 8, color: AppColors.textMuted)),
+                                          Text(_timeSince(context, d.lastSeenAt), style: TextStyle(fontSize: 8, color: AppColors.subtext)),
                                         ],
                                       ),
                                     ],
@@ -272,7 +272,7 @@ class _ElectricityTab extends StatelessWidget {
                                         Icon(
                                           notifyOn ? Icons.notifications_active_outlined : Icons.notifications_off_outlined,
                                           size: 14,
-                                          color: notifyOn ? const Color(0xFFD97706) : AppColors.textMuted,
+                                          color: notifyOn ? AppColors.warning : AppColors.subtext,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
@@ -280,7 +280,7 @@ class _ElectricityTab extends StatelessWidget {
                                           style: TextStyle(
                                             fontSize: 9,
                                             fontWeight: FontWeight.w500,
-                                            color: notifyOn ? const Color(0xFFD97706) : AppColors.textMuted,
+                                            color: notifyOn ? AppColors.warning : AppColors.subtext,
                                           ),
                                         ),
                                       ],
@@ -308,7 +308,7 @@ class _ElectricityTab extends StatelessWidget {
                                 ),
                                 child: Text(
                                   context.tr('farms_no_power_events'),
-                                  style: TextStyle(fontSize: 9, color: AppColors.textMuted),
+                                  style: TextStyle(fontSize: 9, color: AppColors.subtext),
                                 ),
                               ),
                             )
@@ -329,7 +329,7 @@ class _ElectricityTab extends StatelessWidget {
                                             children: [
                                               Text(day.label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w500)),
                                               if (day.totalMinutes > 0)
-                                                Text(fmtHours(day.totalMinutes), style: TextStyle(fontSize: 8, color: AppColors.textMuted)),
+                                                Text(fmtHours(day.totalMinutes), style: TextStyle(fontSize: 8, color: AppColors.subtext)),
                                             ],
                                           ),
                                         ),
@@ -346,11 +346,11 @@ class _ElectricityTab extends StatelessWidget {
                                                       padding: const EdgeInsets.only(bottom: 3),
                                                       child: Row(
                                                         children: [
-                                                          Text(onStr, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w500, color: Color(0xFF059669))),
+                                                          Text(onStr, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w500, color: AppColors.success)),
                                                           const SizedBox(width: 4),
                                                           Expanded(child: Container(height: 6, decoration: BoxDecoration(color: const Color(0xFF6EE7B7), borderRadius: BorderRadius.circular(3)))),
                                                           const SizedBox(width: 4),
-                                                          Text(offStr, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w500, color: w.off == null ? const Color(0xFF059669) : const Color(0xFFEF4444))),
+                                                          Text(offStr, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w500, color: w.off == null ? AppColors.success : AppColors.danger)),
                                                         ],
                                                       ),
                                                     );
@@ -417,13 +417,13 @@ class _AntiTheftTab extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.shield_outlined, color: Color(0xFFDC2626), size: 18),
+              const Icon(Icons.shield_outlined, color: AppColors.danger, size: 18),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(context.tr('farms_antitheft_requires'), style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFDC2626), fontSize: 11)),
+                    Text(context.tr('farms_antitheft_requires'), style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.danger, fontSize: 11)),
                     const SizedBox(height: 4),
                     Text(
                       context.tr('farms_antitheft_desc'),
@@ -442,14 +442,14 @@ class _AntiTheftTab extends StatelessWidget {
           children: [
             Expanded(child: _HowCard(
               icon: Icons.check_circle_outline,
-              color: const Color(0xFF10B981),
+              color: AppColors.success,
               title: context.tr('farms_normal'),
               desc: context.tr('farms_normal_desc'),
             )),
             const SizedBox(width: 8),
             Expanded(child: _HowCard(
               icon: Icons.warning_amber_outlined,
-              color: const Color(0xFFDC2626),
+              color: AppColors.danger,
               title: context.tr('farms_wire_cut'),
               desc: context.tr('farms_wire_cut_desc'),
             )),
@@ -460,7 +460,7 @@ class _AntiTheftTab extends StatelessWidget {
         if (state.actuators.isEmpty)
           Center(child: Padding(
             padding: const EdgeInsets.all(32),
-            child: Text(context.tr('farms_no_actuators'), style: const TextStyle(color: AppColors.textSecondary)),
+            child: Text(context.tr('farms_no_actuators'), style: const TextStyle(color: AppColors.subtext)),
           ))
         else
           ...state.farms.map((farm) {
@@ -499,7 +499,7 @@ class _AntiTheftTab extends StatelessWidget {
                                 ),
                                 child: Icon(
                                   isEnabled ? Icons.shield : Icons.shield_outlined,
-                                  color: isEnabled ? const Color(0xFFDC2626) : AppColors.textMuted,
+                                  color: isEnabled ? AppColors.danger : AppColors.subtext,
                                   size: 20,
                                 ),
                               ),
@@ -515,23 +515,23 @@ class _AntiTheftTab extends StatelessWidget {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                           decoration: BoxDecoration(
-                                            color: a.isOn ? AppColors.primary600.withValues(alpha: 0.1) : const Color(0xFFF1F5F9),
+                                            color: a.isOn ? AppColors.success.withValues(alpha: 0.1) : const Color(0xFFF1F5F9),
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Text(
                                             a.isOn ? context.tr('farms_status_on') : context.tr('farms_status_off'),
-                                            style: TextStyle(fontSize: 8, fontWeight: FontWeight.w600, color: a.isOn ? AppColors.primary600 : AppColors.textMuted),
+                                            style: TextStyle(fontSize: 8, fontWeight: FontWeight.w600, color: a.isOn ? AppColors.success : AppColors.subtext),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    Text(a.actuatorType, style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                                    Text(a.actuatorType, style: TextStyle(fontSize: 10, color: AppColors.subtext)),
                                   ],
                                 ),
                               ),
                               Switch(
                                 value: isEnabled,
-                                activeTrackColor: const Color(0xFFDC2626),
+                                activeTrackColor: AppColors.danger,
                                 activeThumbColor: Colors.white,
                                 inactiveTrackColor: const Color(0xFFE2E8F0),
                                 inactiveThumbColor: Colors.white,
@@ -544,7 +544,7 @@ class _AntiTheftTab extends StatelessWidget {
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                const Icon(Icons.settings_outlined, size: 14, color: Color(0xFFDC2626)),
+                                const Icon(Icons.settings_outlined, size: 14, color: AppColors.danger),
                                 const SizedBox(width: 6),
                                 Text(context.tr('farms_expected_current'), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500)),
                                 const SizedBox(width: 8),
@@ -582,7 +582,7 @@ class _AntiTheftTab extends StatelessWidget {
                                     : context.tr('farms_alert_threshold').replaceAll('{value}', '${(double.tryParse(threshold) ?? 0) * 0.5}'),
                                 style: TextStyle(
                                   fontSize: 9,
-                                  color: threshold.isEmpty ? const Color(0xFFD97706) : const Color(0xFFDC2626),
+                                  color: threshold.isEmpty ? AppColors.warning : AppColors.danger,
                                 ),
                               ),
                             ),
@@ -654,7 +654,7 @@ class _HowCard extends StatelessWidget {
           Icon(icon, color: color, size: 20),
           const SizedBox(height: 6),
           Text(title, style: TextStyle(fontWeight: FontWeight.w600, color: color, fontSize: 11)),
-          Text(desc, style: TextStyle(color: AppColors.textSecondary, fontSize: 9)),
+          Text(desc, style: TextStyle(color: AppColors.subtext, fontSize: 9)),
         ],
       ),
     );

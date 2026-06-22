@@ -75,15 +75,15 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                           padding: const EdgeInsets.all(48),
                           child: Column(
                             children: [
-                              Icon(Icons.schedule_outlined, size: 48, color: AppColors.textMuted),
+                              Icon(Icons.schedule_outlined, size: 48, color: AppColors.subtext),
                               const SizedBox(height: 12),
                               Text(context.tr('schedules_empty_title'),
-                                  style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                                  style: const TextStyle(color: AppColors.subtext, fontWeight: FontWeight.w500)),
                               const SizedBox(height: 4),
                               Text(
                                 context.tr('schedules_empty_sub'),
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                style: const TextStyle(color: AppColors.subtext, fontSize: 11),
                               ),
                             ],
                           ),
@@ -101,7 +101,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
               onPressed: _showAddSchedule,
               icon: const Icon(Icons.add),
               label: Text(context.tr('schedules_add_tooltip')),
-              backgroundColor: AppColors.primary600,
+              backgroundColor: AppColors.success,
               foregroundColor: Colors.white,
             )
           : null,
@@ -142,13 +142,13 @@ class _ScheduleCardState extends State<_ScheduleCard> {
               height: 42,
               decoration: BoxDecoration(
                 color: s.isActive
-                    ? AppColors.primary600.withValues(alpha: 0.1)
+                    ? AppColors.success.withValues(alpha: 0.1)
                     : const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 Icons.schedule,
-                color: s.isActive ? AppColors.primary600 : AppColors.textMuted,
+                color: s.isActive ? AppColors.success : AppColors.subtext,
                 size: 20,
               ),
             ),
@@ -161,12 +161,12 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                   const SizedBox(height: 2),
                   Text(
                     '${s.actuatorName ?? context.tr('common_unknown')} · ${s.displayTime} · ${s.durationMinutes}min',
-                    style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                    style: TextStyle(fontSize: 10, color: AppColors.subtext),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     s.activeDays,
-                    style: TextStyle(fontSize: 9, color: AppColors.textMuted),
+                    style: TextStyle(fontSize: 9, color: AppColors.subtext),
                   ),
                 ],
               ),
@@ -177,7 +177,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                     ? const SizedBox(width: 36, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                     : Switch(
                         value: s.isActive,
-                        activeTrackColor: AppColors.primary600,
+                        activeTrackColor: AppColors.success,
                         activeThumbColor: Colors.white,
                         inactiveTrackColor: const Color(0xFFE2E8F0),
                         inactiveThumbColor: Colors.white,
@@ -216,7 +216,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
                     }
                   },
-                  child: Icon(Icons.delete_outline, size: 18, color: AppColors.textMuted),
+                  child: Icon(Icons.delete_outline, size: 18, color: AppColors.subtext),
                 ),
               ],
             ),
@@ -379,7 +379,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                         margin: EdgeInsets.only(right: i < 6 ? 4 : 0),
                         height: 36,
                         decoration: BoxDecoration(
-                          color: active ? AppColors.primary600 : const Color(0xFFF1F5F9),
+                          color: active ? AppColors.success : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         alignment: Alignment.center,
@@ -388,7 +388,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: active ? Colors.white : AppColors.textSecondary,
+                            color: active ? Colors.white : AppColors.subtext,
                           ),
                         ),
                       ),
@@ -413,7 +413,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                 child: FilledButton(
                   onPressed: _submitting ? null : _submit,
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary600,
+                    backgroundColor: AppColors.success,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),

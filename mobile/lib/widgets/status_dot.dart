@@ -23,7 +23,7 @@ class StatusDot extends StatelessWidget {
 }
 
 Color statusColor({required bool isOn, required bool deviceOnline}) {
-  if (isOn) return AppColors.primary600;
-  if (!deviceOnline) return AppColors.offlineRed;
-  return AppColors.offGray;
+  if (isOn) return AppColors.success;
+  if (!deviceOnline) return AppColors.danger;
+  return AppColors.subtext;
 }

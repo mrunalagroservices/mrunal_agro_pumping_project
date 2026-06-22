@@ -3,32 +3,41 @@ import 'package:flutter/material.dart';
 /// Bundled font family (see assets/fonts + pubspec.yaml). Applied app-wide.
 const String kFontFamily = 'Inter';
 
-/// Matches the web dashboard's Tailwind palette: "primary" green +
-/// "slate" grays for text/borders/background.
+/// Single shared palette for the whole app — an Airbnb-style look (warm
+/// near-black text, light neutral grays, one pink-red brand accent) used
+/// consistently across every screen, instead of each screen defining its
+/// own private color set.
 class AppColors {
-  static const primary50 = Color(0xFFF0FDF4);
-  static const primary100 = Color(0xFFDCFCE7);
-  static const primary200 = Color(0xFFBBF7D0);
-  static const primary400 = Color(0xFF4ADE80);
-  static const primary500 = Color(0xFF22C55E);
-  static const primary600 = Color(0xFF16A34A);
-  static const primary700 = Color(0xFF15803D);
+  // ── Neutrals ─────────────────────────────────────────────────────────
+  static const text = Color(0xFF222222);
+  static const subtext = Color(0xFF717171);
+  static const divider = Color(0xFFEBEBEB);
+  static const border = Color(0xFFDDDDDD);
+  static const fieldBorder = Color(0xFFB0B0B0);
 
-  // Tailwind "slate" palette
-  static const slate50 = Color(0xFFF8FAFC);
-  static const slate200 = Color(0xFFE2E8F0);
-  static const slate400 = Color(0xFF94A3B8);
-  static const slate500 = Color(0xFF64748B);
-  static const slate600 = Color(0xFF475569);
-  static const slate900 = Color(0xFF0F172A);
+  // ── Surfaces ─────────────────────────────────────────────────────────
+  static const background = Colors.white;
+  static const surfaceMuted = Color(0xFFF7F7F7); // banners, cards
+  static const chip = Color(0xFFF2F2F2); // circle buttons, pills, tiles
 
-  static const offGray = slate500;
-  static const offlineRed = Color(0xFFEF4444);
-  static const background = slate50;
-  static const cardBorder = slate200;
-  static const textPrimary = slate900;
-  static const textSecondary = slate500;
-  static const textMuted = slate400;
+  // ── Brand accent ("Rausch") ──────────────────────────────────────────
+  static const accent = Color(0xFFFF385C);
+  static const accentBg = Color(0xFFFFE4E9);
+
+  // ── Semantic ─────────────────────────────────────────────────────────
+  static const success = Color(0xFF15803D);
+  static const successBg = Color(0xFFF0FDF4);
+  static const danger = Color(0xFFDC2626);
+  static const dangerBg = Color(0xFFFEF2F2);
+  static const warning = Color(0xFFD97706);
+  static const warningBg = Color(0xFFFFFBEB);
+  static const info = Color(0xFF2563EB);
+  static const infoBg = Color(0xFFEFF6FF);
+
+  // ── One-off decorative tones (kept named for the screens that use them) ─
+  static const avatarBg = Color(0xFFFDE8EC);
+  static const avatarFg = Color(0xFFB0285A);
+  static const newBadge = Color(0xFF2E4A5C);
 }
 
 ThemeData buildAppTheme() {
@@ -38,22 +47,22 @@ ThemeData buildAppTheme() {
     scaffoldBackgroundColor: AppColors.background,
     primaryTextTheme: base.primaryTextTheme.apply(fontFamily: kFontFamily),
     colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary600,
-      primary: AppColors.primary600,
+      seedColor: AppColors.accent,
+      primary: AppColors.accent,
     ),
     textTheme: base.textTheme.apply(
       fontFamily: kFontFamily,
-      bodyColor: AppColors.textPrimary,
-      displayColor: AppColors.textPrimary,
+      bodyColor: AppColors.text,
+      displayColor: AppColors.text,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.background,
-      foregroundColor: AppColors.textPrimary,
+      foregroundColor: AppColors.text,
       elevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
         fontFamily: kFontFamily,
-        color: AppColors.textPrimary,
+        color: AppColors.text,
         fontSize: 16,
         fontWeight: FontWeight.w500,
       ),
@@ -63,13 +72,13 @@ ThemeData buildAppTheme() {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.cardBorder),
+        side: const BorderSide(color: AppColors.divider),
       ),
       margin: EdgeInsets.zero,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary600,
+        backgroundColor: AppColors.text,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -82,15 +91,15 @@ ThemeData buildAppTheme() {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.cardBorder),
+        borderSide: const BorderSide(color: AppColors.divider),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.cardBorder),
+        borderSide: const BorderSide(color: AppColors.divider),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primary600, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.text, width: 1.5),
       ),
     ),
   );

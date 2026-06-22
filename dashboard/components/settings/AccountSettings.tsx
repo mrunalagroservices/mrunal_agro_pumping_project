@@ -30,7 +30,7 @@ const MENU: { key: MenuKey; label: string; icon: typeof UserIcon }[] = [
   { key: "support", label: "Find support", icon: LifeBuoy },
 ];
 
-const inputCls = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500";
+const inputCls = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500";
 const labelCls = "block text-xs font-medium text-slate-500 mb-1";
 
 function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
@@ -38,7 +38,7 @@ function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolea
     <button
       onClick={onClick}
       disabled={saving}
-      className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors disabled:opacity-60"
+      className="flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors disabled:opacity-60"
     >
       {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
       Save
@@ -210,7 +210,7 @@ function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: 
             <p className="text-sm font-medium text-slate-800">Help improve the app</p>
             <p className="text-xs text-slate-500 max-w-sm">Use anonymous usage data to improve features across farm management, irrigation scheduling, and the marketplace.</p>
           </div>
-          <input type="checkbox" checked={analyticsOptIn} onChange={(e) => toggleAnalytics(e.target.checked)} className="accent-primary-600 w-5 h-5 shrink-0" />
+          <input type="checkbox" checked={analyticsOptIn} onChange={(e) => toggleAnalytics(e.target.checked)} className="accent-accent-600 w-5 h-5 shrink-0" />
         </div>
       </div>
 
@@ -307,7 +307,7 @@ function NotificationsPanel({ user, onSaved }: { user: User; onSaved: (u: User) 
                   <div className="flex items-center gap-4">
                     {(["email", "push", "sms"] as const).map((channel) => (
                       <label key={channel} className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer">
-                        <input type="checkbox" disabled={saving} checked={p[channel]} onChange={(e) => toggle(cat.key, channel, e.target.checked)} className="accent-primary-600 w-4 h-4" />
+                        <input type="checkbox" disabled={saving} checked={p[channel]} onChange={(e) => toggle(cat.key, channel, e.target.checked)} className="accent-accent-600 w-4 h-4" />
                         {channel.toUpperCase()}
                       </label>
                     ))}
@@ -347,7 +347,7 @@ function PaymentsPanel({ user, onSaved }: { user: User; onSaved: (u: User) => vo
       <div className="flex gap-2">
         {([["cod", "Cash on Delivery"], ["card", "Card"], ["upi", "UPI"]] as const).map(([value, label]) => (
           <button key={value} onClick={() => setMethod(value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${method === value ? "bg-primary-600 text-white border-primary-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${method === value ? "bg-accent-600 text-white border-accent-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
             {label}
           </button>
         ))}
@@ -397,7 +397,7 @@ function LegalPanel({ openRequest }: { openRequest: { slug: string; nonce: numbe
   if (active) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <button onClick={() => setActive(null)} className="text-sm text-primary-600 font-medium mb-4 hover:underline">← Back to Legal</button>
+        <button onClick={() => setActive(null)} className="text-sm text-accent-600 font-medium mb-4 hover:underline">← Back to Legal</button>
         <h3 className="text-lg font-semibold text-slate-800">{active.title}</h3>
         <p className="text-xs text-slate-400 mt-1 mb-5">
           Last updated {new Date(active.updated_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
@@ -464,7 +464,7 @@ function SupportPanel() {
 
       <div className="bg-white rounded-xl border border-slate-200">
         <p className="text-sm font-semibold text-slate-800 px-5 pt-5 pb-2 flex items-center gap-2">
-          <MessageCircleQuestion className="w-4 h-4 text-primary-600" /> Frequently asked questions
+          <MessageCircleQuestion className="w-4 h-4 text-accent-600" /> Frequently asked questions
         </p>
         <div className="divide-y divide-slate-100">
           {faqs.map((faq) => (
@@ -503,7 +503,7 @@ export default function AccountSettings() {
               key={item.key}
               onClick={() => setActive(item.key)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                active === item.key ? "bg-primary-50 text-primary-700" : "text-slate-600 hover:bg-slate-50"
+                active === item.key ? "bg-accent-50 text-accent-700" : "text-slate-600 hover:bg-slate-50"
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />

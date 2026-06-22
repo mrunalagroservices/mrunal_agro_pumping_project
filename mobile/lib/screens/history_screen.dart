@@ -119,11 +119,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           padding: const EdgeInsets.all(48),
                           child: Column(children: [
                             Icon(Icons.bar_chart_outlined,
-                                size: 48, color: AppColors.textMuted),
+                                size: 48, color: AppColors.subtext),
                             const SizedBox(height: 12),
                             Text(context.tr('history_no_data'),
                                 style:
-                                    const TextStyle(color: AppColors.textSecondary)),
+                                    const TextStyle(color: AppColors.subtext)),
                           ]),
                         )
                       ])
@@ -158,7 +158,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           children: [
             _StatCard(
               icon: Icons.timer_outlined,
-              color: AppColors.primary600,
+              color: AppColors.success,
               label: _range == '24h' ? context.tr('history_runtime_24h') : context.tr('history_runtime_10d'),
               value: _fmtHours(runtimeMin),
             ),
@@ -191,19 +191,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primary600.withValues(alpha: 0.1),
+              color: AppColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border:
-                  Border.all(color: AppColors.primary600.withValues(alpha: 0.3)),
+                  Border.all(color: AppColors.success.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
-                Icon(Icons.bolt, color: AppColors.primary600, size: 20),
+                Icon(Icons.bolt, color: AppColors.success, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   context.tr('history_motors_running').replaceAll('{n}', '$running'),
                   style: TextStyle(
-                      color: AppColors.primary600,
+                      color: AppColors.success,
                       fontWeight: FontWeight.w500),
                 ),
               ],
@@ -220,7 +220,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const Spacer(),
               Text(_range == '24h' ? context.tr('history_last_24h') : context.tr('history_last_10d'),
-                  style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                  style: TextStyle(fontSize: 10, color: AppColors.subtext)),
             ],
           ),
           const SizedBox(height: 10),
@@ -268,7 +268,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               child: Text(
                 _range == '24h' ? context.tr('history_days_2') : context.tr('history_days_10'),
-                style: TextStyle(fontSize: 9, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 9, color: AppColors.subtext),
               ),
             ),
           ],
@@ -284,7 +284,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Text(context.tr('history_no_sessions'),
-                style: const TextStyle(color: AppColors.textMuted)),
+                style: const TextStyle(color: AppColors.subtext)),
           )
         else
           ...(_dailyLogs!).asMap().entries.map((entry) {
@@ -305,7 +305,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: hasActivity && isExpanded
-                        ? AppColors.primary600.withValues(alpha: 0.3)
+                        ? AppColors.success.withValues(alpha: 0.3)
                         : const Color(0xFFE2E8F0),
                   ),
                   boxShadow: [
@@ -345,7 +345,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     Text(context.tr('history_no_pump_activity'),
                                         style: TextStyle(
                                             fontSize: 10,
-                                            color: AppColors.textMuted))
+                                            color: AppColors.subtext))
                                   else
                                     Row(
                                       children: [
@@ -353,7 +353,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                             icon: Icons.timer_outlined,
                                             value: _fmtHours(
                                                 (totalHours * 60).round()),
-                                            color: AppColors.primary600),
+                                            color: AppColors.success),
                                         if (dayWater > 0) ...[
                                           const SizedBox(width: 10),
                                           _QuickStat(
@@ -381,7 +381,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary600
+                                  color: AppColors.success
                                       .withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -390,7 +390,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w500,
-                                      color: AppColors.primary600),
+                                      color: AppColors.success),
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -398,7 +398,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 isExpanded
                                     ? Icons.expand_less
                                     : Icons.expand_more,
-                                color: AppColors.textMuted,
+                                color: AppColors.subtext,
                                 size: 20,
                               ),
                             ] else
@@ -406,7 +406,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: AppColors.offGray,
+                                  color: AppColors.subtext,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -474,11 +474,11 @@ class _ActuatorSessionRow extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: AppColors.primary600.withValues(alpha: 0.1),
+                  color: AppColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(Icons.water_drop_outlined,
-                    size: 14, color: AppColors.primary600),
+                    size: 14, color: AppColors.success),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -491,7 +491,7 @@ class _ActuatorSessionRow extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primary600),
+                    color: AppColors.success),
               ),
             ],
           ),
@@ -551,7 +551,7 @@ class _ActuatorSessionRow extends StatelessWidget {
                         ),
                         child: Text(dur,
                             style: TextStyle(
-                                fontSize: 8, color: AppColors.textSecondary)),
+                                fontSize: 8, color: AppColors.subtext)),
                       ),
                     ],
                   ],
@@ -611,14 +611,14 @@ class _RangeBtn extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: active ? AppColors.primary600 : Colors.transparent,
+          color: active ? AppColors.success : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(label,
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: active ? Colors.white : AppColors.textSecondary,
+              color: active ? Colors.white : AppColors.subtext,
             )),
       ),
     );
@@ -659,11 +659,11 @@ class _StatCard extends StatelessWidget {
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             Text(label,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 9)),
+                style: TextStyle(color: AppColors.subtext, fontSize: 9)),
             if (subtitle != null)
               Text(subtitle!,
                   style:
-                      TextStyle(color: AppColors.textMuted, fontSize: 8)),
+                      TextStyle(color: AppColors.subtext, fontSize: 8)),
           ],
         ),
       ),
@@ -735,13 +735,13 @@ class _ActuatorRow extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.primary600.withValues(alpha: 0.1),
+                              color: AppColors.success.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(context.tr('farms_status_on'),
                                 style: TextStyle(
                                     fontSize: 8,
-                                    color: AppColors.primary600,
+                                    color: AppColors.success,
                                     fontWeight: FontWeight.w600)),
                           ),
                       ],
@@ -749,7 +749,7 @@ class _ActuatorRow extends StatelessWidget {
                     if (farm.isNotEmpty)
                       Text(farm,
                           style: TextStyle(
-                              fontSize: 10, color: AppColors.textMuted)),
+                              fontSize: 10, color: AppColors.subtext)),
                   ],
                 ),
               ),
@@ -757,7 +757,7 @@ class _ActuatorRow extends StatelessWidget {
                 _fmtHours(runtimeMin),
                 style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primary600,
+                    color: AppColors.success,
                     fontSize: 13),
               ),
             ],
@@ -770,7 +770,7 @@ class _ActuatorRow extends StatelessWidget {
                   ? (runtimeMin / 1440).clamp(0.0, 1.0)
                   : 0,
               backgroundColor: const Color(0xFFF1F5F9),
-              valueColor: AlwaysStoppedAnimation(AppColors.primary600),
+              valueColor: AlwaysStoppedAnimation(AppColors.success),
               minHeight: 4,
             ),
           ),
@@ -812,7 +812,7 @@ class _MiniStat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 8, color: AppColors.textMuted)),
+          Text(label, style: TextStyle(fontSize: 8, color: AppColors.subtext)),
           Text(value,
               style:
                   const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),

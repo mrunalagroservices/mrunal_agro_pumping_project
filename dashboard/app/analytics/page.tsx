@@ -117,7 +117,7 @@ export default function AnalyticsPage() {
             <select
               value={farmId}
               onChange={(e) => setFarmId(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-accent-500"
             >
               <option value="">All farms</option>
               {farms.map((f) => (
@@ -132,7 +132,7 @@ export default function AnalyticsPage() {
               onClick={() => setRange("24h")}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 range === "24h"
-                  ? "bg-white text-primary-700 shadow-sm"
+                  ? "bg-white text-accent-700 shadow-sm"
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
               onClick={() => setRange("10d")}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 range === "10d"
-                  ? "bg-white text-primary-700 shadow-sm"
+                  ? "bg-white text-accent-700 shadow-sm"
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
@@ -204,8 +204,8 @@ export default function AnalyticsPage() {
               icon={Activity}
               label="Currently Running"
               value={`${totals?.currently_running ?? 0} / ${totalActuators}`}
-              textColor="text-primary-700"
-              bgLight="bg-primary-50"
+              textColor="text-accent-700"
+              bgLight="bg-accent-50"
             />
           </div>
 

@@ -2,21 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-}
+import '../config/theme.dart';
 
 /// Bottom sheet for rating + reviewing a product. Returns `true` via
 /// Navigator.pop on successful submission so callers can refresh.
-Future<bool?> showWriteReviewSheet(BuildContext context, {required int productId, required String productName, int initialRating = 5}) {
+Future<bool?> showWriteReviewSheet(
+  BuildContext context, {
+  required int productId,
+  required String productName,
+  int initialRating = 5,
+}) {
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-    builder: (_) => WriteReviewSheet(productId: productId, productName: productName, initialRating: initialRating),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) => WriteReviewSheet(
+      productId: productId,
+      productName: productName,
+      initialRating: initialRating,
+    ),
   );
 }
 
@@ -25,7 +32,12 @@ class WriteReviewSheet extends StatefulWidget {
   final String productName;
   final int initialRating;
 
-  const WriteReviewSheet({super.key, required this.productId, required this.productName, this.initialRating = 5});
+  const WriteReviewSheet({
+    super.key,
+    required this.productId,
+    required this.productName,
+    this.initialRating = 5,
+  });
 
   @override
   State<WriteReviewSheet> createState() => _WriteReviewSheetState();
@@ -44,13 +56,23 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
   }
 
   Future<void> _submit() async {
-    setState(() { _saving = true; _error = null; });
-    final err = await context.read<AppState>().submitReview(widget.productId, _rating, _comment.text.trim());
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    final err = await context.read<AppState>().submitReview(
+      widget.productId,
+      _rating,
+      _comment.text.trim(),
+    );
     if (!mounted) return;
     if (err == null) {
       Navigator.pop(context, true);
     } else {
-      setState(() { _saving = false; _error = err; });
+      setState(() {
+        _saving = false;
+        _error = err;
+      });
     }
   }
 
@@ -58,7 +80,12 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
   Widget build(BuildContext context) {
     context.watchLocale();
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        24 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,10 +93,21 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
           Row(
             children: [
               Expanded(
-                child: Text(widget.productName, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                child: Text(
+                  widget.productName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.text,
+                  ),
+                ),
               ),
-              InkWell(onTap: () => Navigator.pop(context), child: const Icon(Icons.close, color: _P.text)),
+              InkWell(
+                onTap: () => Navigator.pop(context),
+                child: const Icon(Icons.close, color: AppColors.text),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -78,7 +116,13 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
               final star = i + 1;
               return InkWell(
                 onTap: () => setState(() => _rating = star),
-                child: Icon(star <= _rating ? Icons.star_rounded : Icons.star_border_rounded, size: 36, color: const Color(0xFF15803D)),
+                child: Icon(
+                  star <= _rating
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded,
+                  size: 36,
+                  color: const Color(0xFF15803D),
+                ),
               );
             }),
           ),
@@ -88,14 +132,20 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
             maxLines: 4,
             decoration: InputDecoration(
               hintText: context.tr('review_hint'),
-              hintStyle: const TextStyle(color: _P.subtext),
+              hintStyle: const TextStyle(color: AppColors.subtext),
               contentPadding: const EdgeInsets.all(14),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFB0B0B0))),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFB0B0B0)),
+              ),
             ),
           ),
           if (_error != null) ...[
             const SizedBox(height: 10),
-            Text(_error!, style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11)),
+            Text(
+              _error!,
+              style: const TextStyle(color: Color(0xFFDC2626), fontSize: 11),
+            ),
           ],
           const SizedBox(height: 16),
           SizedBox(
@@ -103,14 +153,26 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
             child: ElevatedButton(
               onPressed: _saving ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _P.text,
+                backgroundColor: AppColors.text,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: _saving
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(context.tr('review_submit'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      context.tr('review_submit'),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
             ),
           ),
         ],

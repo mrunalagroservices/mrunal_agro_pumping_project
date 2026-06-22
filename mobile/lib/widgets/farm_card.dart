@@ -107,7 +107,7 @@ class _FarmCardState extends State<FarmCard> {
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.offlineRed,
+                backgroundColor: AppColors.danger,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(context.tr('widget_delete')),
@@ -157,7 +157,7 @@ class _FarmCardState extends State<FarmCard> {
                           child: Text(
                             widget.farm.location!,
                             style: TextStyle(
-                                color: AppColors.textSecondary, fontSize: 11),
+                                color: AppColors.subtext, fontSize: 11),
                           ),
                         ),
                     ],
@@ -165,7 +165,7 @@ class _FarmCardState extends State<FarmCard> {
                 ),
                 _FarmStatusBadge(active: state.isFarmActive(widget.farm.id)),
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: AppColors.offGray),
+                  icon: const Icon(Icons.more_vert, color: AppColors.subtext),
                   onSelected: (value) {
                     if (value == 'edit') {
                       _handleEdit();
@@ -186,9 +186,9 @@ class _FarmCardState extends State<FarmCard> {
                       value: 'delete',
                       child: ListTile(
                         leading: const Icon(Icons.delete_outline,
-                            color: AppColors.offlineRed),
+                            color: AppColors.danger),
                         title: Text(context.tr('widget_delete'),
-                            style: const TextStyle(color: AppColors.offlineRed)),
+                            style: const TextStyle(color: AppColors.danger)),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -201,7 +201,7 @@ class _FarmCardState extends State<FarmCard> {
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
                   context.tr('widget_no_devices'),
-                  style: TextStyle(color: AppColors.textMuted),
+                  style: TextStyle(color: AppColors.subtext),
                 ),
               )
             else
@@ -244,8 +244,8 @@ class _DeviceSection extends StatelessWidget {
               children: [
                 StatusDot(
                   color: device.isOnline
-                      ? AppColors.primary600
-                      : AppColors.offlineRed,
+                      ? AppColors.success
+                      : AppColors.danger,
                   size: 8,
                 ),
                 const SizedBox(width: 6),
@@ -256,7 +256,7 @@ class _DeviceSection extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   device.isOnline ? context.tr('widget_online') : context.tr('widget_offline'),
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 10),
+                  style: TextStyle(color: AppColors.subtext, fontSize: 10),
                 ),
               ],
             ),
@@ -266,7 +266,7 @@ class _DeviceSection extends StatelessWidget {
               padding: const EdgeInsets.only(left: 14, top: 4, bottom: 4),
               child: Text(
                 context.tr('widget_no_actuators'),
-                style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+                style: TextStyle(color: AppColors.subtext, fontSize: 11),
               ),
             )
           else
@@ -289,7 +289,7 @@ class _FarmStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? AppColors.primary600 : AppColors.offGray;
+    final color = active ? AppColors.success : AppColors.subtext;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(

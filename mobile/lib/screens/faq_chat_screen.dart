@@ -5,15 +5,7 @@ import '../models/faq_topic.dart';
 import '../providers/app_state.dart';
 import '../providers/locale_provider.dart';
 import '../widgets/language_switcher.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-  static const bubbleBg = Color(0xFFF2F2F2);
-  static const accent = Color(0xFF16A34A);
-}
+import '../config/theme.dart';
 
 class _ChatMessage {
   final String text;
@@ -57,12 +49,14 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
   void _greet(BuildContext context, String? email) {
     if (_greeted) return;
     _greeted = true;
-    _messages.add(_ChatMessage(
-      email != null
-          ? context.tr('faq_greeting_pick_email').replaceAll('{email}', email)
-          : context.tr('faq_greeting_pick'),
-      false,
-    ));
+    _messages.add(
+      _ChatMessage(
+        email != null
+            ? context.tr('faq_greeting_pick_email').replaceAll('{email}', email)
+            : context.tr('faq_greeting_pick'),
+        false,
+      ),
+    );
   }
 
   void _ask(List<FaqTopic> topics, int i) {
@@ -74,8 +68,11 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
-      _scroll.animateTo(_scroll.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+      _scroll.animateTo(
+        _scroll.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
     });
   }
 
@@ -86,7 +83,10 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
     final state = context.watch<AppState>();
     final topics = state.faqTopics;
     _greet(context, state.supportContact?.email);
-    final remaining = List.generate(topics.length, (i) => i).where((i) => !_askedTopics.contains(topics[i].id)).toList();
+    final remaining = List.generate(
+      topics.length,
+      (i) => i,
+    ).where((i) => !_askedTopics.contains(topics[i].id)).toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -99,15 +99,21 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
                   Expanded(
-                    child: Text(context.tr('faq_title'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                    child: Text(
+                      context.tr('faq_title'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.text,
+                      ),
+                    ),
                   ),
                   const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
-            const Divider(height: 1, thickness: 1, color: _P.divider),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
             Expanded(
               child: state.isLoadingSupport && topics.isEmpty
                   ? const Center(child: CircularProgressIndicator())
@@ -115,32 +121,44 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
                       controller: _scroll,
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                       itemCount: _messages.length,
-                      itemBuilder: (context, i) => _Bubble(message: _messages[i]),
+                      itemBuilder: (context, i) =>
+                          _Bubble(message: _messages[i]),
                     ),
             ),
             if (remaining.isNotEmpty)
               Container(
                 decoration: const BoxDecoration(
-                  border: Border(top: BorderSide(color: _P.divider)),
+                  border: Border(top: BorderSide(color: AppColors.divider)),
                 ),
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: remaining
-                      .map((i) => InkWell(
-                            borderRadius: BorderRadius.circular(18),
-                            onTap: () => _ask(topics, i),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(18),
-                                border: Border.all(color: _P.accent),
-                              ),
-                              child: Text(topics[i].question,
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _P.accent)),
+                      .map(
+                        (i) => InkWell(
+                          borderRadius: BorderRadius.circular(18),
+                          onTap: () => _ask(topics, i),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 9,
                             ),
-                          ))
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: AppColors.success),
+                            ),
+                            child: Text(
+                              topics[i].question,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.success,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
                       .toList(),
                 ),
               )
@@ -149,9 +167,14 @@ class _FaqChatScreenState extends State<FaqChatScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 child: Text(
                   state.supportContact?.email != null
-                      ? context.tr('faq_everything_done_email').replaceAll('{email}', state.supportContact!.email!)
+                      ? context
+                            .tr('faq_everything_done_email')
+                            .replaceAll('{email}', state.supportContact!.email!)
                       : context.tr('faq_everything_done'),
-                  style: const TextStyle(fontSize: 12, color: _P.subtext),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.subtext,
+                  ),
                 ),
               ),
           ],
@@ -167,9 +190,11 @@ class _Bubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final align = message.fromUser ? CrossAxisAlignment.end : CrossAxisAlignment.start;
-    final bg = message.fromUser ? _P.accent : _P.bubbleBg;
-    final fg = message.fromUser ? Colors.white : _P.text;
+    final align = message.fromUser
+        ? CrossAxisAlignment.end
+        : CrossAxisAlignment.start;
+    final bg = message.fromUser ? AppColors.success : AppColors.chip;
+    final fg = message.fromUser ? Colors.white : AppColors.text;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -177,11 +202,23 @@ class _Bubble extends StatelessWidget {
         crossAxisAlignment: align,
         children: [
           Container(
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.78,
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(16)),
-            child: Text(message.text,
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: fg, height: 1.4)),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              message.text,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                color: fg,
+                height: 1.4,
+              ),
+            ),
           ),
         ],
       ),
@@ -201,8 +238,11 @@ class _CircleBack extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: const Icon(Icons.arrow_back, size: 20, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_back, size: 20, color: AppColors.text),
       ),
     );
   }

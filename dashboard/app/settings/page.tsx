@@ -58,7 +58,7 @@ function AddressFormModal({ initial, onSave, onClose }: {
   onClose: () => void;
 }) {
   const [form, setForm] = useState<Omit<SavedAddress, "id">>(initial ?? BLANK_ADDR);
-  const inp = "w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition";
+  const inp = "w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition";
 
   function set(k: keyof typeof BLANK_ADDR, v: string | boolean) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -83,7 +83,7 @@ function AddressFormModal({ initial, onSave, onClose }: {
             <div className="flex gap-2 flex-wrap mb-1">
               {["Home", "Farm", "Office", "Other"].map((l) => (
                 <button key={l} type="button" onClick={() => set("label", l)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${form.label === l ? "bg-primary-600 text-white border-primary-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${form.label === l ? "bg-accent-600 text-white border-accent-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
                   {l}
                 </button>
               ))}
@@ -126,13 +126,13 @@ function AddressFormModal({ initial, onSave, onClose }: {
             </select>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={form.isDefault} onChange={(e) => set("isDefault", e.target.checked)} className="accent-primary-600 w-4 h-4" />
+            <input type="checkbox" checked={form.isDefault} onChange={(e) => set("isDefault", e.target.checked)} className="accent-accent-600 w-4 h-4" />
             <span className="text-sm text-slate-600">Set as default address</span>
           </label>
         </div>
         <div className="flex gap-3 mt-5">
           <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-          <button onClick={submit} disabled={!valid} className="flex-1 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors">
+          <button onClick={submit} disabled={!valid} className="flex-1 py-2.5 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors">
             {initial ? "Save Changes" : "Add Address"}
           </button>
         </div>
@@ -292,13 +292,13 @@ export default function SettingsPage() {
                   step="0.01"
                   value={rateInput}
                   onChange={(e) => setRateInput(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                 />
               </div>
               <button
                 onClick={saveRate}
                 disabled={savingRate}
-                className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors disabled:opacity-60"
+                className="flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors disabled:opacity-60"
               >
                 {savingRate ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -356,7 +356,7 @@ export default function SettingsPage() {
                           step="0.1"
                           value={form.pipe_diameter_mm}
                           onChange={(e) => updateField(actuator.id, "pipe_diameter_mm", e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
                       </div>
                       <div>
@@ -369,7 +369,7 @@ export default function SettingsPage() {
                           step="0.01"
                           value={form.flow_velocity_ms}
                           onChange={(e) => updateField(actuator.id, "flow_velocity_ms", e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
                       </div>
                       <div>
@@ -383,7 +383,7 @@ export default function SettingsPage() {
                           value={form.flow_rate_lpm}
                           onChange={(e) => updateField(actuator.id, "flow_rate_lpm", e.target.value)}
                           placeholder="optional"
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
                       </div>
                       <div>
@@ -396,7 +396,7 @@ export default function SettingsPage() {
                           step="1"
                           value={form.power_rating_watts}
                           onChange={(e) => updateField(actuator.id, "power_rating_watts", e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
                       </div>
                     </div>
@@ -410,7 +410,7 @@ export default function SettingsPage() {
                       <button
                         onClick={() => saveSpecs(actuator)}
                         disabled={savingId === actuator.id}
-                        className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium rounded-lg px-3 py-1.5 transition-colors disabled:opacity-60"
+                        className="flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white text-xs font-medium rounded-lg px-3 py-1.5 transition-colors disabled:opacity-60"
                       >
                         {savingId === actuator.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -442,7 +442,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setAddrModal("new")}
-              className="flex items-center gap-1.5 px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-accent-600 hover:bg-accent-700 text-white text-xs font-semibold rounded-lg transition-colors"
             >
               <Plus className="w-3.5 h-3.5" /> Add Address
             </button>
@@ -452,23 +452,23 @@ export default function SettingsPage() {
             <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-xl">
               <MapPin className="w-8 h-8 text-slate-300 mx-auto mb-2" />
               <p className="text-sm text-slate-400">No saved addresses yet</p>
-              <button onClick={() => setAddrModal("new")} className="mt-2 text-xs text-primary-600 font-semibold hover:underline">
+              <button onClick={() => setAddrModal("new")} className="mt-2 text-xs text-accent-600 font-semibold hover:underline">
                 + Add your first address
               </button>
             </div>
           ) : (
             <div className="space-y-3">
               {addresses.map((addr) => (
-                <div key={addr.id} className={`flex items-start gap-3 border rounded-xl p-4 ${addr.isDefault ? "border-primary-200 bg-primary-50" : "border-slate-100"}`}>
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${addr.isDefault ? "bg-primary-100" : "bg-slate-100"}`}>
-                    <MapPin className={`w-4 h-4 ${addr.isDefault ? "text-primary-600" : "text-slate-500"}`} />
+                <div key={addr.id} className={`flex items-start gap-3 border rounded-xl p-4 ${addr.isDefault ? "border-accent-200 bg-accent-50" : "border-slate-100"}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${addr.isDefault ? "bg-accent-100" : "bg-slate-100"}`}>
+                    <MapPin className={`w-4 h-4 ${addr.isDefault ? "text-accent-600" : "text-slate-500"}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${addr.isDefault ? "bg-primary-600 text-white" : "bg-slate-100 text-slate-600"}`}>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${addr.isDefault ? "bg-accent-600 text-white" : "bg-slate-100 text-slate-600"}`}>
                         {addr.label}
                       </span>
-                      {addr.isDefault && <span className="flex items-center gap-1 text-[10px] font-semibold text-primary-600"><Star className="w-3 h-3 fill-primary-600" /> Default</span>}
+                      {addr.isDefault && <span className="flex items-center gap-1 text-[10px] font-semibold text-accent-600"><Star className="w-3 h-3 fill-accent-600" /> Default</span>}
                     </div>
                     <p className="text-sm font-semibold text-slate-800">{addr.name} · {addr.phone}</p>
                     <p className="text-xs text-slate-500 truncate">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}, {addr.city}, {addr.state} – {addr.pincode}</p>
@@ -480,7 +480,7 @@ export default function SettingsPage() {
                         <Star className="w-4 h-4" />
                       </button>
                     )}
-                    <button onClick={() => setAddrModal(addr)} className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                    <button onClick={() => setAddrModal(addr)} className="p-1.5 rounded-lg text-slate-400 hover:text-accent-600 hover:bg-accent-50 transition-colors">
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button onClick={() => handleDeleteAddress(addr.id)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">

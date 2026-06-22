@@ -8,14 +8,7 @@ import 'notifications_screen.dart';
 import 'payments_screen.dart';
 import 'personal_info_screen.dart';
 import 'privacy_screen.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const bannerBg = Color(0xFFF7F7F7);
-  static const circleBtn = Color(0xFFF2F2F2);
-  static const divider = Color(0xFFEBEBEB);
-}
+import '../config/theme.dart';
 
 class _BannerData {
   final IconData? icon;
@@ -23,7 +16,13 @@ class _BannerData {
   final String titleKey;
   final String subtitleKey;
   final String actionKey;
-  _BannerData({this.icon, this.emoji, required this.titleKey, required this.subtitleKey, required this.actionKey});
+  _BannerData({
+    this.icon,
+    this.emoji,
+    required this.titleKey,
+    required this.subtitleKey,
+    required this.actionKey,
+  });
 }
 
 class AccountSettingsScreen extends StatefulWidget {
@@ -42,10 +41,18 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   void initState() {
     super.initState();
     _banners = [
-      _BannerData(emoji: '🔔', titleKey: 'settings_notif_banner_title',
-          subtitleKey: 'settings_notif_banner_sub', actionKey: 'settings_notif_banner_action'),
-      _BannerData(icon: Icons.mail_outline, titleKey: 'settings_email_banner_title',
-          subtitleKey: 'settings_email_banner_sub', actionKey: 'settings_email_banner_action'),
+      _BannerData(
+        emoji: '🔔',
+        titleKey: 'settings_notif_banner_title',
+        subtitleKey: 'settings_notif_banner_sub',
+        actionKey: 'settings_notif_banner_action',
+      ),
+      _BannerData(
+        icon: Icons.mail_outline,
+        titleKey: 'settings_email_banner_title',
+        subtitleKey: 'settings_email_banner_sub',
+        actionKey: 'settings_email_banner_action',
+      ),
     ];
     _loadVersion();
   }
@@ -54,9 +61,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     try {
       final info = await PackageInfo.fromPlatform();
       if (!mounted) return;
-      setState(() => _versionLabel = context.tr('settings_version')
-          .replaceAll('{version}', info.version)
-          .replaceAll('{build}', info.buildNumber));
+      setState(
+        () => _versionLabel = context
+            .tr('settings_version')
+            .replaceAll('{version}', info.version)
+            .replaceAll('{build}', info.buildNumber),
+      );
     } catch (_) {
       // Plugin channel not registered yet (e.g. mid hot-restart) — just omit the footer.
     }
@@ -70,7 +80,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   void _comingSoon(String f) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.tr('profile_coming_soon').replaceAll('{feature}', f)), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(
+          context.tr('profile_coming_soon').replaceAll('{feature}', f),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -94,8 +109,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               ],
             ),
             const SizedBox(height: 18),
-            Text(context.tr('settings_title'),
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+            Text(
+              context.tr('settings_title'),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w500,
+                color: AppColors.text,
+                letterSpacing: -0.3,
+              ),
+            ),
             const SizedBox(height: 20),
 
             // ── Dismissible banner carousel ──────────────────────────────
@@ -115,10 +137,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                           itemBuilder: (context, i) {
                             final b = _banners[i];
                             return Padding(
-                              padding: EdgeInsets.only(right: i == _banners.length - 1 ? 0 : 12),
+                              padding: EdgeInsets.only(
+                                right: i == _banners.length - 1 ? 0 : 12,
+                              ),
                               child: _BannerCard(
                                 data: b,
-                                onAction: () => _comingSoon(context.tr(b.titleKey)),
+                                onAction: () =>
+                                    _comingSoon(context.tr(b.titleKey)),
                                 onDismiss: () => _dismiss(b),
                               ),
                             );
@@ -129,35 +154,84 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             ),
 
             // ── Settings list ────────────────────────────────────────────
-            _Row(icon: Icons.person_outline, label: context.tr('settings_personal_info'), onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const PersonalInfoScreen()));
-            }),
+            _Row(
+              icon: Icons.person_outline,
+              label: context.tr('settings_personal_info'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
+                );
+              },
+            ),
             const _Div(),
-            _Row(icon: Icons.shield_outlined, label: context.tr('settings_login_security'), onTap: () => _comingSoon(context.tr('settings_login_security'))),
+            _Row(
+              icon: Icons.shield_outlined,
+              label: context.tr('settings_login_security'),
+              onTap: () => _comingSoon(context.tr('settings_login_security')),
+            ),
             const _Div(),
-            _Row(icon: Icons.front_hand_outlined, label: context.tr('settings_privacy'), onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyScreen()));
-            }),
+            _Row(
+              icon: Icons.front_hand_outlined,
+              label: context.tr('settings_privacy'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrivacyScreen()),
+                );
+              },
+            ),
             const _Div(),
-            _Row(icon: Icons.notifications_outlined, label: context.tr('settings_notifications'), onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
-            }),
+            _Row(
+              icon: Icons.notifications_outlined,
+              label: context.tr('settings_notifications'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(),
+                  ),
+                );
+              },
+            ),
             const _Div(),
-            _Row(icon: Icons.payments_outlined, label: context.tr('settings_payments'), onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentsScreen()));
-            }),
+            _Row(
+              icon: Icons.payments_outlined,
+              label: context.tr('settings_payments'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PaymentsScreen()),
+                );
+              },
+            ),
             const _Div(),
-            _Row(icon: Icons.calculate_outlined, label: context.tr('settings_taxes'), onTap: () => _comingSoon(context.tr('settings_taxes'))),
+            _Row(
+              icon: Icons.calculate_outlined,
+              label: context.tr('settings_taxes'),
+              onTap: () => _comingSoon(context.tr('settings_taxes')),
+            ),
             const _Div(),
-            _Row(icon: Icons.language_outlined, label: context.tr('settings_translation'), onTap: () => _comingSoon(context.tr('settings_translation'))),
+            _Row(
+              icon: Icons.language_outlined,
+              label: context.tr('settings_translation'),
+              onTap: () => _comingSoon(context.tr('settings_translation')),
+            ),
             const _Div(),
-            _Row(icon: Icons.accessibility_new_outlined, label: context.tr('settings_accessibility'), onTap: () => _comingSoon(context.tr('settings_accessibility'))),
+            _Row(
+              icon: Icons.accessibility_new_outlined,
+              label: context.tr('settings_accessibility'),
+              onTap: () => _comingSoon(context.tr('settings_accessibility')),
+            ),
 
             if (_versionLabel != null) ...[
               const SizedBox(height: 16),
-              const Divider(height: 1, thickness: 1, color: _P.divider),
+              const Divider(height: 1, thickness: 1, color: AppColors.divider),
               const SizedBox(height: 16),
-              Text(_versionLabel!, style: const TextStyle(fontSize: 11, color: _P.subtext)),
+              Text(
+                _versionLabel!,
+                style: const TextStyle(fontSize: 11, color: AppColors.subtext),
+              ),
             ],
           ],
         ),
@@ -171,13 +245,20 @@ class _BannerCard extends StatelessWidget {
   final VoidCallback onAction;
   final VoidCallback onDismiss;
 
-  const _BannerCard({required this.data, required this.onAction, required this.onDismiss});
+  const _BannerCard({
+    required this.data,
+    required this.onAction,
+    required this.onDismiss,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 12, 16),
-      decoration: BoxDecoration(color: _P.bannerBg, borderRadius: BorderRadius.circular(18)),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -189,23 +270,41 @@ class _BannerCard extends StatelessWidget {
                 width: 40,
                 child: data.emoji != null
                     ? Text(data.emoji!, style: const TextStyle(fontSize: 28))
-                    : Icon(data.icon, size: 28, color: _P.text),
+                    : Icon(data.icon, size: 28, color: AppColors.text),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(context.tr(data.titleKey), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: _P.text)),
+                    Text(
+                      context.tr(data.titleKey),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: AppColors.text,
+                      ),
+                    ),
                     const SizedBox(height: 3),
-                    Text(context.tr(data.subtitleKey), style: const TextStyle(color: _P.subtext, fontWeight: FontWeight.w400, fontSize: 12, height: 1.3)),
+                    Text(
+                      context.tr(data.subtitleKey),
+                      style: const TextStyle(
+                        color: AppColors.subtext,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
                   ],
                 ),
               ),
               InkWell(
                 borderRadius: BorderRadius.circular(20),
                 onTap: onDismiss,
-                child: const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.close, size: 20, color: _P.text)),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.close, size: 20, color: AppColors.text),
+                ),
               ),
             ],
           ),
@@ -215,12 +314,20 @@ class _BannerCard extends StatelessWidget {
               onPressed: onAction,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: _P.text,
+                foregroundColor: AppColors.text,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: Text(context.tr(data.actionKey), style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+              child: Text(
+                context.tr(data.actionKey),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ),
         ],
@@ -243,9 +350,18 @@ class _Row extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 17),
         child: Row(
           children: [
-            Icon(icon, color: _P.text, size: 26),
+            Icon(icon, color: AppColors.text, size: 26),
             const SizedBox(width: 18),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text))),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.text,
+                ),
+              ),
+            ),
             const Icon(Icons.chevron_right, color: Color(0xFF717171), size: 24),
           ],
         ),
@@ -257,7 +373,8 @@ class _Row extends StatelessWidget {
 class _Div extends StatelessWidget {
   const _Div();
   @override
-  Widget build(BuildContext context) => const Divider(height: 1, thickness: 1, color: _P.divider);
+  Widget build(BuildContext context) =>
+      const Divider(height: 1, thickness: 1, color: AppColors.divider);
 }
 
 class _CircleBack extends StatelessWidget {
@@ -272,8 +389,11 @@ class _CircleBack extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: const Icon(Icons.arrow_back, size: 22, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_back, size: 22, color: AppColors.text),
       ),
     );
   }

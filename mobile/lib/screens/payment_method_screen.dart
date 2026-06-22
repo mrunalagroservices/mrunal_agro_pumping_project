@@ -3,13 +3,7 @@ import 'package:provider/provider.dart';
 import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
 import '../widgets/language_switcher.dart';
-
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-}
+import '../config/theme.dart';
 
 const _methods = [
   ('cod', 'pm_cod', 'pm_cod_sub', true),
@@ -31,7 +25,9 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
     final current = context.read<AppState>().user?.preferredPaymentMethod;
     if (current == value) return;
     setState(() => _saving = true);
-    final err = await context.read<AppState>().updateProfile(preferredPaymentMethod: value);
+    final err = await context.read<AppState>().updateProfile(
+      preferredPaymentMethod: value,
+    );
     if (!mounted) return;
     setState(() => _saving = false);
     if (err != null) {
@@ -42,7 +38,8 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
   @override
   Widget build(BuildContext context) {
     context.watchLocale();
-    final selected = context.watch<AppState>().user?.preferredPaymentMethod ?? 'cod';
+    final selected =
+        context.watch<AppState>().user?.preferredPaymentMethod ?? 'cod';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -55,28 +52,46 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
                   Expanded(
-                    child: Text(context.tr('pm_title'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: _P.text)),
+                    child: Text(
+                      context.tr('pm_title'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.text,
+                      ),
+                    ),
                   ),
                   const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
-            const Divider(height: 1, thickness: 1, color: _P.divider),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(context.tr('pm_default_hint'),
-                    style: const TextStyle(fontSize: 11, color: _P.subtext, height: 1.4)),
+                child: Text(
+                  context.tr('pm_default_hint'),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.subtext,
+                    height: 1.4,
+                  ),
+                ),
               ),
             ),
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: _methods.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, thickness: 1, color: _P.divider, indent: 20, endIndent: 20),
+                separatorBuilder: (_, __) => const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: AppColors.divider,
+                  indent: 20,
+                  endIndent: 20,
+                ),
                 itemBuilder: (context, i) {
                   final (value, labelKey, subtitleKey, enabled) = _methods[i];
                   return Opacity(
@@ -84,31 +99,60 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                     child: InkWell(
                       onTap: !enabled || _saving ? null : () => _select(value),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         child: Row(
                           children: [
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(context.tr(labelKey), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
+                                  Text(
+                                    context.tr(labelKey),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.text,
+                                    ),
+                                  ),
                                   const SizedBox(height: 2),
-                                  Text(context.tr(subtitleKey), style: const TextStyle(fontSize: 11, color: _P.subtext)),
+                                  Text(
+                                    context.tr(subtitleKey),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.subtext,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                             if (!enabled)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: _P.divider, borderRadius: BorderRadius.circular(20)),
-                                child: Text(context.tr('pm_coming_soon'), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: _P.subtext)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.divider,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  context.tr('pm_coming_soon'),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.subtext,
+                                  ),
+                                ),
                               )
                             else
                               Radio<String>(
                                 value: value,
                                 groupValue: selected,
                                 onChanged: _saving ? null : (v) => _select(v!),
-                                activeColor: _P.text,
+                                activeColor: AppColors.text,
                               ),
                           ],
                         ),
@@ -137,8 +181,11 @@ class _CircleBack extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: const Icon(Icons.arrow_back, size: 20, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_back, size: 20, color: AppColors.text),
       ),
     );
   }

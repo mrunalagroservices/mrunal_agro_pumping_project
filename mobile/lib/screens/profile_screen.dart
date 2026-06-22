@@ -7,17 +7,9 @@ import 'account_settings_screen.dart';
 import 'legal_screen.dart';
 import 'privacy_screen.dart';
 import 'support_screen.dart';
+import '../config/theme.dart';
 
 /// Palette tuned to match the reference profile design.
-class _P {
-  static const avatarBg = Color(0xFFFDE8EC); // light rose
-  static const avatarFg = Color(0xFFB0285A); // deep wine/rose
-  static const newBadge = Color(0xFF2E4A5C); // dark slate-blue pill
-  static const circleBtn = Color(0xFFF2F2F2); // gray icon circle
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const divider = Color(0xFFEBEBEB);
-}
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onViewOrders;
@@ -41,7 +33,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _comingSoon(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.tr('profile_coming_soon').replaceAll('{feature}', feature)), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(
+          context.tr('profile_coming_soon').replaceAll('{feature}', feature),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -50,7 +47,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     context.watchLocale();
     final state = context.watch<AppState>();
     final user = state.user;
-    final unresolved = state.notifications.where((n) => n.isUnresolvedAlert).length;
+    final unresolved = state.notifications
+        .where((n) => n.isUnresolvedAlert)
+        .length;
 
     final yearsOnApp = user?.createdAt != null
         ? (DateTime.now().difference(user!.createdAt!).inDays / 365).floor()
@@ -66,11 +65,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Row(
               children: [
                 if (Navigator.canPop(context)) ...[
-                  _CircleIcon(icon: Icons.arrow_back, onTap: () => Navigator.pop(context)),
+                  _CircleIcon(
+                    icon: Icons.arrow_back,
+                    onTap: () => Navigator.pop(context),
+                  ),
                   const SizedBox(width: 12),
                 ],
-                Text(context.tr('profile_title'),
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: _P.text, letterSpacing: -0.3)),
+                Text(
+                  context.tr('profile_title'),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.text,
+                    letterSpacing: -0.3,
+                  ),
+                ),
                 const Spacer(),
                 const LanguageSwitcher(size: 36),
                 const SizedBox(width: 10),
@@ -90,7 +99,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 6)),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  ),
                 ],
               ),
               child: Row(
@@ -103,19 +116,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           width: 96,
                           height: 96,
-                          decoration: const BoxDecoration(color: _P.avatarBg, shape: BoxShape.circle),
+                          decoration: const BoxDecoration(
+                            color: AppColors.avatarBg,
+                            shape: BoxShape.circle,
+                          ),
                           alignment: Alignment.center,
                           child: Text(
-                            (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : '?',
-                            style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w500, color: _P.avatarFg),
+                            (user?.name.isNotEmpty ?? false)
+                                ? user!.name[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.avatarFg,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 14),
-                        Text(user?.name ?? '',
-                            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w500, color: _P.text)),
+                        Text(
+                          user?.name ?? '',
+                          style: const TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.text,
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text(_roleLabel(context, user?.role),
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext)),
+                        Text(
+                          _roleLabel(context, user?.role),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.subtext,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -125,11 +159,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _Stat(value: '${state.orders.length}', label: state.orders.length == 1 ? context.tr('profile_order') : context.tr('profile_orders')),
+                        _Stat(
+                          value: '${state.orders.length}',
+                          label: state.orders.length == 1
+                              ? context.tr('profile_order')
+                              : context.tr('profile_orders'),
+                        ),
                         const _StatDivider(),
-                        _Stat(value: '${state.farms.length}', label: state.farms.length == 1 ? context.tr('profile_farm') : context.tr('profile_farms')),
+                        _Stat(
+                          value: '${state.farms.length}',
+                          label: state.farms.length == 1
+                              ? context.tr('profile_farm')
+                              : context.tr('profile_farms'),
+                        ),
                         const _StatDivider(),
-                        _Stat(value: '$yearsOnApp', label: yearsOnApp == 1 ? context.tr('profile_year_on_app') : context.tr('profile_years_on_app')),
+                        _Stat(
+                          value: '$yearsOnApp',
+                          label: yearsOnApp == 1
+                              ? context.tr('profile_year_on_app')
+                              : context.tr('profile_years_on_app'),
+                        ),
                       ],
                     ),
                   ),
@@ -157,7 +206,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       tileBg: const Color(0xFFEFF6EF),
                       emoji: '🌾',
                       label: context.tr('profile_my_farms'),
-                      onTap: () => _comingSoon(context.tr('profile_farms_overview')),
+                      onTap: () =>
+                          _comingSoon(context.tr('profile_farms_overview')),
                     ),
                   ),
                 ],
@@ -175,31 +225,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 18),
 
             // ── Menu list ────────────────────────────────────────────────
-            _MenuRow(icon: Icons.settings_outlined, label: context.tr('profile_account_settings'), showDot: true, onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountSettingsScreen()));
-            }),
+            _MenuRow(
+              icon: Icons.settings_outlined,
+              label: context.tr('profile_account_settings'),
+              showDot: true,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AccountSettingsScreen(),
+                  ),
+                );
+              },
+            ),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.help_outline, label: context.tr('profile_get_help'), onTap: () => _comingSoon(context.tr('profile_help_center'))),
+            _MenuRow(
+              icon: Icons.help_outline,
+              label: context.tr('profile_get_help'),
+              onTap: () => _comingSoon(context.tr('profile_help_center')),
+            ),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.person_outline, label: context.tr('profile_view_profile'), onTap: () => _comingSoon(context.tr('profile_view_profile'))),
+            _MenuRow(
+              icon: Icons.person_outline,
+              label: context.tr('profile_view_profile'),
+              onTap: () => _comingSoon(context.tr('profile_view_profile')),
+            ),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.front_hand_outlined, label: context.tr('profile_privacy'), onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyScreen()));
-            }),
+            _MenuRow(
+              icon: Icons.front_hand_outlined,
+              label: context.tr('profile_privacy'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrivacyScreen()),
+                );
+              },
+            ),
 
             const SizedBox(height: 14),
-            const Divider(height: 1, thickness: 1, color: _P.divider),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
             const SizedBox(height: 14),
 
-            _MenuRow(icon: Icons.group_add_outlined, label: context.tr('profile_refer_friend'), onTap: () => _comingSoon(context.tr('profile_referrals'))),
+            _MenuRow(
+              icon: Icons.group_add_outlined,
+              label: context.tr('profile_refer_friend'),
+              onTap: () => _comingSoon(context.tr('profile_referrals')),
+            ),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.support_agent_outlined, label: context.tr('profile_find_support'), onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen()));
-            }),
+            _MenuRow(
+              icon: Icons.support_agent_outlined,
+              label: context.tr('profile_find_support'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SupportScreen()),
+                );
+              },
+            ),
             const _MenuDivider(),
-            _MenuRow(icon: Icons.menu_book_outlined, label: context.tr('profile_legal'), onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const LegalScreen()));
-            }),
+            _MenuRow(
+              icon: Icons.menu_book_outlined,
+              label: context.tr('profile_legal'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LegalScreen()),
+                );
+              },
+            ),
             const _MenuDivider(),
             _MenuRow(
               icon: Icons.meeting_room_outlined,
@@ -229,8 +322,22 @@ class _Stat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.text)),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: AppColors.text,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: AppColors.text,
+          ),
+        ),
       ],
     );
   }
@@ -242,7 +349,7 @@ class _StatDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 12),
-      child: Divider(height: 1, thickness: 1, color: _P.divider),
+      child: Divider(height: 1, thickness: 1, color: AppColors.divider),
     );
   }
 }
@@ -253,7 +360,12 @@ class _PromoCard extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _PromoCard({required this.tileBg, required this.emoji, required this.label, required this.onTap});
+  const _PromoCard({
+    required this.tileBg,
+    required this.emoji,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +380,11 @@ class _PromoCard extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 14, offset: const Offset(0, 4)),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           padding: const EdgeInsets.all(16),
@@ -279,10 +395,23 @@ class _PromoCard extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                  decoration: BoxDecoration(color: _P.newBadge, borderRadius: BorderRadius.circular(20)),
-                  child: Text(context.tr('profile_new_badge'),
-                      style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w500, letterSpacing: 0.3)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.newBadge,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    context.tr('profile_new_badge'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -290,13 +419,23 @@ class _PromoCard extends StatelessWidget {
                 child: Container(
                   width: 64,
                   height: 64,
-                  decoration: BoxDecoration(color: tileBg, borderRadius: BorderRadius.circular(16)),
+                  decoration: BoxDecoration(
+                    color: tileBg,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   alignment: Alignment.center,
                   child: Text(emoji, style: const TextStyle(fontSize: 30)),
                 ),
               ),
               const SizedBox(height: 16),
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: _P.text)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                  color: AppColors.text,
+                ),
+              ),
             ],
           ),
         ),
@@ -311,7 +450,12 @@ class _WideCard extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
 
-  const _WideCard({required this.emoji, required this.title, required this.subtitle, required this.onTap});
+  const _WideCard({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -326,7 +470,11 @@ class _WideCard extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 14, offset: const Offset(0, 4)),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           padding: const EdgeInsets.fromLTRB(16, 18, 18, 18),
@@ -335,7 +483,10 @@ class _WideCard extends StatelessWidget {
               Container(
                 width: 58,
                 height: 58,
-                decoration: BoxDecoration(color: const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 alignment: Alignment.center,
                 child: Text(emoji, style: const TextStyle(fontSize: 28)),
               ),
@@ -344,9 +495,24 @@ class _WideCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: _P.text)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                        color: AppColors.text,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: const TextStyle(color: _P.subtext, fontWeight: FontWeight.w400, fontSize: 12, height: 1.3)),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: AppColors.subtext,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -384,7 +550,7 @@ class _MenuRow extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(icon, color: _P.text, size: 26),
+                Icon(icon, color: AppColors.text, size: 26),
                 if (showDot)
                   Positioned(
                     top: -1,
@@ -393,7 +559,7 @@ class _MenuRow extends StatelessWidget {
                       width: 9,
                       height: 9,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF385C),
+                        color: AppColors.accent,
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 1.5),
                       ),
@@ -403,9 +569,21 @@ class _MenuRow extends StatelessWidget {
             ),
             const SizedBox(width: 18),
             Expanded(
-              child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _P.text)),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.text,
+                ),
+              ),
             ),
-            if (showChevron) const Icon(Icons.chevron_right, color: Color(0xFF717171), size: 24),
+            if (showChevron)
+              const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF717171),
+                size: 24,
+              ),
           ],
         ),
       ),
@@ -416,14 +594,19 @@ class _MenuRow extends StatelessWidget {
 class _MenuDivider extends StatelessWidget {
   const _MenuDivider();
   @override
-  Widget build(BuildContext context) => const Divider(height: 1, thickness: 1, color: _P.divider);
+  Widget build(BuildContext context) =>
+      const Divider(height: 1, thickness: 1, color: AppColors.divider);
 }
 
 class _CircleIcon extends StatelessWidget {
   final IconData icon;
   final bool badge;
   final VoidCallback onTap;
-  const _CircleIcon({required this.icon, this.badge = false, required this.onTap});
+  const _CircleIcon({
+    required this.icon,
+    this.badge = false,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -433,11 +616,14 @@ class _CircleIcon extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(icon, size: 22, color: _P.text),
+            Icon(icon, size: 22, color: AppColors.text),
             if (badge)
               Positioned(
                 top: 11,
@@ -445,7 +631,10 @@ class _CircleIcon extends StatelessWidget {
                 child: Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(color: Color(0xFFFF385C), shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
           ],

@@ -4,17 +4,22 @@ import '../l10n/tr_extension.dart';
 import '../providers/app_state.dart';
 import '../widgets/language_switcher.dart';
 import 'legal_screen.dart';
+import '../config/theme.dart';
 
-class _P {
-  static const text = Color(0xFF222222);
-  static const subtext = Color(0xFF717171);
-  static const border = Color(0xFFDDDDDD);
-  static const divider = Color(0xFFEBEBEB);
-  static const circleBtn = Color(0xFFF2F2F2);
-  static const danger = Color(0xFFDC2626);
-}
-
-const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const _months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 class PrivacyScreen extends StatefulWidget {
   const PrivacyScreen({super.key});
@@ -41,7 +46,9 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
   }
 
   Future<void> _toggleAnalytics(bool value) async {
-    final err = await context.read<AppState>().updateProfile(analyticsOptIn: value);
+    final err = await context.read<AppState>().updateProfile(
+      analyticsOptIn: value,
+    );
     if (!mounted) return;
     if (err != null) _toast(err);
   }
@@ -53,10 +60,19 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
         title: Text(context.tr('privacy_delete_dialog_title')),
         content: Text(context.tr('privacy_delete_dialog_body')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('privacy_cancel'))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.tr('privacy_cancel')),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(context.tr('privacy_continue'), style: const TextStyle(color: _P.danger, fontWeight: FontWeight.w500)),
+            child: Text(
+              context.tr('privacy_continue'),
+              style: const TextStyle(
+                color: AppColors.danger,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),
@@ -69,10 +85,19 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
         title: Text(context.tr('privacy_sure_title')),
         content: Text(context.tr('privacy_sure_body')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('privacy_cancel'))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.tr('privacy_cancel')),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(context.tr('privacy_delete_dialog_confirm'), style: const TextStyle(color: _P.danger, fontWeight: FontWeight.w500)),
+            child: Text(
+              context.tr('privacy_delete_dialog_confirm'),
+              style: const TextStyle(
+                color: AppColors.danger,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),
@@ -113,28 +138,46 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                 children: [
                   _CircleBack(onTap: () => Navigator.pop(context)),
                   Expanded(
-                    child: Text(context.tr('privacy_title'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _P.text)),
+                    child: Text(
+                      context.tr('privacy_title'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.text,
+                      ),
+                    ),
                   ),
                   const LanguageSwitcher(size: 36),
                 ],
               ),
             ),
-            const Divider(height: 1, thickness: 1, color: _P.divider),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
 
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
                 children: [
-                  Text(context.tr('privacy_data_privacy'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: _P.text)),
+                  Text(
+                    context.tr('privacy_data_privacy'),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.text,
+                    ),
+                  ),
                   const SizedBox(height: 14),
 
                   _OutlinedRow(
                     label: context.tr('privacy_policy'),
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => LegalDocScreen(slug: 'privacy-policy', title: context.tr('privacy_policy'))),
+                      MaterialPageRoute(
+                        builder: (_) => LegalDocScreen(
+                          slug: 'privacy-policy',
+                          title: context.tr('privacy_policy'),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -151,12 +194,23 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(context.tr('privacy_help_improve'),
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _P.text)),
+                            Text(
+                              context.tr('privacy_help_improve'),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.text,
+                              ),
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               context.tr('privacy_help_improve_sub'),
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: _P.subtext, height: 1.35),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.subtext,
+                                height: 1.35,
+                              ),
                             ),
                           ],
                         ),
@@ -166,7 +220,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                         value: user?.analyticsOptIn ?? true,
                         onChanged: _busy ? null : _toggleAnalytics,
                         thumbColor: const WidgetStatePropertyAll(Colors.white),
-                        activeTrackColor: _P.text,
+                        activeTrackColor: AppColors.text,
                       ),
                     ],
                   ),
@@ -186,17 +240,28 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                           Text(
                             '${context.tr('privacy_deletion_requested')}'
                             '${deletionDate != null ? ' on ${deletionDate.day} ${_months[deletionDate.month - 1]} ${deletionDate.year}' : ''}.',
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _P.danger),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.danger,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           OutlinedButton(
                             onPressed: _busy ? null : _cancelDeletion,
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: _P.text,
-                              side: const BorderSide(color: _P.border),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              foregroundColor: AppColors.text,
+                              side: const BorderSide(color: AppColors.border),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            child: Text(context.tr('privacy_cancel_deletion'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                            child: Text(
+                              context.tr('privacy_cancel_deletion'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -204,7 +269,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                   ] else
                     _OutlinedRow(
                       label: context.tr('privacy_delete_account'),
-                      labelColor: _P.danger,
+                      labelColor: AppColors.danger,
                       onTap: _busy ? null : _confirmDelete,
                     ),
                 ],
@@ -221,7 +286,11 @@ class _OutlinedRow extends StatelessWidget {
   final String label;
   final Color? labelColor;
   final VoidCallback? onTap;
-  const _OutlinedRow({required this.label, this.labelColor, required this.onTap});
+  const _OutlinedRow({
+    required this.label,
+    this.labelColor,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -232,14 +301,21 @@ class _OutlinedRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _P.border),
+          border: Border.all(color: AppColors.border),
         ),
         child: Row(
           children: [
             Expanded(
-              child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: labelColor ?? _P.text)),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: labelColor ?? AppColors.text,
+                ),
+              ),
             ),
-            const Icon(Icons.chevron_right, color: _P.subtext),
+            const Icon(Icons.chevron_right, color: AppColors.subtext),
           ],
         ),
       ),
@@ -259,8 +335,11 @@ class _CircleBack extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
-        decoration: const BoxDecoration(color: _P.circleBtn, shape: BoxShape.circle),
-        child: const Icon(Icons.arrow_back, size: 20, color: _P.text),
+        decoration: const BoxDecoration(
+          color: AppColors.chip,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_back, size: 20, color: AppColors.text),
       ),
     );
   }

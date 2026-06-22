@@ -178,7 +178,7 @@ export default function AutomationPage() {
   }
 
   // ── shared input class ───────────────────────────────────────────────────────
-  const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500";
+  const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500";
 
   return (
     <DashboardShell breadcrumb={[{ label: "Automation & Schedules" }]}>
@@ -202,13 +202,13 @@ export default function AutomationPage() {
           <button
             onClick={() => setTab("schedules")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              tab === "schedules" ? "bg-white text-primary-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              tab === "schedules" ? "bg-white text-accent-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
             }`}
           >
             <CalendarClock className="w-4 h-4" />
             Schedules
             {schedules.length > 0 && (
-              <span className="bg-primary-100 text-primary-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
+              <span className="bg-accent-100 text-accent-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
                 {schedules.length}
               </span>
             )}
@@ -227,7 +227,7 @@ export default function AutomationPage() {
           <button
             onClick={() => setShowSchedModal(true)}
             disabled={actuators.length === 0}
-            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
           >
             <Plus className="w-4 h-4" /> Add schedule
           </button>
@@ -329,8 +329,8 @@ export default function AutomationPage() {
                   {schedules.map((s) => (
                     <div key={s.id} className="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between gap-4">
                       <div className="flex items-start gap-3 min-w-0">
-                        <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                          <CalendarClock className="w-4 h-4 text-primary-700" />
+                        <div className="w-9 h-9 rounded-lg bg-accent-50 flex items-center justify-center shrink-0">
+                          <CalendarClock className="w-4 h-4 text-accent-700" />
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-slate-800">{s.name}</p>
@@ -356,7 +356,7 @@ export default function AutomationPage() {
                         <button
                           onClick={() => toggleSchedule(s)}
                           className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
-                            s.is_active ? "bg-primary-100 text-primary-700" : "bg-slate-100 text-slate-500"
+                            s.is_active ? "bg-accent-100 text-accent-700" : "bg-slate-100 text-slate-500"
                           }`}
                         >
                           {s.is_active ? "Active" : "Paused"}
@@ -471,7 +471,7 @@ export default function AutomationPage() {
                 {DAY_LABELS.map((label, i) => (
                   <button type="button" key={i} onClick={() => toggleDay(i)}
                     className={`flex-1 text-xs font-medium rounded-lg py-2 transition-colors ${
-                      daysOfWeek.includes(i) ? "bg-primary-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                      daysOfWeek.includes(i) ? "bg-accent-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                     }`}>
                     {label}
                   </button>
@@ -479,7 +479,7 @@ export default function AutomationPage() {
               </div>
             </div>
             <button type="submit" disabled={schedSubmitting}
-              className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
+              className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {schedSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Add schedule
             </button>
