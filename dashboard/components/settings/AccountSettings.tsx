@@ -116,28 +116,37 @@ function PersonalInfoPanel({ user, onSaved }: { user: User; onSaved: (u: User) =
 }
 
 // ─── Privacy ────────────────────────────────────────────────────────────────
-function PrivacyPanel({ user, onSaved }: { user: User; onSaved: (u: User) => void }) {
+function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: (u: User) => void; onOpenLegalDoc: (slug: string) => void }) {
   const [analyticsOptIn, setAnalyticsOptIn] = useState(user.analytics_opt_in ?? true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [policy, setPolicy] = useState<LegalDocument | null>(null);
 
-  useEffect(() => {
-    httpClient.get<ApiResponse<LegalDocument>>("/legal/documents/privacy-policy").then((res) => setPolicy(res.data)).catch(() => {});
-  }, []);
+  function errorMessage(err: unknown): string {
+    return err instanceof Error ? err.message : "Something went wrong. Please try again.";
+  }
 
   async function toggleAnalytics(value: boolean) {
     setAnalyticsOptIn(value);
-    const res = await httpClient.put<ApiResponse<User>>("/auth/me", { analytics_opt_in: value });
-    onSaved(res.data);
+    setError(null);
+    try {
+      const res = await httpClient.put<ApiResponse<User>>("/auth/me", { analytics_opt_in: value });
+      onSaved(res.data);
+    } catch (err) {
+      setAnalyticsOptIn(!value); // revert
+      setError(errorMessage(err));
+    }
   }
 
   async function requestExport() {
     setBusy(true);
+    setError(null);
     try {
       await httpClient.post("/auth/me/request-data-export");
       setMessage("Request received — we'll email your data export when it's ready.");
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -145,11 +154,14 @@ function PrivacyPanel({ user, onSaved }: { user: User; onSaved: (u: User) => voi
 
   async function confirmDelete() {
     setBusy(true);
+    setError(null);
     try {
       const res = await httpClient.post<ApiResponse<User>>("/auth/me/request-deletion");
       onSaved(res.data);
       setConfirmingDelete(false);
       setMessage("Account deletion requested.");
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -157,10 +169,13 @@ function PrivacyPanel({ user, onSaved }: { user: User; onSaved: (u: User) => voi
 
   async function cancelDeletion() {
     setBusy(true);
+    setError(null);
     try {
       const res = await httpClient.post<ApiResponse<User>>("/auth/me/cancel-deletion");
       onSaved(res.data);
       setMessage("Deletion request cancelled.");
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -174,13 +189,18 @@ function PrivacyPanel({ user, onSaved }: { user: User; onSaved: (u: User) => voi
           <button onClick={() => setMessage(null)}><X className="w-4 h-4" /></button>
         </div>
       )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 flex items-center justify-between">
+          {error}
+          <button onClick={() => setError(null)}><X className="w-4 h-4" /></button>
+        </div>
+      )}
       <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
         <p className="text-sm font-semibold text-slate-800">Data privacy</p>
-        {policy && (
-          <a href={`#legal-${policy.slug}`} className="flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-            Privacy Policy <ChevronRight className="w-4 h-4 text-slate-400" />
-          </a>
-        )}
+        <button onClick={() => onOpenLegalDoc("privacy-policy")}
+          className="w-full flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+          Privacy Policy <ChevronRight className="w-4 h-4 text-slate-400" />
+        </button>
         <button onClick={requestExport} disabled={busy}
           className="w-full flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-60">
           Request my personal data <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -340,25 +360,43 @@ function PaymentsPanel({ user, onSaved }: { user: User; onSaved: (u: User) => vo
 }
 
 // ─── Legal ──────────────────────────────────────────────────────────────────
-function LegalPanel() {
+function LegalPanel({ openRequest }: { openRequest: { slug: string; nonce: number } | null }) {
   const [docs, setDocs] = useState<LegalDocumentSummary[]>([]);
   const [active, setActive] = useState<LegalDocument | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     httpClient.get<ApiResponse<LegalDocumentSummary[]>>("/legal/documents")
       .then((res) => setDocs(res.data))
+      .catch(() => setError("Could not load legal documents."))
       .finally(() => setLoading(false));
   }, []);
 
   async function open(slug: string) {
-    const res = await httpClient.get<ApiResponse<LegalDocument>>(`/legal/documents/${slug}`);
-    setActive(res.data);
+    setError(null);
+    try {
+      const res = await httpClient.get<ApiResponse<LegalDocument>>(`/legal/documents/${slug}`);
+      setActive(res.data);
+    } catch {
+      setError("Could not load this document.");
+    }
+  }
+
+  // Triggered when the Privacy panel's "Privacy Policy" row is clicked —
+  // nonce changes on every click so re-clicking the same doc still re-opens it.
+  useEffect(() => {
+    if (openRequest) open(openRequest.slug);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openRequest?.nonce]);
+
+  if (error && !active) {
+    return <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>;
   }
 
   if (active) {
     return (
-      <div id={`legal-${active.slug}`} className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
         <button onClick={() => setActive(null)} className="text-sm text-primary-600 font-medium mb-4 hover:underline">← Back to Legal</button>
         <h3 className="text-lg font-semibold text-slate-800">{active.title}</h3>
         <p className="text-xs text-slate-400 mt-1 mb-5">
@@ -398,14 +436,16 @@ function SupportPanel() {
   const [contact, setContact] = useState<Organization | null>(null);
   const [faqs, setFaqs] = useState<FaqTopic[]>([]);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    httpClient.get<ApiResponse<Organization>>("/support/contact").then((res) => setContact(res.data)).catch(() => {});
-    httpClient.get<ApiResponse<FaqTopic[]>>("/support/faqs").then((res) => setFaqs(res.data)).catch(() => {});
+    httpClient.get<ApiResponse<Organization>>("/support/contact").then((res) => setContact(res.data)).catch(() => setError("Could not load contact details."));
+    httpClient.get<ApiResponse<FaqTopic[]>>("/support/faqs").then((res) => setFaqs(res.data)).catch(() => setError("Could not load FAQs."));
   }, []);
 
   return (
     <div className="space-y-4">
+      {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>}
       <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
         <p className="text-sm font-semibold text-slate-800 mb-1">How can we help?</p>
         {contact?.support_email && (
@@ -419,7 +459,7 @@ function SupportPanel() {
             {contact.support_hours && <span className="text-slate-400 text-xs ml-1">· {contact.support_hours}</span>}
           </a>
         )}
-        {!contact && <p className="text-sm text-slate-400 flex items-center gap-2"><Clock className="w-4 h-4" /> Loading contact details...</p>}
+        {!contact && !error && <p className="text-sm text-slate-400 flex items-center gap-2"><Clock className="w-4 h-4" /> Loading contact details...</p>}
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200">
@@ -444,6 +484,12 @@ function SupportPanel() {
 export default function AccountSettings() {
   const { user, updateUser } = useAuth();
   const [active, setActive] = useState<MenuKey>("personal");
+  const [legalOpenRequest, setLegalOpenRequest] = useState<{ slug: string; nonce: number } | null>(null);
+
+  function openLegalDoc(slug: string) {
+    setActive("legal");
+    setLegalOpenRequest((prev) => ({ slug, nonce: (prev?.nonce ?? 0) + 1 }));
+  }
 
   if (!user) return <p className="text-sm text-slate-500">Loading account...</p>;
 
@@ -470,13 +516,13 @@ export default function AccountSettings() {
       <div>
         {active === "personal" && <PersonalInfoPanel user={user} onSaved={updateUser} />}
         {active === "security" && <ComingSoonPanel title="Login & security" />}
-        {active === "privacy" && <PrivacyPanel user={user} onSaved={updateUser} />}
+        {active === "privacy" && <PrivacyPanel user={user} onSaved={updateUser} onOpenLegalDoc={openLegalDoc} />}
         {active === "notifications" && <NotificationsPanel user={user} onSaved={updateUser} />}
         {active === "payments" && <PaymentsPanel user={user} onSaved={updateUser} />}
         {active === "taxes" && <ComingSoonPanel title="Taxes (GST)" />}
         {active === "translation" && <ComingSoonPanel title="Translation" />}
         {active === "accessibility" && <ComingSoonPanel title="Accessibility" />}
-        {active === "legal" && <LegalPanel />}
+        {active === "legal" && <LegalPanel openRequest={legalOpenRequest} />}
         {active === "support" && <SupportPanel />}
       </div>
     </div>
