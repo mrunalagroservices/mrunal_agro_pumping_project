@@ -126,6 +126,14 @@ export interface Product {
   updated_at: string;
 }
 
+export interface ProductReview {
+  id: number;
+  rating: number;
+  comment?: string | null;
+  user_name: string;
+  created_at: string;
+}
+
 export type DiagramElementType = 'well' | 'motor' | 'valve' | 'electricity_pole' | 'pipe_junction';
 export type DiagramConnectionType = 'pipe' | 'wire';
 export type DiagramTool = 'select' | DiagramElementType | DiagramConnectionType;
