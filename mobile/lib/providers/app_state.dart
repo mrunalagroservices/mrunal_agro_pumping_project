@@ -724,6 +724,17 @@ class AppState extends ChangeNotifier {
     final index = actuators.indexWhere((a) => a.id == actuator.id);
     if (index == -1) return 'Actuator not found';
 
+    // Fire feedback for our own tap right away — the optimistic update below
+    // changes currentState immediately, so by the time the socket echoes this
+    // change back, onActuatorStatus's before/after diff would see no change
+    // and never fire (that diff only catches changes from elsewhere: another
+    // client, a schedule, automation, or a safety cutoff).
+    if (newState == 'on') {
+      FeedbackService.motorStarted();
+    } else {
+      FeedbackService.motorStopped();
+    }
+
     // Optimistic update
     final previous = actuators[index];
     actuators[index] = actuator.copyWith(currentState: newState);

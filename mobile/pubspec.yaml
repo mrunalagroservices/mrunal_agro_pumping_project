@@ -59,6 +59,9 @@ dependencies:
   # Voice search (Market screen)
   speech_to_text: ^7.0.0
 
+  # Haptic/sound feedback for motor + connectivity events
+  audioplayers: ^6.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -84,6 +87,9 @@ flutter:
   assets:
     - assets/images/icon.png
     - assets/images/logo.png
+    - assets/sounds/success.wav
+    - assets/sounds/stop.wav
+    - assets/sounds/alert.wav
 
   fonts:
     - family: Inter
