@@ -668,7 +668,15 @@ class AppState extends ChangeNotifier {
       'total': total,
       if (couponCode != null) 'coupon_code': couponCode,
     });
-    return OrderModel.fromJson({...data as Map<String, dynamic>, 'items': const []});
+    final order = OrderModel.fromJson({...data as Map<String, dynamic>, 'items': const []});
+    // The Orders screen is kept alive off-screen by the bottom-nav's
+    // IndexedStack, so without this it would keep showing whatever it loaded
+    // on its very first build until the user manually pulls to refresh.
+    // Reloading here (rather than just prepending `order`) also fills in the
+    // item details, which the bare create-order response above doesn't include.
+    // Not awaited so the order-placed confirmation isn't delayed by it.
+    loadOrders();
+    return order;
   }
 
   // ── Orders ─────────────────────────────────────────────────────────────────
