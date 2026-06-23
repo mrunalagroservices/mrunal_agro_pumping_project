@@ -3,6 +3,7 @@ import '../models/actuator.dart';
 import '../models/alert_model.dart';
 import '../models/device.dart';
 import '../models/farm.dart';
+import '../models/farm_diagram.dart';
 import '../models/faq_topic.dart';
 import '../models/legal_document.dart';
 import '../models/notification_item.dart';
@@ -35,6 +36,10 @@ class AppState extends ChangeNotifier {
   List<Product> wishlist = [];
   Set<int> wishlistIds = {};
   Map<int, List<PowerEvent>> powerEvents = {}; // deviceId → events
+
+  FarmDiagram? farmDiagram;
+  int? farmDiagramFarmId; // which farm `farmDiagram` belongs to, so stale data isn't shown mid-fetch
+  bool isLoadingFarmDiagram = false;
 
   List<LegalDocumentSummary> legalDocuments = [];
   List<FaqTopic> faqTopics = [];
@@ -709,6 +714,31 @@ class AppState extends ChangeNotifier {
       notifyListeners();
       return 'Could not reach the server.';
     }
+  }
+
+  // ── Farm layout diagram (read-only on mobile; authored on the dashboard) ───
+  Future<void> loadFarmDiagram(int farmId) async {
+    farmDiagram = null;
+    farmDiagramFarmId = farmId;
+    isLoadingFarmDiagram = true;
+    notifyListeners();
+    try {
+      final data = await _api.get('/farms/$farmId/diagram') as Map<String, dynamic>;
+      if (farmDiagramFarmId != farmId) return; // a newer selection has since started loading
+      farmDiagram = FarmDiagram.fromJson(data);
+    } catch (_) {
+      if (farmDiagramFarmId != farmId) return;
+      farmDiagram = null;
+    } finally {
+      if (farmDiagramFarmId == farmId) isLoadingFarmDiagram = false;
+      notifyListeners();
+    }
+  }
+
+  void clearFarmDiagram() {
+    farmDiagram = null;
+    farmDiagramFarmId = null;
+    notifyListeners();
   }
 
   // ── Legal & Support (backend is source of truth; local DB is offline cache) ─

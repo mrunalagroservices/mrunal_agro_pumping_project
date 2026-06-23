@@ -5,11 +5,39 @@ import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../l10n/tr_extension.dart';
 import '../models/farm.dart';
+import '../models/farm_diagram.dart';
 import '../providers/app_state.dart';
 import '../widgets/language_switcher.dart';
 
 // Default map center: Pune, Maharashtra (used when no farm has GPS coordinates yet).
 const _defaultCenter = LatLng(18.5204, 73.8567);
+
+const Map<DiagramElementType, Color> _diagramElementColors = {
+  DiagramElementType.well: Color(0xFF0369A1),
+  DiagramElementType.motor: Color(0xFF15803D),
+  DiagramElementType.valve: Color(0xFF7C3AED),
+  DiagramElementType.electricityPole: Color(0xFFB45309),
+  DiagramElementType.pipeJunction: Color(0xFF57534E),
+};
+
+const Map<DiagramElementType, IconData> _diagramElementIcons = {
+  DiagramElementType.well: Icons.water_drop,
+  DiagramElementType.motor: Icons.settings,
+  DiagramElementType.valve: Icons.tune,
+  DiagramElementType.electricityPole: Icons.bolt,
+  DiagramElementType.pipeJunction: Icons.add,
+};
+
+const Map<DiagramElementType, String> _diagramElementLabelKeys = {
+  DiagramElementType.well: 'map_el_well',
+  DiagramElementType.motor: 'map_el_motor',
+  DiagramElementType.valve: 'map_el_valve',
+  DiagramElementType.electricityPole: 'map_el_electricity_pole',
+  DiagramElementType.pipeJunction: 'map_el_pipe_junction',
+};
+
+const Color _pipeColor = Color(0xFF0EA5E9);
+const Color _wireColor = Color(0xFFF59E0B);
 
 /// Full-screen, live farm map: custom light basemap, pulsing "live" markers
 /// for farms with a pump currently running, and animated fly-to on selection.
@@ -58,6 +86,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     setState(() => _selectedFarmId = farm.id);
     final targetZoom = _mapController.camera.zoom < 13 ? 14.0 : _mapController.camera.zoom;
     _flyTo(LatLng(farm.latitude!, farm.longitude!), targetZoom);
+    context.read<AppState>().loadFarmDiagram(farm.id);
     _showFarmSheet(farm);
   }
 
@@ -101,6 +130,46 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  // Read-only render of the well/motor/valve/pole/junction layout authored on
+  // the dashboard — only shown for the currently-selected farm, once its
+  // diagram has finished loading (guards against showing a stale diagram from
+  // a previously-selected farm while the new one is still in flight).
+  List<Widget> _buildDiagramLayers(AppState state) {
+    final diagram = state.farmDiagram;
+    if (diagram == null || diagram.isEmpty) return [];
+    if (state.farmDiagramFarmId != _selectedFarmId) return [];
+
+    final elementsById = {for (final e in diagram.elements) e.id: e};
+
+    return [
+      PolylineLayer(
+        polylines: diagram.connections
+            .map((c) {
+              final from = elementsById[c.from];
+              final to = elementsById[c.to];
+              if (from == null || to == null) return null;
+              return Polyline(
+                points: [LatLng(from.lat, from.lng), LatLng(to.lat, to.lng)],
+                color: c.type == DiagramConnectionType.wire ? _wireColor : _pipeColor,
+                strokeWidth: 3,
+              );
+            })
+            .whereType<Polyline>()
+            .toList(),
+      ),
+      MarkerLayer(
+        markers: diagram.elements.map((el) {
+          return Marker(
+            point: LatLng(el.lat, el.lng),
+            width: 70,
+            height: 70,
+            child: _DiagramElementMarker(element: el),
+          );
+        }).toList(),
+      ),
+    ];
   }
 
   @override
@@ -162,6 +231,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     );
                   }).toList(),
                 ),
+                ..._buildDiagramLayers(state),
               ],
             ),
             // Empty-state overlay.
@@ -363,6 +433,59 @@ class _PulsingDot extends StatelessWidget {
         color: active ? AppColors.success : AppColors.subtext,
         shape: BoxShape.circle,
       ),
+    );
+  }
+}
+
+/// A single well/motor/valve/pole/junction icon from a farm's saved layout
+/// diagram (authored on the dashboard) — read-only on mobile.
+class _DiagramElementMarker extends StatelessWidget {
+  final DiagramElement element;
+
+  const _DiagramElementMarker({required this.element});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _diagramElementColors[element.type] ?? AppColors.subtext;
+    final icon = _diagramElementIcons[element.type] ?? Icons.circle;
+    final labelKey = _diagramElementLabelKeys[element.type];
+    final label = element.label ?? (labelKey != null ? context.tr(labelKey) : '');
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2.5),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 4),
+            ],
+          ),
+          child: Icon(icon, color: Colors.white, size: 16),
+        ),
+        const SizedBox(height: 2),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 3),
+            ],
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: Color(0xFF1e293b)),
+          ),
+        ),
+      ],
     );
   }
 }
