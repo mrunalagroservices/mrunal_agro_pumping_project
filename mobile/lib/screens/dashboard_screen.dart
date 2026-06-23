@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../l10n/tr_extension.dart';
+import '../models/farm.dart';
 import '../providers/app_state.dart';
 import '../widgets/language_switcher.dart';
 import '../widgets/top_bar_actions.dart';
@@ -18,10 +19,51 @@ const _defaultCenter = LatLng(18.5204, 73.8567);
 const _kText = Color(0xFF222222);
 const _kSub = Color(0xFF717171);
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final VoidCallback? onViewMap;
 
   const DashboardScreen({super.key, this.onViewMap});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final MapController _mapController = MapController();
+  bool _hasCentered = false;
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  // `initialCenter`/`initialZoom` on MapOptions only apply once, when the map
+  // is first created — but farm data loads asynchronously after that first
+  // build, so without this the map would be stuck showing the Pune/zoomed-out
+  // fallback forever instead of moving to the farm once it's loaded.
+  void _centerOnFarmsIfNeeded(List<Farm> farmsWithLocation) {
+    if (_hasCentered || farmsWithLocation.isEmpty) return;
+    _hasCentered = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (farmsWithLocation.length == 1) {
+        _mapController.move(
+          LatLng(farmsWithLocation.first.latitude!, farmsWithLocation.first.longitude!),
+          13,
+        );
+      } else {
+        _mapController.fitCamera(
+          CameraFit.coordinates(
+            coordinates: farmsWithLocation
+                .map((f) => LatLng(f.latitude!, f.longitude!))
+                .toList(),
+            padding: const EdgeInsets.all(40),
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +71,7 @@ class DashboardScreen extends StatelessWidget {
     final state = context.watch<AppState>();
 
     final farmsWithLocation = state.farms.where((f) => f.hasLocation).toList();
+    _centerOnFarmsIfNeeded(farmsWithLocation);
     final center = farmsWithLocation.isNotEmpty
         ? LatLng(farmsWithLocation.first.latitude!, farmsWithLocation.first.longitude!)
         : _defaultCenter;
@@ -75,6 +118,7 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     IgnorePointer(
                       child: FlutterMap(
+                        mapController: _mapController,
                         options: MapOptions(
                           initialCenter: center,
                           initialZoom: farmsWithLocation.isNotEmpty ? 12 : 6,
@@ -112,7 +156,7 @@ class DashboardScreen extends StatelessWidget {
                       right: 12,
                       bottom: 12,
                       child: GestureDetector(
-                        onTap: onViewMap,
+                        onTap: widget.onViewMap,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(

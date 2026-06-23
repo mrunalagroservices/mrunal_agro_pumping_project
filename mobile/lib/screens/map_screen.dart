@@ -172,11 +172,39 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     ];
   }
 
+  bool _hasCentered = false;
+
+  // Same fix as the dashboard's mini-map: MapOptions' initialCenter/initialZoom
+  // only apply once at creation, but farm data loads asynchronously, so without
+  // this the map stays on the zoomed-out fallback forever instead of framing
+  // the farm(s) once they load.
+  void _centerOnFarmsIfNeeded(List<Farm> farmsWithLocation) {
+    if (_hasCentered || farmsWithLocation.isEmpty) return;
+    _hasCentered = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (farmsWithLocation.length == 1) {
+        _mapController.move(
+          LatLng(farmsWithLocation.first.latitude!, farmsWithLocation.first.longitude!),
+          14,
+        );
+      } else {
+        _mapController.fitCamera(
+          CameraFit.coordinates(
+            coordinates: farmsWithLocation.map((f) => LatLng(f.latitude!, f.longitude!)).toList(),
+            padding: const EdgeInsets.all(50),
+          ),
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watchLocale();
     final state = context.watch<AppState>();
     final farmsWithLocation = state.farms.where((f) => f.hasLocation).toList();
+    _centerOnFarmsIfNeeded(farmsWithLocation);
     final center = farmsWithLocation.isNotEmpty
         ? LatLng(farmsWithLocation.first.latitude!, farmsWithLocation.first.longitude!)
         : _defaultCenter;
