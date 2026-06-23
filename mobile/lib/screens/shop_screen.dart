@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -682,10 +683,10 @@ class _ProductCard extends StatelessWidget {
                     width: double.infinity,
                     color: p.iconBg,
                     child: p.imageUrl != null
-                        ? Image.network(
-                            p.imageUrl!,
+                        ? CachedNetworkImage(
+                            imageUrl: p.imageUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Center(
+                            errorWidget: (_, __, ___) => Center(
                               child: Icon(p.icon, size: 48, color: p.iconColor),
                             ),
                           )

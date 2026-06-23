@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/tr_extension.dart';
@@ -156,10 +157,10 @@ class _WishlistRow extends StatelessWidget {
                 height: 76,
                 color: p.iconBg,
                 child: p.imageUrl != null
-                    ? Image.network(
-                        p.imageUrl!,
+                    ? CachedNetworkImage(
+                        imageUrl: p.imageUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Center(
+                        errorWidget: (_, __, ___) => Center(
                           child: Icon(p.icon, size: 32, color: p.iconColor),
                         ),
                       )

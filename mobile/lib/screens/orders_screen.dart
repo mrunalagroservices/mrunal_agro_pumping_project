@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/tr_extension.dart';
@@ -366,10 +367,10 @@ class _ItemRowState extends State<_ItemRow> {
                     height: 60,
                     color: AppColors.chip,
                     child: item.productImage != null
-                        ? Image.network(
-                            item.productImage!,
+                        ? CachedNetworkImage(
+                            imageUrl: item.productImage!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Center(
+                            errorWidget: (_, __, ___) => const Center(
                               child: Text('🌿', style: TextStyle(fontSize: 22)),
                             ),
                           )

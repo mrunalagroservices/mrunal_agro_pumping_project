@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/tr_extension.dart';
@@ -566,12 +567,12 @@ class _CartItemRow extends StatelessWidget {
               color: product.iconBg,
               alignment: Alignment.center,
               child: product.imageUrl != null
-                  ? Image.network(
-                      product.imageUrl!,
+                  ? CachedNetworkImage(
+                      imageUrl: product.imageUrl!,
                       width: 64,
                       height: 64,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Icon(product.icon, color: product.iconColor, size: 28),
+                      errorWidget: (_, __, ___) => Icon(product.icon, color: product.iconColor, size: 28),
                     )
                   : Icon(product.icon, color: product.iconColor, size: 28),
             ),

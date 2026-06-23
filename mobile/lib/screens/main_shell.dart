@@ -49,7 +49,7 @@ class _MainShellState extends State<MainShell> {
       ),
       const ShopScreen(),
       const OrdersScreen(),
-      AlertsScreen(title: context.tr('nav_messages')),
+      AlertsScreen(title: context.tr('nav_notifications')),
       ProfileScreen(
         onViewOrders: () => _goTo(2),
         onViewMessages: () => _goTo(3),
@@ -92,7 +92,7 @@ class _BottomBar extends StatelessWidget {
       _NavItem(Icons.agriculture_outlined, Icons.agriculture, context.tr('nav_farm')),
       _NavItem(Icons.storefront_outlined, Icons.storefront, context.tr('nav_market')),
       _NavItem(Icons.shopping_bag_outlined, Icons.shopping_bag, context.tr('nav_orders')),
-      _NavItem(Icons.chat_bubble_outline, Icons.chat_bubble, context.tr('nav_messages'), badge: messagesBadge),
+      _NavItem(Icons.notifications_outlined, Icons.notifications, context.tr('nav_notifications'), badge: messagesBadge),
       _NavItem(Icons.person_outline, Icons.person, context.tr('nav_profile')),
     ];
 

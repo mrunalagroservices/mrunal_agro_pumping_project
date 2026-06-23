@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -159,10 +160,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 width: double.infinity,
                                 color: p.iconBg,
                                 child: p.imageUrl != null
-                                    ? Image.network(
-                                        p.imageUrl!,
+                                    ? CachedNetworkImage(
+                                        imageUrl: p.imageUrl!,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Center(
+                                        errorWidget: (_, __, ___) => Center(
                                           child: Icon(
                                             p.icon,
                                             size: 100,
@@ -735,10 +736,10 @@ class _SimilarProducts extends StatelessWidget {
                           width: double.infinity,
                           color: p.iconBg,
                           child: p.imageUrl != null
-                              ? Image.network(
-                                  p.imageUrl!,
+                              ? CachedNetworkImage(
+                                  imageUrl: p.imageUrl!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Center(
+                                  errorWidget: (_, __, ___) => Center(
                                     child: Icon(p.icon, size: 40, color: p.iconColor),
                                   ),
                                 )

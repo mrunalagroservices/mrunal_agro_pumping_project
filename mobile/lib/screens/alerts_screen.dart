@@ -2,24 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/tr_extension.dart';
 import '../models/notification_item.dart';
+import '../models/order.dart';
 import '../providers/app_state.dart';
 import '../widgets/language_switcher.dart';
 import 'account_settings_screen.dart';
 import 'notifications_screen.dart';
+import 'order_detail_screen.dart';
 import 'orders_screen.dart';
 import '../config/theme.dart';
 
 class AlertsScreen extends StatefulWidget {
   final String title;
 
-  const AlertsScreen({super.key, this.title = 'Messages'});
+  const AlertsScreen({super.key, this.title = 'Notifications'});
 
   @override
   State<AlertsScreen> createState() => _AlertsScreenState();
 }
 
 class _AlertsScreenState extends State<AlertsScreen> {
-  String _filter = 'all'; // all | farm | market
+  String _filter = 'farm'; // farm | market
   bool _searching = false;
   final _searchController = TextEditingController();
 
@@ -60,9 +62,24 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   Future<void> _openItem(NotificationItem item) async {
     if (item.isOrder) {
+      final state = context.read<AppState>();
+      if (state.orders.isEmpty) {
+        await state.loadOrders();
+      }
+      if (!mounted) return;
+      OrderModel? order;
+      for (final o in state.orders) {
+        if (o.id == item.refId) {
+          order = o;
+          break;
+        }
+      }
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const OrdersScreen()),
+        MaterialPageRoute(
+          builder: (_) =>
+              order != null ? OrderDetailScreen(order: order) : const OrdersScreen(),
+        ),
       );
       return;
     }
@@ -180,32 +197,35 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 ),
               ),
 
-            // ── Filter pills ─────────────────────────────────────────────
+            // ── Farm / Market segmented toggle ───────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
-                children: [
-                  _Pill(
-                    label: context.tr('category_all'),
-                    value: 'all',
-                    current: _filter,
-                    onTap: (v) => setState(() => _filter = v),
-                  ),
-                  const SizedBox(width: 8),
-                  _Pill(
-                    label: context.tr('nav_farm'),
-                    value: 'farm',
-                    current: _filter,
-                    onTap: (v) => setState(() => _filter = v),
-                  ),
-                  const SizedBox(width: 8),
-                  _Pill(
-                    label: context.tr('nav_market'),
-                    value: 'market',
-                    current: _filter,
-                    onTap: (v) => setState(() => _filter = v),
-                  ),
-                ],
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.chip,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _Segment(
+                        label: context.tr('nav_farm'),
+                        value: 'farm',
+                        current: _filter,
+                        onTap: (v) => setState(() => _filter = v),
+                      ),
+                    ),
+                    Expanded(
+                      child: _Segment(
+                        label: context.tr('nav_market'),
+                        value: 'market',
+                        current: _filter,
+                        onTap: (v) => setState(() => _filter = v),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -246,10 +266,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
   }
 }
 
-class _Pill extends StatelessWidget {
+/// One half of the Farm/Market segmented toggle — sits inside a single
+/// shared pill-shaped container so the two options read as one connected
+/// control rather than two separate floating chips.
+class _Segment extends StatelessWidget {
   final String label, value, current;
   final void Function(String) onTap;
-  const _Pill({
+  const _Segment({
     required this.label,
     required this.value,
     required this.current,
@@ -261,18 +284,23 @@ class _Pill extends StatelessWidget {
     final active = value == current;
     return GestureDetector(
       onTap: () => onTap(value),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: active ? AppColors.text : AppColors.chip,
-          borderRadius: BorderRadius.circular(24),
+          color: active ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: active
+              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 4)]
+              : null,
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: active ? Colors.white : AppColors.text,
+            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+            color: active ? AppColors.text : AppColors.subtext,
           ),
         ),
       ),
@@ -301,6 +329,8 @@ String _orderStatusLabel(BuildContext context, String status) {
       return context.tr('notif_status_confirmed');
     case 'shipped':
       return context.tr('notif_status_shipped');
+    case 'out_for_delivery':
+      return context.tr('notif_status_out_for_delivery');
     case 'delivered':
       return context.tr('notif_status_delivered');
     case 'cancelled':

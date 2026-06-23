@@ -62,6 +62,10 @@ dependencies:
   # Haptic/sound feedback for motor + connectivity events
   audioplayers: ^6.1.0
 
+  # Disk-caches product images so they aren't re-downloaded on every screen
+  # visit/app refresh
+  cached_network_image: ^3.4.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

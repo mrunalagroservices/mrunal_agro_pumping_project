@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/tr_extension.dart';
 import '../models/order.dart';
 import '../providers/app_state.dart';
+import '../widgets/order_timeline.dart';
 import 'product_detail_screen.dart';
 import 'write_review_sheet.dart';
 import '../config/theme.dart';
@@ -28,6 +30,8 @@ IconData _statusIcon(String status) {
       return Icons.check_circle_outline;
     case 'shipped':
       return Icons.local_shipping_outlined;
+    case 'out_for_delivery':
+      return Icons.delivery_dining_outlined;
     case 'delivered':
       return Icons.inventory_2_outlined;
     case 'cancelled':
@@ -50,6 +54,8 @@ String _statusHeadline(BuildContext context, String status) {
       return context.tr('orders_status_confirmed_headline');
     case 'shipped':
       return context.tr('orders_status_shipped_headline');
+    case 'out_for_delivery':
+      return context.tr('orders_status_out_for_delivery_headline');
     case 'delivered':
       return context.tr('order_detail_item_delivered');
     case 'cancelled':
@@ -133,11 +139,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               controller: _pageController,
                               itemCount: images.length,
                               onPageChanged: (i) => setState(() => _page = i),
-                              itemBuilder: (_, i) => Image.network(
-                                images[i],
+                              itemBuilder: (_, i) => CachedNetworkImage(
+                                imageUrl: images[i],
                                 fit: BoxFit.cover,
                                 width: double.infinity,
-                                errorBuilder: (_, __, ___) => Container(
+                                errorWidget: (_, __, ___) => Container(
                                   color: AppColors.chip,
                                   child: const Center(
                                     child: Text(
@@ -251,6 +257,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           ),
                           if (o.status == 'delivered' ||
                               o.status == 'shipped' ||
+                              o.status == 'out_for_delivery' ||
                               o.status == 'cancelled') ...[
                             const SizedBox(height: 2),
                             Text(
@@ -266,6 +273,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                   ],
                 ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ── Order Updates timeline + delivery contact ──────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  OrderTimeline(order: o),
+                  if (o.deliveryContactName != null &&
+                      o.deliveryContactName!.isNotEmpty &&
+                      o.deliveryContactPhone != null &&
+                      o.deliveryContactPhone!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    DeliveryContactCard(
+                      name: o.deliveryContactName!,
+                      phone: o.deliveryContactPhone!,
+                    ),
+                  ],
+                ],
               ),
             ),
             const SizedBox(height: 22),
@@ -447,10 +475,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             child:
                                 item.productImage != null &&
                                     item.productImage!.isNotEmpty
-                                ? Image.network(
-                                    item.productImage!,
+                                ? CachedNetworkImage(
+                                    imageUrl: item.productImage!,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Center(
+                                    errorWidget: (_, __, ___) => const Center(
                                       child: Text(
                                         '🌿',
                                         style: TextStyle(fontSize: 20),
@@ -794,10 +822,10 @@ class _YouMayAlsoLike extends StatelessWidget {
                             width: double.infinity,
                             color: p.iconBg,
                             child: p.imageUrl != null
-                                ? Image.network(
-                                    p.imageUrl!,
+                                ? CachedNetworkImage(
+                                    imageUrl: p.imageUrl!,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Center(
+                                    errorWidget: (_, __, ___) => Center(
                                       child: Icon(p.icon, size: 40, color: p.iconColor),
                                     ),
                                   )

@@ -94,6 +94,8 @@ class OrderModel {
   final double discount;
   final double total;
   final String? couponCode;
+  final String? deliveryContactName;
+  final String? deliveryContactPhone;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<OrderItem> items;
@@ -108,6 +110,8 @@ class OrderModel {
     required this.discount,
     required this.total,
     this.couponCode,
+    this.deliveryContactName,
+    this.deliveryContactPhone,
     required this.createdAt,
     required this.updatedAt,
     required this.items,
@@ -125,6 +129,8 @@ class OrderModel {
       discount: double.tryParse('${json['discount']}') ?? 0,
       total: double.tryParse('${json['total']}') ?? 0,
       couponCode: json['coupon_code'] as String?,
+      deliveryContactName: json['delivery_contact_name'] as String?,
+      deliveryContactPhone: json['delivery_contact_phone'] as String?,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
           DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
@@ -138,6 +144,8 @@ class OrderModel {
     switch (status) {
       case 'delivered':
         return const Color(0xFF15803D);
+      case 'out_for_delivery':
+        return const Color(0xFF0D9488);
       case 'shipped':
         return const Color(0xFF7C3AED);
       case 'confirmed':
@@ -153,6 +161,8 @@ class OrderModel {
     switch (status) {
       case 'delivered':
         return const Color(0xFFF0FDF4);
+      case 'out_for_delivery':
+        return const Color(0xFFF0FDFA);
       case 'shipped':
         return const Color(0xFFF5F3FF);
       case 'confirmed':
@@ -163,4 +173,13 @@ class OrderModel {
         return const Color(0xFFFFFBEB);
     }
   }
+
+  /// Index into the linear status journey, for driving a step-progress
+  /// timeline. -1 for `cancelled`, which isn't part of the linear journey.
+  int get statusStepIndex {
+    const order = ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
+    return order.indexOf(status);
+  }
+
+  bool get isCancelled => status == 'cancelled';
 }
