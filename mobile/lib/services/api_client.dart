@@ -55,7 +55,17 @@ class ApiClient {
     } catch (_) {}
 
     if (res.statusCode == 401) {
-      throw UnauthorizedException();
+      // Only an actual expired/invalid session if we sent a token. A 401 on a
+      // request with no token (e.g. login with the wrong password) is a plain
+      // credential failure — surface the server's real message instead of the
+      // generic "session expired" one.
+      if (_token != null) {
+        throw UnauthorizedException();
+      }
+      throw ApiException(
+        body['message'] as String? ?? 'Invalid email or password',
+        statusCode: 401,
+      );
     }
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException(
