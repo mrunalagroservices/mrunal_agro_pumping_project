@@ -15,6 +15,7 @@ import { ELEMENT_CFG } from "@/lib/diagramConfig";
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DEFAULT_CENTER: [number, number] = [73.8567, 18.5204];
 const CONN_SOURCE = "diagram-connections";
+const BOUNDARY_SOURCE = "diagram-boundary";
 
 const ELEMENT_TOOLS: DiagramElementType[] = [
   "well", "motor", "valve", "electricity_pole", "pipe_junction",
@@ -58,6 +59,7 @@ export default function FarmsMap({
   const markersRef = useRef<Map<number, maplibregl.Marker>>(new Map());
   const diagramMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
   const connSourceReadyRef = useRef(false);
+  const boundarySourceReadyRef = useRef(false);
 
   // Keep latest callbacks/props in refs so map event handlers never go stale.
   const onSelectRef = useRef(onSelectFarm);
@@ -122,6 +124,34 @@ export default function FarmsMap({
           "line-width": 2,
         },
       });
+
+      // Farm boundary — a fill+outline once closed (>=3 points), or a plain
+      // line/dots while still being plotted.
+      map.addSource(BOUNDARY_SOURCE, {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.addLayer({
+        id: "boundary-fill",
+        type: "fill",
+        source: BOUNDARY_SOURCE,
+        filter: ["==", ["geometry-type"], "Polygon"],
+        paint: { "fill-color": "#16a34a", "fill-opacity": 0.12 },
+      });
+      map.addLayer({
+        id: "boundary-line",
+        type: "line",
+        source: BOUNDARY_SOURCE,
+        paint: { "line-color": "#16a34a", "line-width": 2.5, "line-dasharray": [2, 1] },
+      });
+      map.addLayer({
+        id: "boundary-points",
+        type: "circle",
+        source: BOUNDARY_SOURCE,
+        filter: ["==", ["geometry-type"], "Point"],
+        paint: { "circle-color": "#16a34a", "circle-radius": 5, "circle-stroke-color": "#fff", "circle-stroke-width": 1.5 },
+      });
+      boundarySourceReadyRef.current = true;
       connSourceReadyRef.current = true;
     });
 
@@ -133,7 +163,7 @@ export default function FarmsMap({
       }
       if (!editModeRef.current) return;
       const tool = activeToolRef.current;
-      if (tool && ELEMENT_TOOLS.includes(tool as DiagramElementType)) {
+      if (tool === "boundary" || (tool && ELEMENT_TOOLS.includes(tool as DiagramElementType))) {
         onMapClickRef.current?.(e.lngLat.lat, e.lngLat.lng);
       }
     });
@@ -338,6 +368,57 @@ export default function FarmsMap({
     const source = map.getSource(CONN_SOURCE) as maplibregl.GeoJSONSource | undefined;
     source?.setData({ type: "FeatureCollection", features });
   }, [diagram]);
+
+  // ── Farm boundary ──────────────────────────────────────────────────────────
+  function boundaryFeatures(): GeoJSON.Feature[] {
+    const points = diagram?.boundary ?? [];
+    if (points.length === 0) return [];
+    const coords = points.map((p) => [p.lng, p.lat]);
+    const features: GeoJSON.Feature[] = [];
+    if (points.length >= 3) {
+      features.push({
+        type: "Feature",
+        properties: {},
+        geometry: { type: "Polygon", coordinates: [[...coords, coords[0]]] },
+      });
+    } else if (points.length === 2) {
+      features.push({
+        type: "Feature",
+        properties: {},
+        geometry: { type: "LineString", coordinates: coords },
+      });
+    }
+    // Always show each plotted point as a dot too, so it's clear where taps landed.
+    for (const p of points) {
+      features.push({
+        type: "Feature",
+        properties: {},
+        geometry: { type: "Point", coordinates: [p.lng, p.lat] },
+      });
+    }
+    return features;
+  }
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !boundarySourceReadyRef.current) return;
+    const source = map.getSource(BOUNDARY_SOURCE) as maplibregl.GeoJSONSource | undefined;
+    source?.setData({ type: "FeatureCollection", features: boundaryFeatures() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diagram?.boundary]);
+
+  // Retry boundary update once source is ready (handles initial load timing).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const handler = () => {
+      const source = map.getSource(BOUNDARY_SOURCE) as maplibregl.GeoJSONSource | undefined;
+      source?.setData({ type: "FeatureCollection", features: boundaryFeatures() });
+    };
+    map.on("load", handler);
+    return () => { map.off("load", handler); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Retry connection line update once source is ready (handles initial load timing).
   useEffect(() => {

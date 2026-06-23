@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   MapPin, MapPinOff, Cpu, Pencil, X, Save, Trash2, MousePointer2,
-  Navigation, CheckCircle2,
+  Navigation, CheckCircle2, Shapes, Check, Undo2,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import FarmsMap from "@/components/FarmsMap";
@@ -164,6 +164,27 @@ export default function MapPage() {
     setSelectedElementId(null);
   };
 
+  // ── farm boundary plotting ──────────────────────────────────────────────────
+  const startBoundaryPlotting = () => {
+    if (!diagram) return;
+    if (!diagram.boundary) setDiagram({ ...diagram, boundary: [] });
+    setActiveTool("boundary");
+  };
+
+  const undoLastBoundaryPoint = () => {
+    if (!diagram?.boundary?.length) return;
+    setDiagram({ ...diagram, boundary: diagram.boundary.slice(0, -1) });
+  };
+
+  const clearBoundary = () => {
+    if (!diagram) return;
+    setDiagram({ ...diagram, boundary: [] });
+  };
+
+  const completeBoundary = () => {
+    setActiveTool("select");
+  };
+
   // ── unified map click handler ─────────────────────────────────────────────
   const handleMapClick = async (lat: number, lng: number) => {
     // Pin mode: save GPS for the selected farm
@@ -181,8 +202,15 @@ export default function MapPage() {
       return;
     }
 
-    // Diagram edit mode: place element
     if (!editMode || !diagram) return;
+
+    // Plotting the farm boundary — append a point.
+    if (activeTool === "boundary") {
+      setDiagram({ ...diagram, boundary: [...(diagram.boundary ?? []), { lat, lng }] });
+      return;
+    }
+
+    // Diagram edit mode: place element
     if (!ELEMENT_TOOL_TYPES.includes(activeTool as DiagramElementType)) return;
     const newEl: DiagramElement = {
       id: crypto.randomUUID(),
@@ -225,6 +253,7 @@ export default function MapPage() {
 
   const instruction = (() => {
     if (activeTool === "select") return selectedElementId ? t("map_instr_select_with_selection") : t("map_instr_select_empty");
+    if (activeTool === "boundary") return t("map_instr_boundary");
     if (activeTool === "pipe" || activeTool === "wire") {
       return connectingFromId ? t("map_instr_connect_dest") : t("map_instr_connect_first");
     }
@@ -297,6 +326,48 @@ export default function MapPage() {
                   >
                     <MousePointer2 className="w-4 h-4" /> {t("map_select_move")}
                   </button>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">{t("map_farm_boundary")}</p>
+                  {activeTool === "boundary" ? (
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-slate-500 px-1">
+                        {t("map_boundary_points_count", { n: diagram?.boundary?.length ?? 0 })}
+                      </p>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={undoLastBoundaryPoint}
+                          disabled={!diagram?.boundary?.length}
+                          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                        >
+                          <Undo2 className="w-3.5 h-3.5" /> {t("map_boundary_undo")}
+                        </button>
+                        <button
+                          onClick={clearBoundary}
+                          disabled={!diagram?.boundary?.length}
+                          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> {t("map_boundary_clear")}
+                        </button>
+                      </div>
+                      <button
+                        onClick={completeBoundary}
+                        disabled={(diagram?.boundary?.length ?? 0) < 3}
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:hover:bg-emerald-600 transition-colors"
+                      >
+                        <Check className="w-4 h-4" /> {t("map_boundary_complete")}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={startBoundaryPlotting}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                    >
+                      <Shapes className="w-4 h-4" />
+                      {(diagram?.boundary?.length ?? 0) >= 3 ? t("map_boundary_replot") : t("map_boundary_plot")}
+                    </button>
+                  )}
                 </div>
 
                 <div>

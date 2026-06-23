@@ -923,6 +923,14 @@ export const translations = {
   map_el_pipe_junction: { en: "Junction", hi: "जंक्शन", mr: "जंक्शन" },
   map_conn_pipe: { en: "Pipe", hi: "पाइप", mr: "पाइप" },
   map_conn_wire: { en: "Wire", hi: "वायर", mr: "वायर" },
+  map_farm_boundary: { en: "Farm Boundary", hi: "फार्म की सीमा", mr: "फार्मची सीमा" },
+  map_boundary_plot: { en: "Plot Boundary", hi: "सीमा प्लॉट करें", mr: "सीमा प्लॉट करा" },
+  map_boundary_replot: { en: "Re-plot Boundary", hi: "सीमा फिर से प्लॉट करें", mr: "सीमा पुन्हा प्लॉट करा" },
+  map_boundary_points_count: { en: "{n} point(s) plotted", hi: "{n} पॉइंट प्लॉट किए गए", mr: "{n} पॉइंट्स प्लॉट केले" },
+  map_boundary_undo: { en: "Undo", hi: "पूर्ववत करें", mr: "पूर्ववत करा" },
+  map_boundary_clear: { en: "Clear", hi: "साफ़ करें", mr: "साफ करा" },
+  map_boundary_complete: { en: "Complete", hi: "पूर्ण करें", mr: "पूर्ण करा" },
+  map_instr_boundary: { en: "Click on the map to add boundary points, then tap Complete (at least 3 points)", hi: "सीमा के पॉइंट जोड़ने के लिए मैप पर क्लिक करें, फिर पूर्ण करें दबाएं (कम से कम 3 पॉइंट)", mr: "सीमेचे पॉइंट्स जोडण्यासाठी मॅपवर क्लिक करा, नंतर पूर्ण करा दाबा (किमान 3 पॉइंट्स)" },
   admin_redirecting: { en: "Redirecting to admin panel…", hi: "एडमिन पैनल पर रीडायरेक्ट हो रहा है…", mr: "अॅडमिन पॅनलवर रीडायरेक्ट होत आहे…" },
 } as const satisfies Record<string, { en: string; hi: string; mr: string }>;
 

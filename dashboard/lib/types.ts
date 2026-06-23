@@ -136,7 +136,7 @@ export interface ProductReview {
 
 export type DiagramElementType = 'well' | 'motor' | 'valve' | 'electricity_pole' | 'pipe_junction';
 export type DiagramConnectionType = 'pipe' | 'wire';
-export type DiagramTool = 'select' | DiagramElementType | DiagramConnectionType;
+export type DiagramTool = 'select' | 'boundary' | DiagramElementType | DiagramConnectionType;
 
 export interface DiagramElement {
   id: string;
@@ -153,9 +153,15 @@ export interface DiagramConnection {
   type: DiagramConnectionType;
 }
 
+export interface BoundaryPoint {
+  lat: number;
+  lng: number;
+}
+
 export interface FarmDiagram {
   elements: DiagramElement[];
   connections: DiagramConnection[];
+  boundary?: BoundaryPoint[];
 }
 
 export interface Farm {

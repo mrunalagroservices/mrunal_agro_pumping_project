@@ -144,6 +144,17 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     final elementsById = {for (final e in diagram.elements) e.id: e};
 
     return [
+      if (diagram.boundary.length >= 3)
+        PolygonLayer(
+          polygons: [
+            Polygon(
+              points: diagram.boundary.map((p) => LatLng(p.lat, p.lng)).toList(),
+              color: const Color(0xFF16A34A).withValues(alpha: 0.12),
+              borderColor: const Color(0xFF16A34A),
+              borderStrokeWidth: 2.5,
+            ),
+          ],
+        ),
       PolylineLayer(
         polylines: diagram.connections
             .map((c) {
