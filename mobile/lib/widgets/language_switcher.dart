@@ -6,24 +6,43 @@ import '../providers/locale_provider.dart';
 const _kText = Color(0xFF222222);
 const _kCircleBg = Color(0xFFF2F2F2);
 
-/// Globe icon button for the top-right corner of a screen. Tapping it opens
-/// a bottom sheet to pick English / हिंदी / मराठी; the choice applies
-/// instantly app-wide and is persisted.
+/// Current-language pill for the top-right corner of a screen — shows "En",
+/// "हिंदी" or "मराठी" instead of a generic globe icon, so the active language
+/// is visible at a glance. Tapping it opens a bottom sheet to switch; the
+/// choice applies instantly app-wide and is persisted.
 class LanguageSwitcher extends StatelessWidget {
   final double size;
   const LanguageSwitcher({super.key, this.size = 40});
 
+  static String _currentLabel(BuildContext context, String code) {
+    switch (code) {
+      case 'en':
+        return 'En';
+      case 'hi':
+        return context.tr('language_hindi');
+      case 'mr':
+      default:
+        return context.tr('language_marathi');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final locale = context.watch<LocaleProvider>();
+    final label = _currentLabel(context, locale.languageCode);
     return InkWell(
       onTap: () => _openPicker(context),
       borderRadius: BorderRadius.circular(size / 2),
       child: Container(
-        width: size,
         height: size,
-        decoration: const BoxDecoration(color: _kCircleBg, shape: BoxShape.circle),
+        constraints: BoxConstraints(minWidth: size),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(color: _kCircleBg, borderRadius: BorderRadius.circular(size / 2)),
         alignment: Alignment.center,
-        child: const Icon(Icons.language, size: 20, color: _kText),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _kText),
+        ),
       ),
     );
   }

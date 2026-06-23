@@ -49,7 +49,12 @@ class DashboardScreen extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: _kText, letterSpacing: -0.2)),
                 Text(
                   state.user != null
-                      ? context.tr('dashboard_greeting').replaceAll('{name}', state.user!.name)
+                      ? context.tr('dashboard_greeting').replaceAll(
+                          '{name}',
+                          state.user!.preferredFirstName?.isNotEmpty == true
+                              ? state.user!.preferredFirstName!
+                              : state.user!.name,
+                        )
                       : context.tr('dashboard_pumping_control'),
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _kSub),
                 ),
