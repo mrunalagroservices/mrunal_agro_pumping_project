@@ -59,8 +59,12 @@ function getEffectiveFlowRateLpm(actuator) {
 }
 
 // Turn a chronological list of {action, created_at} logs into ON intervals,
-// clamped to [rangeStart, rangeEnd]. An actuator still ON at rangeEnd stays open until rangeEnd.
-function computeRuntimeIntervals(logs, rangeStart, rangeEnd) {
+// clamped to [rangeStart, rangeEnd]. An actuator still ON at rangeEnd stays open until
+// rangeEnd — unless its device has gone silent, in which case we have no telemetry
+// confirming it kept running past the device's last contact, so the open interval is
+// closed at `openEnd` (the device's last_seen_at) instead. This stops a motor whose
+// device dropped offline mid-run from counting as pumping/drawing power indefinitely.
+function computeRuntimeIntervals(logs, rangeStart, rangeEnd, openEnd = rangeEnd) {
   const intervals = [];
   let onSince = null;
 
@@ -76,7 +80,7 @@ function computeRuntimeIntervals(logs, rangeStart, rangeEnd) {
     }
   }
   if (onSince !== null) {
-    intervals.push({ start: onSince, end: rangeEnd });
+    intervals.push({ start: onSince, end: openEnd });
   }
 
   return intervals
@@ -126,18 +130,27 @@ function formatBucketLabel(date, range) {
   return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-async function fetchActuatorIntervals(actuatorId, rangeStart, rangeEnd) {
+// `act` carries device_status/device_last_seen_at from fetchActuators' join. If the
+// device is offline, an actuator log still open at rangeEnd is closed at the device's
+// last_seen_at instead — see computeRuntimeIntervals for why.
+async function fetchActuatorIntervals(act, rangeStart, rangeEnd) {
   const logsResult = await db.query(
     `SELECT action, created_at FROM actuator_logs
      WHERE actuator_id = $1 AND created_at <= $2
      ORDER BY created_at DESC LIMIT 500`,
-    [actuatorId, rangeEnd]
+    [act.id, rangeEnd]
   );
   const logs = logsResult.rows
     .slice()
     .reverse()
     .map((l) => ({ action: l.action, created_at: new Date(l.created_at) }));
-  return computeRuntimeIntervals(logs, rangeStart, rangeEnd);
+
+  let openEnd = rangeEnd;
+  if (act.device_status === 'offline' && act.device_last_seen_at) {
+    const lastSeen = new Date(act.device_last_seen_at);
+    if (lastSeen < openEnd) openEnd = lastSeen;
+  }
+  return computeRuntimeIntervals(logs, rangeStart, rangeEnd, openEnd);
 }
 
 async function fetchActuators(req) {
@@ -148,8 +161,10 @@ async function fetchActuators(req) {
     where += ` AND a.farm_id = $${params.length}`;
   }
   const result = await db.query(
-    `SELECT a.*, f.name AS farm_name FROM actuators a
+    `SELECT a.*, f.name AS farm_name, d.status AS device_status, d.last_seen_at AS device_last_seen_at
+     FROM actuators a
      LEFT JOIN farms f ON f.id = a.farm_id
+     LEFT JOIN devices d ON d.id = a.device_id
      WHERE ${where}
      ORDER BY a.id`,
     params
@@ -178,7 +193,7 @@ router.get('/overview', async (req, res) => {
     const actuatorBreakdown = [];
 
     for (const act of actuators) {
-      const intervals = await fetchActuatorIntervals(act.id, rangeStart, rangeEnd);
+      const intervals = await fetchActuatorIntervals(act, rangeStart, rangeEnd);
       const runtimeMinutes = intervalMinutes(intervals);
       const metrics = computeMetrics(act, runtimeMinutes, electricityRate);
 
@@ -186,14 +201,17 @@ router.get('/overview', async (req, res) => {
       totals.water_liters += metrics.waterLiters;
       totals.electricity_kwh += metrics.electricityKwh;
       totals.cost += metrics.cost;
-      if (act.current_state === 'on') totals.currently_running += 1;
+      // A device that's gone offline can't confirm its actuator is still actually
+      // running, even if current_state is still "on" in our records — don't count it.
+      const isActuallyRunning = act.current_state === 'on' && act.device_status === 'online';
+      if (isActuallyRunning) totals.currently_running += 1;
 
       actuatorBreakdown.push({
         id: act.id,
         name: act.name,
         farm_name: act.farm_name,
         actuator_type: act.actuator_type,
-        current_state: act.current_state,
+        current_state: isActuallyRunning ? 'on' : 'off',
         runtime_minutes: round2(metrics.runtimeMinutes),
         water_liters: round2(metrics.waterLiters),
         electricity_kwh: round2(metrics.electricityKwh),
@@ -238,7 +256,7 @@ router.get('/series', async (req, res) => {
 
     const actuatorIntervals = [];
     for (const act of actuators) {
-      const intervals = await fetchActuatorIntervals(act.id, rangeStart, rangeEnd);
+      const intervals = await fetchActuatorIntervals(act, rangeStart, rangeEnd);
       actuatorIntervals.push({ act, intervals });
     }
 
@@ -293,7 +311,7 @@ router.get('/daily-runtime', async (req, res) => {
 
     const actuatorIntervals = [];
     for (const act of actuators) {
-      const intervals = await fetchActuatorIntervals(act.id, rangeStart, rangeEnd);
+      const intervals = await fetchActuatorIntervals(act, rangeStart, rangeEnd);
       actuatorIntervals.push({ act, intervals });
     }
 

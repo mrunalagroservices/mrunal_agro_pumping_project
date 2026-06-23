@@ -99,7 +99,10 @@ async function enforceSafetyCutoffs() {
 }
 
 // Marks devices offline if no MQTT status message has been received recently —
-// catches silent disconnects where the broker's LWT didn't fire.
+// catches silent disconnects where the broker's LWT didn't fire. Any actuator left
+// "on" on a device that just went silent is force-marked off in our records too,
+// since we have no telemetry confirming it's still running and otherwise it would
+// count as running/consuming water+power forever in live status and analytics.
 async function detectOfflineDevices() {
   const stale = await db.query(
     `SELECT * FROM devices
@@ -122,6 +125,22 @@ async function detectOfflineDevices() {
 
     emitToOrg(device.organization_id, 'device-status', { device_id: device.id, status: 'offline' });
     emitToOrg(device.organization_id, 'alert', alert.rows[0]);
+
+    const strandedOn = await db.query(
+      `UPDATE actuators SET current_state = 'off', last_turned_off_at = $2, updated_at = NOW()
+       WHERE device_id = $1 AND current_state = 'on'
+       RETURNING *`,
+      [device.id, device.last_seen_at]
+    );
+
+    for (const act of strandedOn.rows) {
+      await db.query(
+        `INSERT INTO actuator_logs (organization_id, actuator_id, action, triggered_by, created_at)
+         VALUES ($1, $2, 'off', 'device_offline', $3)`,
+        [act.organization_id, act.id, device.last_seen_at]
+      );
+      emitToOrg(act.organization_id, 'actuator-status', act);
+    }
   }
 }
 

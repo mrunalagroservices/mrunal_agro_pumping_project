@@ -29,6 +29,14 @@ import {
   AnalyticsDailyRuntime,
 } from "@/lib/types";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { socketClient } from "@/lib/socket";
+
+// Runtime/water/electricity/cost keep accruing every second a pump stays on, and an
+// actuator or device can flip state at any moment — neither is something the user
+// triggers from this page, so it's kept fresh with a periodic refetch plus an
+// immediate refetch whenever a relevant socket event arrives.
+const POLL_INTERVAL_MS = 30_000;
 
 type Range = "24h" | "10d";
 
@@ -63,6 +71,7 @@ export default function AnalyticsPage() {
   const [dailyRuntime, setDailyRuntime] = useState<AnalyticsDailyRuntime | null>(null);
   const [loading, setLoading] = useState(true);
   const { t } = useLocale();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     httpClient
@@ -71,8 +80,8 @@ export default function AnalyticsPage() {
       .catch(() => {});
   }, []);
 
-  const loadAnalytics = useCallback(async () => {
-    setLoading(true);
+  const loadAnalytics = useCallback(async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
     try {
       const params = new URLSearchParams({ range });
       const dailyParams = new URLSearchParams({ days: "10" });
@@ -88,13 +97,34 @@ export default function AnalyticsPage() {
       setOverview(overviewRes.data);
       setDailyRuntime(dailyRes.data);
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
   }, [range, farmId]);
 
   useEffect(() => {
     loadAnalytics();
   }, [loadAnalytics]);
+
+  // Periodic background refresh so runtime/water/electricity/cost keep climbing
+  // live while a pump is running, without flashing the loading spinner.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(() => loadAnalytics(false), POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, loadAnalytics]);
+
+  // Refetch immediately when a pump or device changes state, so "Currently Running"
+  // and the per-pump table don't wait for the next poll tick to reflect reality.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const onStatusChange = () => loadAnalytics(false);
+    socketClient.on("actuator-status", onStatusChange);
+    socketClient.on("device-status", onStatusChange);
+    return () => {
+      socketClient.off("actuator-status", onStatusChange);
+      socketClient.off("device-status", onStatusChange);
+    };
+  }, [isAuthenticated, loadAnalytics]);
 
   const totals = overview?.totals;
   const totalActuators = overview?.actuators.length ?? 0;
