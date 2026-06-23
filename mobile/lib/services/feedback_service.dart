@@ -51,6 +51,14 @@ class FeedbackService {
     }
   }
 
+  /// A subtle, sound-free buzz for routine UI interactions — toggle switches,
+  /// successful login, an order being placed — distinct from the louder
+  /// haptic+sound combo used for pump/connectivity events above, which are
+  /// meant to be noticed even when the phone isn't being looked at.
+  static void lightTap() {
+    HapticFeedback.lightImpact();
+  }
+
   static void motorStarted() {
     debugPrint('[FeedbackService] motorStarted (haptic + success.wav)');
     HapticFeedback.mediumImpact();

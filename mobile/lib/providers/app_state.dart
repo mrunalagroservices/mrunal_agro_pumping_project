@@ -90,6 +90,7 @@ class AppState extends ChangeNotifier {
       user = AppUser.fromJson(data['user'] as Map<String, dynamic>);
       authStatus = AuthStatus.loggedIn;
       _connectSocket();
+      FeedbackService.lightTap();
       notifyListeners();
       return null;
     } on ApiException catch (e) {
@@ -118,6 +119,7 @@ class AppState extends ChangeNotifier {
       user = AppUser.fromJson(data['user'] as Map<String, dynamic>);
       authStatus = AuthStatus.loggedIn;
       _connectSocket();
+      FeedbackService.lightTap();
       notifyListeners();
       return null;
     } on ApiException catch (e) {

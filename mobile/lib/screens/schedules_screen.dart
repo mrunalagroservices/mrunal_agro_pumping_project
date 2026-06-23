@@ -4,6 +4,7 @@ import '../config/theme.dart';
 import '../l10n/tr_extension.dart';
 import '../models/schedule.dart';
 import '../providers/app_state.dart';
+import '../services/feedback_service.dart';
 import '../widgets/language_switcher.dart';
 
 class SchedulesScreen extends StatefulWidget {
@@ -183,6 +184,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
                         inactiveThumbColor: Colors.white,
                         trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
                         onChanged: (_) async {
+                          FeedbackService.lightTap();
                           setState(() => _toggling = true);
                           final err = await context.read<AppState>().toggleSchedule(s);
                           if (!mounted) return;

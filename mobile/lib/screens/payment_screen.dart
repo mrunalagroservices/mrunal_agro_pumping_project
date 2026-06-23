@@ -4,6 +4,7 @@ import '../l10n/tr_extension.dart';
 import '../models/order.dart';
 import '../providers/app_state.dart';
 import '../services/api_client.dart';
+import '../services/feedback_service.dart';
 import '../config/theme.dart';
 
 const _codDeliveryCharge = 100.0;
@@ -66,6 +67,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         couponCode: widget.couponCode,
       );
       if (!mounted) return;
+      FeedbackService.lightTap();
       widget.onOrderPlaced();
       await showDialog<void>(
         context: context,

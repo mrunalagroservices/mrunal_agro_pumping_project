@@ -4,6 +4,7 @@ import '../config/theme.dart';
 import '../l10n/tr_extension.dart';
 import '../models/power_event.dart';
 import '../providers/app_state.dart';
+import '../services/feedback_service.dart';
 import '../widgets/farm_card.dart';
 import '../widgets/language_switcher.dart';
 import '../widgets/top_bar_actions.dart';
@@ -71,9 +72,15 @@ class _FarmsScreenState extends State<FarmsScreen> with SingleTickerProviderStat
         controller: _tabs,
         children: [
           _FarmsTab(),
-          _ElectricityTab(notifyEnabled: _notifyEnabled, onToggleNotify: (id) => setState(() => _notifyEnabled.contains(id) ? _notifyEnabled.remove(id) : _notifyEnabled.add(id))),
+          _ElectricityTab(notifyEnabled: _notifyEnabled, onToggleNotify: (id) {
+            FeedbackService.lightTap();
+            setState(() => _notifyEnabled.contains(id) ? _notifyEnabled.remove(id) : _notifyEnabled.add(id));
+          }),
           _AntiTheftTab(enabled: _antitheftEnabled, thresholds: _thresholds,
-            onToggle: (id) => setState(() => _antitheftEnabled.contains(id) ? _antitheftEnabled.remove(id) : _antitheftEnabled.add(id)),
+            onToggle: (id) {
+              FeedbackService.lightTap();
+              setState(() => _antitheftEnabled.contains(id) ? _antitheftEnabled.remove(id) : _antitheftEnabled.add(id));
+            },
             onThreshold: (id, v) => setState(() => _thresholds[id] = v),
           ),
         ],
