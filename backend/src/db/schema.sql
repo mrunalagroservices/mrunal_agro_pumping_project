@@ -323,19 +323,22 @@ CREATE INDEX idx_user_wishlist_user ON user_wishlist(user_id);
 
 -- ─── Orders ────────────────────────────────────────────────────────────────────
 CREATE TABLE orders (
-  id               SERIAL PRIMARY KEY,
-  user_id          INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  status           VARCHAR(50) NOT NULL DEFAULT 'placed',
-  -- placed | confirmed | shipped | delivered | cancelled
-  payment_method   VARCHAR(50) NOT NULL,
-  delivery_address JSONB NOT NULL,
-  subtotal         NUMERIC(10,2) NOT NULL,
-  delivery_charge  NUMERIC(10,2) NOT NULL DEFAULT 0,
-  discount         NUMERIC(10,2) NOT NULL DEFAULT 0,
-  total            NUMERIC(10,2) NOT NULL,
-  coupon_code      VARCHAR(50),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                     SERIAL PRIMARY KEY,
+  user_id                INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  status                 VARCHAR(50) NOT NULL DEFAULT 'placed',
+  -- placed | confirmed | shipped | out_for_delivery | delivered | cancelled
+  payment_method         VARCHAR(50) NOT NULL,
+  delivery_address       JSONB NOT NULL,
+  subtotal               NUMERIC(10,2) NOT NULL,
+  delivery_charge        NUMERIC(10,2) NOT NULL DEFAULT 0,
+  discount               NUMERIC(10,2) NOT NULL DEFAULT 0,
+  total                  NUMERIC(10,2) NOT NULL,
+  coupon_code            VARCHAR(50),
+  -- Delivery rider/courier contact, shown on the order-updates timeline once assigned
+  delivery_contact_name  VARCHAR(150),
+  delivery_contact_phone VARCHAR(20),
+  created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_orders_user ON orders(user_id, created_at DESC);
 CREATE INDEX idx_orders_status ON orders(status);

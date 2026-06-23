@@ -302,17 +302,22 @@ router.get('/orders', async (req, res) => {
   }
 });
 
-// PUT /api/v1/admin/orders/:id — update order status
+// PUT /api/v1/admin/orders/:id — update order status and/or delivery contact
 router.put('/orders/:id', async (req, res) => {
-  const { status } = req.body;
-  const valid = ['placed', 'confirmed', 'shipped', 'delivered', 'cancelled'];
-  if (!valid.includes(status)) {
+  const { status, delivery_contact_name, delivery_contact_phone } = req.body;
+  const valid = ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
+  if (status !== undefined && !valid.includes(status)) {
     return res.status(400).json({ success: false, message: `status must be one of: ${valid.join(', ')}` });
   }
   try {
     const result = await db.query(
-      `UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
-      [status, req.params.id]
+      `UPDATE orders SET
+         status                 = COALESCE($1, status),
+         delivery_contact_name  = COALESCE($2, delivery_contact_name),
+         delivery_contact_phone = COALESCE($3, delivery_contact_phone),
+         updated_at             = NOW()
+       WHERE id = $4 RETURNING *`,
+      [status || null, delivery_contact_name || null, delivery_contact_phone || null, req.params.id]
     );
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'Order not found' });
     res.json({ success: true, data: result.rows[0] });
