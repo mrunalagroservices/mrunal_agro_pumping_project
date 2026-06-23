@@ -3,6 +3,7 @@ const router = express.Router();
 const crypto = require('crypto');
 const db = require('../../config/database');
 const { requireAuth, requireDeviceApiKey } = require('../../middleware/auth');
+const { emitToOrg } = require('../../config/socket');
 
 // ── ESP32 ingest (API key auth, no JWT needed) ────────────────────────────────
 // POST /api/v1/devices/ingest/power-event
@@ -14,10 +15,17 @@ router.post('/ingest/power-event', requireDeviceApiKey, async (req, res) => {
     return res.status(400).json({ success: false, message: 'event_type must be power_on or power_off' });
   }
   try {
-    await db.query(
-      'INSERT INTO power_events (organization_id, device_id, event_type) VALUES ($1, $2, $3)',
+    const created = await db.query(
+      `INSERT INTO power_events (organization_id, device_id, event_type)
+       VALUES ($1, $2, $3) RETURNING *`,
       [req.device.organization_id, req.device.id, event_type]
     );
+    emitToOrg(req.device.organization_id, 'power-event', {
+      device_id: req.device.id,
+      device_name: req.device.name,
+      event_type,
+      created_at: created.rows[0].created_at,
+    });
     res.json({ success: true });
   } catch (err) {
     console.error('[PowerEvent]', err.message);

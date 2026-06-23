@@ -250,6 +250,12 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
             ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: _EmergencyStopButton(enabled: activeActuators > 0),
+              ),
+            ),
             // Quick links: Farms & Devices / Schedules
             SliverToBoxAdapter(
               child: Padding(
@@ -503,6 +509,110 @@ class _FarmMarker extends StatelessWidget {
           child: const Icon(Icons.water_drop, color: Colors.white, size: 14),
         ),
       ],
+    );
+  }
+}
+
+/// Emergency "सर्व बंद" — visible at all times but only tappable while
+/// something is actually running, to keep it from being a dead control most
+/// of the time. A confirmation dialog guards against an accidental tap before
+/// every running actuator across every farm is switched off in parallel.
+class _EmergencyStopButton extends StatefulWidget {
+  final bool enabled;
+  const _EmergencyStopButton({required this.enabled});
+
+  @override
+  State<_EmergencyStopButton> createState() => _EmergencyStopButtonState();
+}
+
+class _EmergencyStopButtonState extends State<_EmergencyStopButton> {
+  bool _stopping = false;
+
+  Future<void> _onTap() async {
+    if (!widget.enabled || _stopping) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('dashboard_emergency_stop_confirm_title')),
+        content: Text(context.tr('dashboard_emergency_stop_confirm_body')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.tr('common_cancel')),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(context.tr('dashboard_emergency_stop')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _stopping = true);
+    final failedCount = await context.read<AppState>().emergencyStopAll();
+    if (!mounted) return;
+    setState(() => _stopping = false);
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          failedCount == 0
+              ? context.tr('dashboard_emergency_stop_success')
+              : context.tr('dashboard_emergency_stop_partial').replaceAll('{n}', '$failedCount'),
+        ),
+        backgroundColor: failedCount == 0 ? AppColors.success : AppColors.danger,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: widget.enabled ? _onTap : null,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: widget.enabled
+              ? AppColors.danger.withValues(alpha: 0.1)
+              : AppColors.subtext.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: widget.enabled ? AppColors.danger.withValues(alpha: 0.3) : Colors.transparent,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_stopping)
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.danger),
+              )
+            else
+              Icon(
+                Icons.power_settings_new,
+                size: 18,
+                color: widget.enabled ? AppColors.danger : AppColors.subtext,
+              ),
+            const SizedBox(width: 8),
+            Text(
+              context.tr('dashboard_emergency_stop'),
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: widget.enabled ? AppColors.danger : AppColors.subtext,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

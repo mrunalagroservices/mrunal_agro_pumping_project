@@ -24,6 +24,12 @@ const Map<String, Map<String, String>> kTranslations = {
   // ── Dashboard (dashboard_screen.dart) ────────────────────────────────────
   'dashboard_greeting': {'en': 'Hi, {name}', 'hi': 'नमस्ते, {name}', 'mr': 'नमस्कार, {name}'},
   'dashboard_pumping_control': {'en': 'Pumping Control', 'hi': 'पंपिंग कंट्रोल', 'mr': 'पंपिंग कंट्रोल'},
+  'dashboard_emergency_stop': {'en': 'All Stop', 'hi': 'सभी बंद', 'mr': 'सर्व बंद'},
+  'dashboard_emergency_stop_confirm_title': {'en': 'Turn off every running pump?', 'hi': 'सभी चल रहे पंप बंद करें?', 'mr': 'सर्व सुरू असलेले पंप बंद करायचे?'},
+  'dashboard_emergency_stop_confirm_body': {'en': 'This immediately stops every actuator that is currently on, across all your farms.', 'hi': 'यह आपके सभी फार्मों में चल रहे हर एक्ट्यूएटर को तुरंत बंद कर देगा।', 'mr': 'यामुळे तुमच्या सर्व फार्म्समधील सध्या सुरू असलेले प्रत्येक अ‍ॅक्ट्युएटर लगेच बंद होईल.'},
+  'dashboard_emergency_stop_none_running': {'en': 'Nothing is running right now.', 'hi': 'अभी कुछ भी चालू नहीं है।', 'mr': 'सध्या काहीही सुरू नाही.'},
+  'dashboard_emergency_stop_success': {'en': 'All pumps stopped.', 'hi': 'सभी पंप बंद कर दिए गए।', 'mr': 'सर्व पंप बंद केले.'},
+  'dashboard_emergency_stop_partial': {'en': '{n} pump(s) could not be stopped. Please check them.', 'hi': '{n} पंप बंद नहीं हो सके। कृपया उन्हें जांचें।', 'mr': '{n} पंप बंद होऊ शकले नाहीत. कृपया तपासा.'},
   'dashboard_view_live_map': {'en': 'View live map', 'hi': 'लाइव मैप देखें', 'mr': 'लाइव्ह मॅप पाहा'},
   'dashboard_no_farm_location': {
     'en': 'No farm locations set yet.\nAdd latitude/longitude to a farm to see it on the map.',
@@ -225,6 +231,7 @@ const Map<String, Map<String, String>> kTranslations = {
 
   // ── Market / Shop (shop_screen.dart) ──────────────────────────────────────
   'shop_search_hint': {'en': 'Search seeds, fertilizers, tools…', 'hi': 'बीज, खाद, उपकरण खोजें…', 'mr': 'बियाणे, खते, अवजारे शोधा…'},
+  'shop_voice_search_unavailable': {'en': 'Voice search is not available on this device.', 'hi': 'इस डिवाइस पर वॉइस सर्च उपलब्ध नहीं है।', 'mr': 'या डिव्हाइसवर व्हॉइस सर्च उपलब्ध नाही.'},
   'shop_free_delivery': {
     'en': 'Free delivery by {date} on orders above ₹499',
     'hi': '₹499 से ऊपर के ऑर्डर पर {date} तक फ्री डिलीवरी',

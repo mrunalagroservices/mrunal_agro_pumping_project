@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../l10n/tr_extension.dart';
 import '../models/product.dart';
 import '../providers/app_state.dart';
@@ -39,6 +41,9 @@ class _ShopScreenState extends State<ShopScreen> {
   String _searchQuery = '';
   List<String> _categories = [];
 
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _isListening = false;
+
   @override
   void initState() {
     super.initState();
@@ -58,7 +63,48 @@ class _ShopScreenState extends State<ShopScreen> {
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _speech.stop();
     super.dispose();
+  }
+
+  // Tapping the mic mid-listen stops it; otherwise this requests the mic
+  // permission (handled by the plugin) and starts a one-shot voice search.
+  Future<void> _toggleVoiceSearch() async {
+    if (_isListening) {
+      await _speech.stop();
+      if (mounted) setState(() => _isListening = false);
+      return;
+    }
+
+    HapticFeedback.selectionClick();
+    final available = await _speech.initialize(
+      onStatus: (status) {
+        if ((status == 'done' || status == 'notListening') && mounted) {
+          setState(() => _isListening = false);
+        }
+      },
+      onError: (_) {
+        if (mounted) setState(() => _isListening = false);
+      },
+    );
+    if (!available) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.tr('shop_voice_search_unavailable'))),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isListening = true);
+    _speech.listen(
+      onResult: (result) {
+        setState(() {
+          _searchCtrl.text = result.recognizedWords;
+          _searchQuery = result.recognizedWords;
+        });
+      },
+    );
   }
 
   int get _cartCount => _cart.values.fold(0, (a, b) => a + b);
@@ -269,7 +315,14 @@ class _ShopScreenState extends State<ShopScreen> {
                                       setState(() => _searchQuery = '');
                                     },
                                   )
-                                : null,
+                                : IconButton(
+                                    icon: Icon(
+                                      _isListening ? Icons.mic : Icons.mic_none,
+                                      size: 20,
+                                      color: _isListening ? AppColors.accent : AppColors.subtext,
+                                    ),
+                                    onPressed: _toggleVoiceSearch,
+                                  ),
                             filled: true,
                             fillColor: AppColors.chip,
                             contentPadding: const EdgeInsets.symmetric(

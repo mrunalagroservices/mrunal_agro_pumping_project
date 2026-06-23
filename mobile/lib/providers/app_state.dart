@@ -13,6 +13,7 @@ import '../models/product.dart';
 import '../models/schedule.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
+import '../services/feedback_service.dart';
 import '../services/local_db.dart';
 import '../services/socket_service.dart';
 
@@ -153,10 +154,21 @@ class AppState extends ChangeNotifier {
       onActuatorStatus: (data) {
         final updated = Actuator.fromJson(data);
         final index = actuators.indexWhere((a) => a.id == updated.id);
+        final previousState = index == -1 ? null : actuators[index].currentState;
         if (index == -1) {
           actuators.add(updated);
         } else {
           actuators[index] = updated;
+        }
+        // Fires for every transition regardless of who/what triggered it (this
+        // phone, the dashboard, a schedule, automation, or a safety cutoff) so
+        // the operator always feels/hears a motor turning on or off.
+        if (previousState != null && previousState != updated.currentState) {
+          if (updated.isOn) {
+            FeedbackService.motorStarted();
+          } else {
+            FeedbackService.motorStopped();
+          }
         }
         notifyListeners();
       },
@@ -164,13 +176,32 @@ class AppState extends ChangeNotifier {
         final deviceId = data['device_id'] as int;
         final index = devices.indexWhere((d) => d.id == deviceId);
         if (index == -1) return;
+        final previousStatus = devices[index].status;
+        final newStatus = data['status'] as String?;
         devices[index] = devices[index].copyWith(
-          status: data['status'] as String?,
+          status: newStatus,
           lastSeenAt: data['last_seen_at'] != null
               ? DateTime.tryParse(data['last_seen_at'] as String)
               : null,
         );
+        // "Forceful" disconnect — the device dropped offline without a graceful
+        // logout, e.g. a snapped wire or power loss to the controller itself.
+        if (previousStatus != newStatus) {
+          if (newStatus == 'offline') {
+            FeedbackService.connectionLost();
+          } else if (newStatus == 'online' && previousStatus == 'offline') {
+            FeedbackService.connectionRestored();
+          }
+        }
         notifyListeners();
+      },
+      onPowerEvent: (data) {
+        final eventType = data['event_type'] as String?;
+        if (eventType == 'power_off') {
+          FeedbackService.powerCut();
+        } else if (eventType == 'power_on') {
+          FeedbackService.powerRestored();
+        }
       },
     );
   }
@@ -714,6 +745,17 @@ class AppState extends ChangeNotifier {
       notifyListeners();
       return 'Could not reach the server.';
     }
+  }
+
+  /// Emergency "सर्व बंद" — turns off every actuator currently running across
+  /// every farm, in parallel. Returns the number that failed to turn off
+  /// (0 means everything stopped successfully).
+  Future<int> emergencyStopAll() async {
+    final running = actuators.where((a) => a.isOn).toList();
+    if (running.isEmpty) return 0;
+    await FeedbackService.emergencyStop();
+    final results = await Future.wait(running.map(toggleActuator));
+    return results.where((e) => e != null).length;
   }
 
   // ── Farm layout diagram (read-only on mobile; authored on the dashboard) ───

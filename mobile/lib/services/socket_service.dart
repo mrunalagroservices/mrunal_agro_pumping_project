@@ -10,6 +10,7 @@ class SocketService {
     String token, {
     required void Function(Map<String, dynamic> data) onActuatorStatus,
     required void Function(Map<String, dynamic> data) onDeviceStatus,
+    void Function(Map<String, dynamic> data)? onPowerEvent,
   }) {
     disconnect();
 
@@ -27,6 +28,9 @@ class SocketService {
     });
     socket.on('device-status', (data) {
       onDeviceStatus(Map<String, dynamic>.from(data as Map));
+    });
+    socket.on('power-event', (data) {
+      onPowerEvent?.call(Map<String, dynamic>.from(data as Map));
     });
 
     socket.connect();

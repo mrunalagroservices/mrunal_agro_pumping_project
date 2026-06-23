@@ -39,7 +39,7 @@ async function requireDeviceApiKey(req, res, next) {
   if (!apiKey) return res.status(401).json({ success: false, message: 'Missing API key' });
   try {
     const result = await db.query(
-      'SELECT id, organization_id FROM devices WHERE api_key = $1',
+      'SELECT id, organization_id, name FROM devices WHERE api_key = $1',
       [apiKey]
     );
     if (!result.rows.length) return res.status(401).json({ success: false, message: 'Invalid API key' });
