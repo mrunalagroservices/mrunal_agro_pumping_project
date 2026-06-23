@@ -54,6 +54,19 @@ export default function MapPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // ── read-only diagram for the selected farm (shown whenever not editing) ───
+  const [viewDiagram, setViewDiagram] = useState<FarmDiagram | null>(null);
+
+  useEffect(() => {
+    if (editMode) return; // edit mode manages its own diagram state/fetch
+    if (selectedFarmId == null) { setViewDiagram(null); return; }
+    let cancelled = false;
+    httpClient.get<ApiResponse<FarmDiagram>>(`/farms/${selectedFarmId}/diagram`)
+      .then((res) => { if (!cancelled) setViewDiagram(res.data ?? null); })
+      .catch(() => { if (!cancelled) setViewDiagram(null); });
+    return () => { cancelled = true; };
+  }, [selectedFarmId, editMode]);
+
   const load = useCallback(() => {
     Promise.all([
       httpClient.get<ApiResponse<Farm[]>>("/farms"),
@@ -477,7 +490,7 @@ export default function MapPage() {
             selectedFarmId={selectedFarmId}
             onSelectFarm={(id) => { setSelectedFarmId(id); if (pinningFarmId) cancelPin(); }}
             pinMode={pinningFarmId !== null}
-            diagram={editMode ? diagram ?? undefined : undefined}
+            diagram={editMode ? diagram ?? undefined : viewDiagram ?? undefined}
             editMode={editMode}
             activeTool={activeTool}
             connectingFromId={connectingFromId}
