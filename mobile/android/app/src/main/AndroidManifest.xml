@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Voice search on the Market screen -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Haptic feedback on motor start/stop and connectivity events -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <application
         android:label="mobile"
         android:name="${applicationName}"

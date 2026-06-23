@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Centralized haptic + sound feedback for real-time pump events (motor
@@ -41,43 +42,53 @@ class FeedbackService {
       await _ensureAudioContext();
       await _player.stop();
       await _player.play(AssetSource(fileName));
-    } catch (_) {
-      // Best-effort — haptics still fire even if audio playback fails
-      // (e.g. no audio asset bundled on an unsupported platform).
+    } catch (e) {
+      // Surfaced via debugPrint rather than swallowed — a MissingPluginException
+      // here usually means the app binary was hot-reloaded/restarted instead of
+      // fully rebuilt after audioplayers was added, so its native side never
+      // got linked in. A full stop + `flutter run` (not hot reload) fixes that.
+      debugPrint('[FeedbackService] failed to play $fileName: $e');
     }
   }
 
   static void motorStarted() {
+    debugPrint('[FeedbackService] motorStarted (haptic + success.wav)');
     HapticFeedback.mediumImpact();
     _play('success.wav');
   }
 
   static void motorStopped() {
+    debugPrint('[FeedbackService] motorStopped (haptic + stop.wav)');
     HapticFeedback.lightImpact();
     _play('stop.wav');
   }
 
   static void powerRestored() {
+    debugPrint('[FeedbackService] powerRestored (haptic + success.wav)');
     HapticFeedback.mediumImpact();
     _play('success.wav');
   }
 
   static void powerCut() {
+    debugPrint('[FeedbackService] powerCut (haptic + alert.wav)');
     HapticFeedback.heavyImpact();
     _play('alert.wav');
   }
 
   static void connectionLost() {
+    debugPrint('[FeedbackService] connectionLost (haptic + alert.wav)');
     HapticFeedback.heavyImpact();
     _play('alert.wav');
   }
 
   static void connectionRestored() {
+    debugPrint('[FeedbackService] connectionRestored (haptic + success.wav)');
     HapticFeedback.mediumImpact();
     _play('success.wav');
   }
 
   static Future<void> emergencyStop() async {
+    debugPrint('[FeedbackService] emergencyStop (haptic x2 + alert.wav)');
     HapticFeedback.heavyImpact();
     await _play('alert.wav');
     await Future.delayed(const Duration(milliseconds: 350));
