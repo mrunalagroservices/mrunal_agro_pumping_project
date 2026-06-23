@@ -10,6 +10,7 @@ import DashboardShell from "@/components/DashboardShell";
 import { httpClient } from "@/lib/api";
 import type { Product, ProductReview, ApiResponse } from "@/lib/types";
 import { cartFromStorage, cartToStorage } from "@/lib/products";
+import { useLocale } from "@/contexts/LocaleContext";
 
 function PImg({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
   const [err, setErr] = useState(false);
@@ -47,6 +48,7 @@ function WriteReviewModal({ productId, onClose, onSubmitted }: { productId: numb
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLocale();
 
   async function submit() {
     setSubmitting(true);
@@ -56,7 +58,7 @@ function WriteReviewModal({ productId, onClose, onSubmitted }: { productId: numb
       onSubmitted();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not submit review.");
+      setError(err instanceof Error ? err.message : t("pd_could_not_submit_review"));
     } finally {
       setSubmitting(false);
     }
@@ -65,7 +67,7 @@ function WriteReviewModal({ productId, onClose, onSubmitted }: { productId: numb
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-bold text-slate-800 mb-4">Write a review</h3>
+        <h3 className="font-bold text-slate-800 mb-4">{t("pd_write_a_review")}</h3>
         <div className="flex gap-1 mb-4">
           {[1, 2, 3, 4, 5].map((s) => (
             <button key={s} onClick={() => setRating(s)}>
@@ -73,13 +75,13 @@ function WriteReviewModal({ productId, onClose, onSubmitted }: { productId: numb
             </button>
           ))}
         </div>
-        <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={4} placeholder="Share your experience (optional)"
+        <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={4} placeholder={t("ordersd_review_placeholder")}
           className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none" />
         {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
         <div className="flex gap-3 mt-4">
-          <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">{t("pd_cancel")}</button>
           <button onClick={submit} disabled={submitting} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-colors">
-            {submitting ? "Submitting..." : "Submit"}
+            {submitting ? t("pd_submitting") : t("pd_submit")}
           </button>
         </div>
       </div>
@@ -99,6 +101,7 @@ export default function ProductDetailPage() {
   const [cartQty, setCartQty] = useState(0);
   const [wishlisted, setWishlisted] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const { t } = useLocale();
 
   function loadReviews() {
     httpClient.get<ApiResponse<ProductReview[]>>(`/products/${id}/reviews`).then((res) => setReviews(res.data)).catch(() => {});
@@ -160,7 +163,7 @@ export default function ProductDetailPage() {
 
   async function share() {
     if (!product) return;
-    const text = `${product.name} — ₹${product.price.toFixed(0)} on Mrunal Agro Market`;
+    const text = t("pd_share_text", { name: product.name, price: product.price.toFixed(0) });
     if (navigator.share) {
       try { await navigator.share({ text }); } catch { /* user cancelled */ }
     } else {
@@ -170,7 +173,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <DashboardShell breadcrumb={[{ label: "Market", href: "/shop" }, { label: "Product" }]}>
+      <DashboardShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: t("pd_product_fallback") }]}>
         <div className="flex items-center justify-center h-64">
           <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -180,11 +183,11 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <DashboardShell breadcrumb={[{ label: "Market", href: "/shop" }, { label: "Product" }]}>
+      <DashboardShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: t("pd_product_fallback") }]}>
         <div className="text-center py-24 text-slate-400">
           <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="font-semibold mb-2">Product not found</p>
-          <button onClick={() => router.push("/shop")} className="text-sm text-emerald-600 hover:underline">← Back to Market</button>
+          <p className="font-semibold mb-2">{t("pd_product_not_found")}</p>
+          <button onClick={() => router.push("/shop")} className="text-sm text-emerald-600 hover:underline">{t("pd_back_to_market_arrow")}</button>
         </div>
       </DashboardShell>
     );
@@ -194,10 +197,10 @@ export default function ProductDetailPage() {
   const similar = allProducts.filter((p) => p.category === product.category && p.id !== product.id);
 
   return (
-    <DashboardShell breadcrumb={[{ label: "Market", href: "/shop" }, { label: product.name }]}>
+    <DashboardShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: product.name }]}>
       <div className="flex items-center justify-between mb-4 max-w-4xl">
         <button onClick={() => router.push("/shop")} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700">
-          <ArrowLeft className="w-4 h-4" /> Back to Market
+          <ArrowLeft className="w-4 h-4" /> {t("pd_back_to_market")}
         </button>
         <div className="flex items-center gap-2">
           <button onClick={toggleWishlist} className={`w-9 h-9 rounded-full flex items-center justify-center border transition-colors ${wishlisted ? "bg-red-50 border-red-200" : "border-slate-200 hover:bg-slate-50"}`}>
@@ -213,7 +216,7 @@ export default function ProductDetailPage() {
         <div>
           <div className="relative rounded-2xl overflow-hidden bg-white border border-slate-200" style={{ aspectRatio: "1/1" }}>
             <PImg src={product.image_url} alt={product.name} className="w-full h-full" />
-            {disc > 0 && <span className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-2.5 py-1 rounded-lg">{disc}% off</span>}
+            {disc > 0 && <span className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-2.5 py-1 rounded-lg">{t("pd_off", { n: disc })}</span>}
             {product.review_count > 0 && (
               <div className="absolute bottom-3 right-3 bg-white rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 shadow">
                 <span className="text-sm font-semibold text-slate-800">{product.rating.toFixed(1)}</span>
@@ -225,7 +228,7 @@ export default function ProductDetailPage() {
         </div>
 
         <div>
-          {product.is_best_seller && <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-full mb-3">★ Best Seller</span>}
+          {product.is_best_seller && <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-full mb-3">{t("pd_best_seller")}</span>}
           <h1 className="text-2xl font-bold text-slate-800 mb-1">{product.name}</h1>
           <p className="text-sm text-slate-400 mb-4">{product.unit}</p>
           <div className="flex items-baseline gap-3 mb-5">
@@ -233,54 +236,54 @@ export default function ProductDetailPage() {
             {product.original_price > product.price && (
               <>
                 <span className="text-lg text-slate-400 line-through">₹{product.original_price.toLocaleString("en-IN")}</span>
-                <span className="text-sm font-semibold text-orange-600">{disc}% off</span>
+                <span className="text-sm font-semibold text-orange-600">{t("pd_off", { n: disc })}</span>
               </>
             )}
           </div>
 
           <div className="border-t border-slate-100 pt-5 mb-5">
-            <p className="text-sm font-semibold text-slate-800 mb-3">Delivery & Services</p>
+            <p className="text-sm font-semibold text-slate-800 mb-3">{t("pd_delivery_services")}</p>
             <div className="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3 mb-3">
               <Truck className="w-4 h-4 text-slate-700 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-slate-800">{product.stock_quantity > 0 ? `Free delivery by ${deliveryDate()}` : "Out of stock"}</p>
-                <p className="text-xs text-slate-400">On orders above ₹499</p>
+                <p className="text-sm font-medium text-slate-800">{product.stock_quantity > 0 ? t("pd_free_delivery_by", { date: deliveryDate() }) : t("pd_out_of_stock")}</p>
+                <p className="text-xs text-slate-400">{t("pd_on_orders_above")}</p>
               </div>
             </div>
             <div className="space-y-2 text-sm text-slate-700">
-              <p className="flex items-center gap-2.5"><Store className="w-4 h-4 text-slate-500" /> Sold by Mrunal Agro</p>
-              <p className="flex items-center gap-2.5"><Banknote className="w-4 h-4 text-slate-500" /> Cash on Delivery available (+₹100 handling)</p>
-              <p className="flex items-center gap-2.5"><Headset className="w-4 h-4 text-slate-500" /> Contact support for replacement of damaged or incorrect items</p>
+              <p className="flex items-center gap-2.5"><Store className="w-4 h-4 text-slate-500" /> {t("pd_sold_by")}</p>
+              <p className="flex items-center gap-2.5"><Banknote className="w-4 h-4 text-slate-500" /> {t("pd_cod_available")}</p>
+              <p className="flex items-center gap-2.5"><Headset className="w-4 h-4 text-slate-500" /> {t("pd_contact_support")}</p>
             </div>
           </div>
 
           {product.description && (
             <div className="border-t border-slate-100 pt-5 mb-5">
-              <p className="text-sm font-semibold text-slate-800 mb-2">Product Details</p>
+              <p className="text-sm font-semibold text-slate-800 mb-2">{t("pd_product_details")}</p>
               <p className="text-sm text-slate-500 leading-relaxed">{product.description}</p>
             </div>
           )}
 
           {product.stock_quantity > 0 && product.stock_quantity <= 20 && (
-            <p className="text-xs text-red-500 font-medium mb-4">Only {product.stock_quantity} left!</p>
+            <p className="text-xs text-red-500 font-medium mb-4">{t("pd_only_left", { n: product.stock_quantity })}</p>
           )}
 
           <div className="flex gap-3 sticky bottom-4">
             <button onClick={buyNow} disabled={product.stock_quantity === 0}
               className="flex-1 py-3 border-2 border-slate-800 text-slate-800 font-bold rounded-xl transition-colors hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
-              Buy Now
+              {t("pd_buy_now")}
             </button>
             {product.stock_quantity === 0 ? (
-              <button disabled className="flex-1 py-3 bg-slate-100 text-slate-400 font-bold rounded-xl cursor-not-allowed">Out of Stock</button>
+              <button disabled className="flex-1 py-3 bg-slate-100 text-slate-400 font-bold rounded-xl cursor-not-allowed">{t("pd_out_of_stock_btn")}</button>
             ) : cartQty > 0 ? (
               <div className="flex-1 flex items-center justify-between border-2 border-emerald-500 rounded-xl px-4">
                 <button onClick={removeFromCart} className="text-emerald-600 hover:text-emerald-800"><Minus className="w-5 h-5" /></button>
-                <span className="font-bold text-emerald-700">{cartQty} in cart</span>
+                <span className="font-bold text-emerald-700">{t("pd_in_cart", { n: cartQty })}</span>
                 <button onClick={addToCart} className="text-emerald-600 hover:text-emerald-800"><Plus className="w-5 h-5" /></button>
               </div>
             ) : (
               <button onClick={addToCart} className="flex-1 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
-                <ShoppingCart className="w-4 h-4" /> Add to Bag
+                <ShoppingCart className="w-4 h-4" /> {t("pd_add_to_bag")}
               </button>
             )}
           </div>
@@ -289,8 +292,8 @@ export default function ProductDetailPage() {
 
       <div className="border-t border-slate-100 mt-8 pt-6 max-w-4xl">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-slate-800">Ratings & Reviews</p>
-          <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold text-emerald-600 hover:underline">Write a review</button>
+          <p className="text-sm font-semibold text-slate-800">{t("pd_ratings_reviews")}</p>
+          <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold text-emerald-600 hover:underline">{t("pd_write_a_review")}</button>
         </div>
         {product.review_count > 0 && (
           <div className="inline-flex items-center gap-1.5 bg-emerald-700 text-white rounded-lg px-2.5 py-1.5 mb-4">
@@ -299,7 +302,7 @@ export default function ProductDetailPage() {
           </div>
         )}
         {reviews.length === 0 ? (
-          <p className="text-sm text-slate-400">No reviews yet — be the first to write one.</p>
+          <p className="text-sm text-slate-400">{t("pd_no_reviews_yet")}</p>
         ) : (
           <div className="space-y-3">
             {reviews.map((r) => (
@@ -322,7 +325,7 @@ export default function ProductDetailPage() {
 
       {similar.length > 0 && (
         <div className="border-t border-slate-100 mt-8 pt-6 max-w-4xl">
-          <p className="text-sm font-semibold text-slate-800 mb-3">Similar Products</p>
+          <p className="text-sm font-semibold text-slate-800 mb-3">{t("pd_similar_products")}</p>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {similar.map((p) => (
               <button key={p.id} onClick={() => router.push(`/shop/${p.id}`)}

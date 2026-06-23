@@ -13,13 +13,28 @@ import {
   DiagramElementType, DiagramConnectionType, DiagramTool,
 } from "@/lib/types";
 import { ELEMENT_CFG, CONN_CFG } from "@/lib/diagramConfig";
+import { useLocale } from "@/contexts/LocaleContext";
+import { TranslationKey } from "@/lib/translations";
 
 const ELEMENT_TOOL_TYPES: DiagramElementType[] = [
   "well", "motor", "valve", "electricity_pole", "pipe_junction",
 ];
 const CONN_TOOL_TYPES: DiagramConnectionType[] = ["pipe", "wire"];
 
+const ELEMENT_LABEL_KEYS: Record<DiagramElementType, TranslationKey> = {
+  well: "map_el_well",
+  motor: "map_el_motor",
+  valve: "map_el_valve",
+  electricity_pole: "map_el_electricity_pole",
+  pipe_junction: "map_el_pipe_junction",
+};
+const CONN_LABEL_KEYS: Record<DiagramConnectionType, TranslationKey> = {
+  pipe: "map_conn_pipe",
+  wire: "map_conn_wire",
+};
+
 export default function MapPage() {
+  const { t } = useLocale();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [actuators, setActuators] = useState<Actuator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +128,7 @@ export default function MapPage() {
       setConnectingFromId(null);
       setSelectedElementId(null);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Failed to save. Please try again.");
+      setSaveError(err instanceof Error ? err.message : t("map_failed_to_save"));
     } finally {
       setSaving(false);
     }
@@ -196,11 +211,12 @@ export default function MapPage() {
   };
 
   const instruction = (() => {
-    if (activeTool === "select") return selectedElementId ? "Drag to move · Delete to remove" : "Click an element to select it";
+    if (activeTool === "select") return selectedElementId ? t("map_instr_select_with_selection") : t("map_instr_select_empty");
     if (activeTool === "pipe" || activeTool === "wire") {
-      return connectingFromId ? "Now click the destination element" : "Click the first element";
+      return connectingFromId ? t("map_instr_connect_dest") : t("map_instr_connect_first");
     }
-    return `Click on the map to place a ${ELEMENT_CFG[activeTool as DiagramElementType]?.label ?? activeTool}`;
+    const labelKey = ELEMENT_LABEL_KEYS[activeTool as DiagramElementType];
+    return t("map_instr_place", { element: labelKey ? t(labelKey) : activeTool });
   })();
 
   return (
@@ -211,8 +227,8 @@ export default function MapPage() {
           <Navigation className="w-4 h-4 shrink-0 animate-pulse" />
           <span className="flex-1">
             {pinSaving
-              ? "Saving location…"
-              : `Click anywhere on the map to pin "${pinningFarm?.name ?? ""}" — crosshair is active`}
+              ? t("map_saving_location")
+              : t("map_pin_instruction", { farm: pinningFarm?.name ?? "" })}
           </span>
           <button onClick={cancelPin} className="p-1 hover:bg-white/20 rounded-lg transition-colors">
             <X className="w-4 h-4" />
@@ -229,7 +245,7 @@ export default function MapPage() {
               <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2 shrink-0">
                 <Pencil className="w-4 h-4 text-emerald-600 shrink-0" />
                 <p className="text-sm font-semibold text-slate-800 truncate">
-                  {editingFarm?.name ?? "Edit Layout"}
+                  {editingFarm?.name ?? t("map_edit_layout")}
                 </p>
               </div>
 
@@ -239,7 +255,7 @@ export default function MapPage() {
                   disabled={saving}
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
                 >
-                  <X className="w-4 h-4" /> Cancel
+                  <X className="w-4 h-4" /> {t("common_cancel")}
                 </button>
                 <button
                   onClick={saveDiagram}
@@ -247,7 +263,7 @@ export default function MapPage() {
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors disabled:opacity-60"
                 >
                   <Save className="w-4 h-4" />
-                  {saving ? "Saving…" : "Save"}
+                  {saving ? t("map_saving") : t("common_save")}
                 </button>
               </div>
 
@@ -259,19 +275,19 @@ export default function MapPage() {
 
               <div className="overflow-y-auto flex-1 px-3 pb-3 space-y-4">
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">Mode</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">{t("map_mode")}</p>
                   <button
                     onClick={() => selectTool("select")}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
                       activeTool === "select" ? "bg-slate-800 text-white border-slate-800" : "border-slate-200 text-slate-600 hover:bg-slate-50"
                     }`}
                   >
-                    <MousePointer2 className="w-4 h-4" /> Select / Move
+                    <MousePointer2 className="w-4 h-4" /> {t("map_select_move")}
                   </button>
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">Place element</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">{t("map_place_element")}</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {ELEMENT_TOOL_TYPES.map((type) => {
                       const cfg = ELEMENT_CFG[type];
@@ -289,7 +305,7 @@ export default function MapPage() {
                             style={{ background: cfg.gradient }}
                             dangerouslySetInnerHTML={{ __html: cfg.svg }}
                           />
-                          <span>{cfg.label}</span>
+                          <span>{t(ELEMENT_LABEL_KEYS[type])}</span>
                         </button>
                       );
                     })}
@@ -297,7 +313,7 @@ export default function MapPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">Draw connection</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">{t("map_draw_connection")}</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {CONN_TOOL_TYPES.map((type) => {
                       const cfg = CONN_CFG[type];
@@ -316,7 +332,7 @@ export default function MapPage() {
                           >
                             {cfg.symbol}
                           </span>
-                          <span>{cfg.label}</span>
+                          <span>{t(CONN_LABEL_KEYS[type])}</span>
                         </button>
                       );
                     })}
@@ -328,7 +344,7 @@ export default function MapPage() {
                     onClick={deleteSelectedElement}
                     className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" /> Delete selected
+                    <Trash2 className="w-4 h-4" /> {t("map_delete_selected")}
                   </button>
                 )}
 
@@ -341,8 +357,8 @@ export default function MapPage() {
             /* ── Farm list ──────────────────────────────────────────────── */
             <>
               <div className="px-4 py-3 border-b border-slate-100 shrink-0">
-                <p className="text-sm font-semibold text-slate-800">Farms</p>
-                <p className="text-xs text-slate-500">{farmsWithLocation.length} pinned · {farmsNoLocation.length} unpinned</p>
+                <p className="text-sm font-semibold text-slate-800">{t("map_farms_title")}</p>
+                <p className="text-xs text-slate-500">{t("map_pinned_unpinned", { pinned: farmsWithLocation.length, unpinned: farmsNoLocation.length })}</p>
               </div>
 
               <div className="overflow-y-auto flex-1">
@@ -351,14 +367,14 @@ export default function MapPage() {
                     <div className="w-6 h-6 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : farms.length === 0 ? (
-                  <p className="text-sm text-slate-400 italic px-4 py-8 text-center">No farms yet</p>
+                  <p className="text-sm text-slate-400 italic px-4 py-8 text-center">{t("map_no_farms_yet")}</p>
                 ) : (
                   <>
                     {/* Pinned farms */}
                     {farmsWithLocation.length > 0 && (
                       <div>
                         <p className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border-b border-slate-100">
-                          On Map
+                          {t("map_on_map")}
                         </p>
                         {farmsWithLocation.map((farm) => {
                           const isActive = activeFarmIds.has(farm.id);
@@ -380,7 +396,7 @@ export default function MapPage() {
                                 )}
                                 <p className="flex items-center gap-1 text-xs text-slate-400 mt-0.5 ml-4">
                                   <Cpu className="w-3 h-3 shrink-0" />
-                                  {isActive ? "Pump running" : "Idle"} · {farm.device_count ?? 0} device(s)
+                                  {isActive ? t("map_pump_running") : t("map_idle")} · {t("map_device_count", { count: farm.device_count ?? 0 })}
                                 </p>
                               </button>
                               {isSelected && (
@@ -389,13 +405,13 @@ export default function MapPage() {
                                     onClick={() => startPin(farm)}
                                     className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors px-3 py-1.5 rounded-lg"
                                   >
-                                    <MapPin className="w-3.5 h-3.5" /> Repin
+                                    <MapPin className="w-3.5 h-3.5" /> {t("map_repin")}
                                   </button>
                                   <button
                                     onClick={() => enterEditMode(farm)}
                                     className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors px-3 py-1.5 rounded-lg"
                                   >
-                                    <Pencil className="w-3.5 h-3.5" /> Layout
+                                    <Pencil className="w-3.5 h-3.5" /> {t("map_layout")}
                                   </button>
                                 </div>
                               )}
@@ -409,7 +425,7 @@ export default function MapPage() {
                     {farmsNoLocation.length > 0 && (
                       <div>
                         <p className="px-4 py-2 text-[10px] font-bold text-amber-500 uppercase tracking-wider bg-amber-50 border-b border-amber-100">
-                          Not Pinned
+                          {t("map_not_pinned")}
                         </p>
                         {farmsNoLocation.map((farm) => {
                           const isPinning = pinningFarmId === farm.id;
@@ -419,18 +435,18 @@ export default function MapPage() {
                                 <MapPinOff className="w-4 h-4 text-slate-300 shrink-0" />
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium text-slate-700 text-sm truncate">{farm.name}</p>
-                                  <p className="text-xs text-slate-400">{farm.device_count ?? 0} device(s)</p>
+                                  <p className="text-xs text-slate-400">{t("map_device_count", { count: farm.device_count ?? 0 })}</p>
                                 </div>
                                 {isPinning ? (
                                   <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg animate-pulse">
-                                    <Navigation className="w-3 h-3" /> Pinning…
+                                    <Navigation className="w-3 h-3" /> {t("map_pinning")}
                                   </span>
                                 ) : (
                                   <button
                                     onClick={() => startPin(farm)}
                                     className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors px-2 py-1.5 rounded-lg shrink-0"
                                   >
-                                    <MapPin className="w-3 h-3" /> Pin
+                                    <MapPin className="w-3 h-3" /> {t("map_pin")}
                                   </button>
                                 )}
                               </div>
@@ -445,8 +461,8 @@ export default function MapPage() {
 
               {/* Legend */}
               <div className="px-4 py-3 border-t border-slate-100 shrink-0 flex items-center gap-4 text-xs text-slate-500">
-                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> Running</span>
-                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-300 inline-block" /> Idle</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> {t("map_legend_running")}</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-300 inline-block" /> {t("map_legend_idle")}</span>
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 ml-auto" />
               </div>
             </>

@@ -15,6 +15,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface MenuItem {
   icon: React.ElementType;
@@ -24,68 +25,69 @@ interface MenuItem {
   bgLight: string;
 }
 
-const menuItems: MenuItem[] = [
-  {
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    href: "/",
-    textColor: "text-accent-700",
-    bgLight: "bg-accent-50",
-  },
-  {
-    icon: Warehouse,
-    label: "Farms & Devices",
-    href: "/farms",
-    textColor: "text-emerald-700",
-    bgLight: "bg-emerald-50",
-  },
-  {
-    icon: Zap,
-    label: "Automation & Schedules",
-    href: "/automation",
-    textColor: "text-amber-700",
-    bgLight: "bg-amber-50",
-  },
-  {
-    icon: Bell,
-    label: "Alerts",
-    href: "/alerts",
-    textColor: "text-amber-700",
-    bgLight: "bg-amber-50",
-  },
-  {
-    icon: BarChart3,
-    label: "Analytics",
-    href: "/analytics",
-    textColor: "text-violet-700",
-    bgLight: "bg-violet-50",
-  },
-  {
-    icon: Map,
-    label: "Map",
-    href: "/map",
-    textColor: "text-sky-700",
-    bgLight: "bg-sky-50",
-  },
-  {
-    icon: Settings,
-    label: "Settings",
-    href: "/settings",
-    textColor: "text-slate-700",
-    bgLight: "bg-slate-100",
-  },
-  {
-    icon: ShoppingBag,
-    label: "Market",
-    href: "/shop",
-    textColor: "text-green-700",
-    bgLight: "bg-green-50",
-  },
-];
-
 export default function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { t } = useLocale();
+
+  const menuItems: MenuItem[] = [
+    {
+      icon: LayoutDashboard,
+      label: t("nav_dashboard"),
+      href: "/",
+      textColor: "text-accent-700",
+      bgLight: "bg-accent-50",
+    },
+    {
+      icon: Warehouse,
+      label: t("nav_farms_devices"),
+      href: "/farms",
+      textColor: "text-emerald-700",
+      bgLight: "bg-emerald-50",
+    },
+    {
+      icon: Zap,
+      label: t("nav_automation_schedules"),
+      href: "/automation",
+      textColor: "text-amber-700",
+      bgLight: "bg-amber-50",
+    },
+    {
+      icon: Bell,
+      label: t("nav_alerts"),
+      href: "/alerts",
+      textColor: "text-amber-700",
+      bgLight: "bg-amber-50",
+    },
+    {
+      icon: BarChart3,
+      label: t("nav_analytics"),
+      href: "/analytics",
+      textColor: "text-violet-700",
+      bgLight: "bg-violet-50",
+    },
+    {
+      icon: Map,
+      label: t("nav_map"),
+      href: "/map",
+      textColor: "text-sky-700",
+      bgLight: "bg-sky-50",
+    },
+    {
+      icon: Settings,
+      label: t("nav_settings"),
+      href: "/settings",
+      textColor: "text-slate-700",
+      bgLight: "bg-slate-100",
+    },
+    {
+      icon: ShoppingBag,
+      label: t("nav_market"),
+      href: "/shop",
+      textColor: "text-green-700",
+      bgLight: "bg-green-50",
+    },
+  ];
 
   return (
     <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 border-r border-slate-200 bg-white h-screen sticky top-0">
@@ -93,7 +95,7 @@ export default function Sidebar() {
         <Image src="/icon.png" alt="Mrunal Agro" width={36} height={36} className="rounded-lg" />
         <div className="leading-tight">
           <p className="font-semibold text-slate-800">Mrunal Agro</p>
-          <p className="text-xs text-slate-500">Pumping Control</p>
+          <p className="text-xs text-slate-500">{t("nav_pumping_control")}</p>
         </div>
       </div>
 
@@ -134,7 +136,7 @@ export default function Sidebar() {
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors"
         >
           <LogOut className="w-5 h-5" />
-          Logout
+          {t("nav_logout")}
         </button>
       </div>
     </aside>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Power, Loader2 } from "lucide-react";
 import { Actuator } from "@/lib/types";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function ActuatorCard({
   actuator,
@@ -14,6 +15,7 @@ export default function ActuatorCard({
   const [duration, setDuration] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const isOn = actuator.current_state === "on";
+  const { t } = useLocale();
 
   async function handleToggle() {
     setSubmitting(true);
@@ -45,14 +47,14 @@ export default function ActuatorCard({
               : "bg-slate-100 text-slate-500"
           }`}
         >
-          {isOn ? "ON" : "OFF"}
+          {isOn ? t("ac_on") : t("ac_off")}
         </span>
       </div>
 
       {!isOn && (
         <div className="mt-4">
           <label className="block text-xs font-medium text-slate-500 mb-1">
-            Run for (minutes, optional)
+            {t("ac_run_for_minutes")}
           </label>
           <input
             type="number"
@@ -61,8 +63,8 @@ export default function ActuatorCard({
             onChange={(e) => setDuration(e.target.value)}
             placeholder={
               actuator.max_runtime_minutes
-                ? `Max ${actuator.max_runtime_minutes} min`
-                : "0 = run until stopped"
+                ? t("ac_max_minutes", { n: actuator.max_runtime_minutes })
+                : t("ac_run_until_stopped")
             }
             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
           />
@@ -71,8 +73,7 @@ export default function ActuatorCard({
 
       {isOn && actuator.last_turned_on_at && (
         <p className="text-xs text-slate-500 mt-4">
-          Running since{" "}
-          {new Date(actuator.last_turned_on_at).toLocaleTimeString()}
+          {t("ac_running_since", { time: new Date(actuator.last_turned_on_at).toLocaleTimeString() })}
         </p>
       )}
 
@@ -90,7 +91,7 @@ export default function ActuatorCard({
         ) : (
           <Power className="w-4 h-4" />
         )}
-        {isOn ? "Turn off" : "Turn on"}
+        {isOn ? t("ac_turn_off") : t("ac_turn_on")}
       </button>
     </div>
   );

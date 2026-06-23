@@ -15,6 +15,7 @@ import { socketClient } from "@/lib/socket";
 import { ApiResponse, Actuator, DeviceDetail, Sensor } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useLocale } from "@/contexts/LocaleContext";
 
 // ── Power event helpers ───────────────────────────────────────────────────────
 interface PowerEvent { event_type: "power_on" | "power_off"; created_at: string; }
@@ -29,24 +30,24 @@ function fmtHours(minutes: number): string {
   const h = Math.floor(minutes / 60), m = minutes % 60;
   return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
-function timeSince(dateStr: string | null | undefined): string {
-  if (!dateStr) return "Never seen";
+function timeSince(dateStr: string | null | undefined, t: (k: any, p?: any) => string): string {
+  if (!dateStr) return t("farms_never_seen");
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t("farms_just_now");
+  if (mins < 60) return t("farms_mins_ago", { mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  if (hours < 24) return t("farms_hours_ago", { hours });
+  return t("farms_days_ago", { days: Math.floor(hours / 24) });
 }
-function buildDayRecords(events: PowerEvent[], deviceOnline: boolean): DayRecord[] {
+function buildDayRecords(events: PowerEvent[], deviceOnline: boolean, t: (k: any, p?: any) => string): DayRecord[] {
   const days: DayRecord[] = [];
   const now = new Date();
   for (let i = 6; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const key = d.toISOString().slice(0, 10);
-    const label = i === 0 ? "Today" : i === 1 ? "Yesterday"
+    const label = i === 0 ? t("common_today") : i === 1 ? t("common_yesterday")
       : d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
     days.push({ label, dateKey: key, windows: [], totalMinutes: 0 });
   }
@@ -82,6 +83,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   const { isAuthenticated } = useAuth();
   const toast = useToast();
+  const { t } = useLocale();
   const [device, setDevice] = useState<DeviceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [showApiKey, setShowApiKey] = useState(false);
@@ -157,15 +159,15 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
     try {
       const res = await httpClient.post<ApiResponse<Actuator>>(`/actuators/${actuatorId}/toggle`, { state, duration_minutes: durationMinutes });
       setDevice((prev) => prev ? { ...prev, actuators: prev.actuators.map((a) => a.id === actuatorId ? { ...a, ...res.data } : a) } : prev);
-      const actuatorName = device?.actuators.find((a) => a.id === actuatorId)?.name ?? "Actuator";
-      toast.success(state === "on" ? `${actuatorName} turned ON` : `${actuatorName} turned OFF`);
+      const actuatorName = device?.actuators.find((a) => a.id === actuatorId)?.name ?? t("devd_actuator_fallback");
+      toast.success(state === "on" ? t("devd_toggled_on", { name: actuatorName }) : t("devd_toggled_off", { name: actuatorName }));
     } catch (err) {
-      toast.error("Failed to toggle actuator", err instanceof Error ? err.message : undefined);
+      toast.error(t("devd_toggle_failed"), err instanceof Error ? err.message : undefined);
     }
   }
 
   async function handleRegenerateKey() {
-    if (!confirm("Regenerate the API key? The firmware will need to be reflashed with the new key.")) return;
+    if (!confirm(t("devd_confirm_regenerate"))) return;
     setRegenerating(true);
     try {
       const res = await httpClient.post<ApiResponse<{ api_key: string }>>(`/devices/${id}/regenerate-key`);
@@ -197,16 +199,16 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
 
   const breadcrumb = device
     ? [
-        { label: "Farms & Devices", href: "/farms" },
+        { label: t("nav_farms_devices"), href: "/farms" },
         ...(device.farm_name ? [{ label: device.farm_name, href: "/farms" }] : []),
         { label: device.name },
       ]
-    : [{ label: "Farms & Devices", href: "/farms" }, { label: "Device" }];
+    : [{ label: t("nav_farms_devices"), href: "/farms" }, { label: t("devd_device_fallback") }];
 
   if (loading) {
     return (
       <DashboardShell breadcrumb={breadcrumb}>
-        <p className="text-sm text-slate-500">Loading…</p>
+        <p className="text-sm text-slate-500">{t("common_loading")}</p>
       </DashboardShell>
     );
   }
@@ -214,13 +216,13 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
   if (!device) {
     return (
       <DashboardShell breadcrumb={breadcrumb}>
-        <p className="text-sm text-slate-500">Device not found.</p>
+        <p className="text-sm text-slate-500">{t("devd_device_not_found")}</p>
       </DashboardShell>
     );
   }
 
   const hasPower = device.status === "online";
-  const dayRecords = buildDayRecords(powerEvents, hasPower);
+  const dayRecords = buildDayRecords(powerEvents, hasPower, t);
   const hasAnyHistory = dayRecords.some((r) => r.windows.length > 0);
 
   return (
@@ -235,31 +237,31 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                 <h2 className="text-lg font-semibold text-slate-800">{device.name}</h2>
                 {device.status === "online" ? (
                   <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                    <Wifi className="w-3.5 h-3.5" /> Online
+                    <Wifi className="w-3.5 h-3.5" /> {t("common_online")}
                   </span>
                 ) : (
                   <span className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                    <WifiOff className="w-3.5 h-3.5" /> Offline
+                    <WifiOff className="w-3.5 h-3.5" /> {t("common_offline")}
                   </span>
                 )}
                 <span className="flex items-center gap-1 text-xs font-medium text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full">
-                  <Battery className="w-3.5 h-3.5" /> Battery powered · 24/7
+                  <Battery className="w-3.5 h-3.5" /> {t("devd_battery_powered")}
                 </span>
               </div>
               <p className="text-sm text-slate-500 mt-1">
-                {device.farm_name || "Unassigned"} · {device.device_type}
+                {device.farm_name || t("home_unassigned")} · {device.device_type}
                 {device.firmware_version ? ` · v${device.firmware_version}` : ""}
               </p>
               {device.ip_address && (
                 <p className="text-xs text-slate-400 mt-1">
-                  IP {device.ip_address} · Last seen {device.last_seen_at ? new Date(device.last_seen_at).toLocaleString() : "never"}
+                  {t("devd_ip_last_seen", { ip: device.ip_address, seen: device.last_seen_at ? new Date(device.last_seen_at).toLocaleString() : t("devd_never") })}
                 </p>
               )}
             </div>
           </div>
 
           <div className="mt-4 pt-4 border-t border-slate-100">
-            <p className="text-xs font-medium text-slate-500 mb-1">ORG_ID / API_KEY (for firmware config.h)</p>
+            <p className="text-xs font-medium text-slate-500 mb-1">{t("devd_org_api_key_label")}</p>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-mono text-xs bg-slate-100 rounded px-2 py-1">ORG_ID = {device.organization_id}</span>
               <span className="font-mono text-xs bg-slate-100 rounded px-2 py-1 break-all">
@@ -274,7 +276,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
               <button onClick={handleRegenerateKey} disabled={regenerating}
                 className="flex items-center gap-1.5 text-xs font-medium text-amber-700 border border-amber-200 bg-amber-50 hover:bg-amber-100 rounded-lg px-2 py-1.5 disabled:opacity-60">
                 {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                Regenerate
+                {t("devd_regenerate")}
               </button>
             </div>
           </div>
@@ -289,16 +291,16 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                 {hasPower ? <Zap className="w-4 h-4 text-emerald-600" /> : <ZapOff className="w-4 h-4 text-slate-400" />}
               </div>
               <div>
-                <h3 className="font-semibold text-slate-800 text-sm">Electricity Monitoring</h3>
-                <p className="text-xs text-slate-400">Farm power availability · last 7 days</p>
+                <h3 className="font-semibold text-slate-800 text-sm">{t("devd_electricity_monitoring")}</h3>
+                <p className="text-xs text-slate-400">{t("devd_power_availability_sub")}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">
               {/* Current status badge */}
               <span className={`text-xs font-bold px-3 py-1 rounded-full ${hasPower ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                {hasPower ? "⚡ Power ON" : "No Power"}
+                {hasPower ? t("farms_power_on_badge") : t("farms_no_power_badge")}
               </span>
-              <span className="text-xs text-slate-400 hidden sm:block">{timeSince(device.last_seen_at)}</span>
+              <span className="text-xs text-slate-400 hidden sm:block">{timeSince(device.last_seen_at, t)}</span>
               {/* Notify toggle */}
               <button
                 onClick={() => setNotifyEnabled((v) => !v)}
@@ -306,7 +308,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                   notifyEnabled ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
                 }`}
               >
-                {notifyEnabled ? <><Bell className="w-3.5 h-3.5" /> Notify ON</> : <><BellOff className="w-3.5 h-3.5" /> Notify OFF</>}
+                {notifyEnabled ? <><Bell className="w-3.5 h-3.5" /> {t("farms_notify_on")}</> : <><BellOff className="w-3.5 h-3.5" /> {t("farms_notify_off")}</>}
               </button>
             </div>
           </div>
@@ -315,7 +317,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
           <div className="mx-5 my-3 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5 flex items-start gap-2">
             <Battery className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
             <p className="text-xs text-amber-700">
-              Your ESP32 runs on battery 24/7. Connect an <strong>AC detection module</strong> to a GPIO pin — the firmware sends <code className="bg-amber-100 px-0.5 rounded">power_on</code> / <code className="bg-amber-100 px-0.5 rounded">power_off</code> events when mains electricity changes. Endpoint: <code className="bg-amber-100 px-0.5 rounded">POST /api/v1/devices/ingest/power-event</code> with header <code className="bg-amber-100 px-0.5 rounded">x-api-key</code>.
+              {t("devd_ac_detection_note")}
             </p>
           </div>
 
@@ -323,13 +325,13 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
           <div className="px-5 pb-5">
             {powerLoading ? (
               <div className="flex items-center gap-2 text-xs text-slate-400 py-3">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading history…
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("farms_loading_history")}
               </div>
             ) : !hasAnyHistory ? (
               <div className="bg-slate-50 rounded-lg px-4 py-4 text-center">
                 <ZapOff className="w-6 h-6 text-slate-300 mx-auto mb-1.5" />
-                <p className="text-xs text-slate-400 italic">No power events recorded yet.</p>
-                <p className="text-xs text-slate-400 mt-0.5">Once the AC detection circuit is wired and firmware is updated, the daily ON/OFF timeline will appear here.</p>
+                <p className="text-xs text-slate-400 italic">{t("devd_no_power_events_yet")}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{t("devd_no_power_events_sub")}</p>
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -339,7 +341,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                     <div className="w-24 shrink-0 pt-0.5">
                       <p className="text-xs font-semibold text-slate-600">{day.label}</p>
                       {day.totalMinutes > 0 && (
-                        <p className="text-[10px] text-slate-400">{fmtHours(day.totalMinutes)} total</p>
+                        <p className="text-[10px] text-slate-400">{t("farms_total_suffix", { x: fmtHours(day.totalMinutes) })}</p>
                       )}
                     </div>
                     {/* Windows */}
@@ -347,7 +349,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                       {day.windows.length === 0 ? (
                         <div className="flex items-center gap-2 h-5">
                           <div className="flex-1 h-1.5 rounded-full bg-slate-100" />
-                          <span className="text-[10px] text-slate-300 shrink-0">No power</span>
+                          <span className="text-[10px] text-slate-300 shrink-0">{t("farms_no_power_short")}</span>
                         </div>
                       ) : (
                         day.windows.map((w, i) => (
@@ -357,7 +359,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                             {w.off ? (
                               <span className="text-[11px] font-semibold text-red-500 shrink-0 w-16">{fmtTime(w.off)}</span>
                             ) : (
-                              <span className="text-[11px] font-semibold text-emerald-600 shrink-0 w-16 animate-pulse">Now ●</span>
+                              <span className="text-[11px] font-semibold text-emerald-600 shrink-0 w-16 animate-pulse">{t("farms_now_indicator")}</span>
                             )}
                             <span className="text-[10px] text-slate-400 shrink-0 w-10 text-right">
                               {w.off
@@ -378,15 +380,15 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
         {/* ── 3. Actuators ─────────────────────────────────────────────────── */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-slate-800">Actuators (motors / pumps / valves)</h3>
+            <h3 className="font-semibold text-slate-800">{t("devd_actuators_header")}</h3>
             <button onClick={() => setShowActuatorModal(true)}
               className="flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:underline">
-              <Plus className="w-4 h-4" /> Add actuator
+              <Plus className="w-4 h-4" /> {t("devd_add_actuator")}
             </button>
           </div>
           {device.actuators.length === 0 ? (
             <div className="bg-white rounded-xl border border-slate-200 p-6 text-center text-sm text-slate-500">
-              No actuators registered for this device yet.
+              {t("devd_no_actuators_yet")}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -406,8 +408,8 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                 <ShieldAlert className="w-4 h-4 text-red-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-slate-800 text-sm">Anti-Theft Monitoring</h3>
-                <p className="text-xs text-slate-500">Detect if motor wires are forcefully cut · requires CT sensor hardware</p>
+                <h3 className="font-semibold text-slate-800 text-sm">{t("devd_antitheft_header")}</h3>
+                <p className="text-xs text-slate-500">{t("devd_antitheft_sub")}</p>
               </div>
             </div>
 
@@ -415,7 +417,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
             <div className="mx-5 mt-4 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5 flex items-start gap-2">
               <ShieldAlert className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
               <p className="text-xs text-red-700">
-                Needs a <strong>SCT-013 CT current sensor</strong> clipped around the motor wire. When motor is ON but current drops to 0A, it means wire was cut — an alert fires instantly. If motor is OFF but current is high — someone bypassed the app.
+                {t("devd_antitheft_requires_note")}
               </p>
             </div>
 
@@ -436,15 +438,15 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-medium text-slate-800 text-sm">{a.name}</p>
                           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${isRunning ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                            {isRunning ? "● Running" : "Off"}
+                            {isRunning ? `● ${t("farms_running")}` : t("farms_off")}
                           </span>
                           {enabled && threshold && (
                             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                              Monitoring {threshold}A
+                              {t("devd_monitoring_amps", { x: threshold })}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5 capitalize">{a.actuator_type} · Relay {a.relay_channel}</p>
+                        <p className="text-xs text-slate-400 mt-0.5 capitalize">{a.actuator_type} · {t("devd_relay_label", { n: a.relay_channel })}</p>
                       </div>
                       {/* Slide toggle */}
                       <button
@@ -460,7 +462,7 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                       <div className="mt-3 pl-12 space-y-3">
                         <div className="flex items-center gap-3 flex-wrap">
                           <Settings2 className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                          <label className="text-xs font-medium text-slate-600 shrink-0">Expected current (A)</label>
+                          <label className="text-xs font-medium text-slate-600 shrink-0">{t("devd_expected_current_short")}</label>
                           <input
                             type="number" step="0.1" min="0.1" value={threshold}
                             onChange={(e) => setThreshold(a.id, e.target.value)}
@@ -476,11 +478,11 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
                         }`}>
                           <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
                           {!threshold
-                            ? "Enter expected current above to activate monitoring"
-                            : `Alert fires if current drops below ${(Number(threshold) * 0.5).toFixed(1)}A while motor is ON`}
+                            ? t("devd_enter_current_activate")
+                            : t("devd_alert_fires_below", { threshold: (Number(threshold) * 0.5).toFixed(1) })}
                         </div>
                         <p className="text-[11px] text-slate-400">
-                          ESP32 firmware endpoint: <code className="bg-slate-100 px-1 rounded">POST /api/v1/devices/ingest/power-event</code> — reuse same pattern for current readings.
+                          {t("devd_endpoint_note")}
                         </p>
                       </div>
                     )}
@@ -494,15 +496,15 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
         {/* ── 5. Sensors ───────────────────────────────────────────────────── */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-slate-800">Sensors</h3>
+            <h3 className="font-semibold text-slate-800">{t("devd_sensors_header")}</h3>
             <button onClick={() => setShowSensorModal(true)}
               className="flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:underline">
-              <Plus className="w-4 h-4" /> Add sensor
+              <Plus className="w-4 h-4" /> {t("devd_add_sensor")}
             </button>
           </div>
           {device.sensors.length === 0 ? (
             <div className="bg-white rounded-xl border border-slate-200 p-6 text-center text-sm text-slate-500">
-              No sensors registered for this device yet.
+              {t("devd_no_sensors_yet")}
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -514,11 +516,11 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
         {/* ── 6. Recent activity ───────────────────────────────────────────── */}
         {device.logs.length > 0 && (
           <div>
-            <h3 className="font-semibold text-slate-800 mb-3">Recent activity</h3>
+            <h3 className="font-semibold text-slate-800 mb-3">{t("devd_recent_activity")}</h3>
             <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
               {device.logs.map((l) => (
                 <div key={l.id} className="px-4 py-2.5 text-sm flex items-center justify-between">
-                  <span className="text-slate-700 capitalize">Device went {l.event_type}</span>
+                  <span className="text-slate-700 capitalize">{t("devd_device_went", { event: l.event_type })}</span>
                   <span className="text-xs text-slate-400">{new Date(l.created_at).toLocaleString()}</span>
                 </div>
               ))}
@@ -552,6 +554,7 @@ function AddSensorModal({ deviceId, farmId, onClose, onCreated }: { deviceId: nu
   const [maxThreshold, setMaxThreshold] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
+  const { t } = useLocale();
   const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500";
 
   async function handleSubmit(e: FormEvent) {
@@ -563,56 +566,56 @@ function AddSensorModal({ deviceId, farmId, onClose, onCreated }: { deviceId: nu
         min_threshold: minThreshold ? Number(minThreshold) : undefined,
         max_threshold: maxThreshold ? Number(maxThreshold) : undefined,
       });
-      toast.success("Sensor added", `"${name}" is now monitoring.`);
+      toast.success(t("devd_toast_sensor_added"), t("devd_toast_sensor_added_body", { name }));
       onCreated(res.data);
     } catch (err) {
-      toast.error("Failed to add sensor", err instanceof Error ? err.message : undefined);
+      toast.error(t("devd_toast_sensor_add_failed"), err instanceof Error ? err.message : undefined);
     } finally { setSubmitting(false); }
   }
 
   return (
-    <Modal title="Add sensor" onClose={onClose}>
+    <Modal title={t("devd_add_sensor")} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
-          <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className={inp} placeholder="Borewell water level" />
+          <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_name")}</label>
+          <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className={inp} placeholder={t("devd_sensor_name_placeholder")} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("devd_field_type")}</label>
             <select value={sensorType} onChange={(e) => setSensorType(e.target.value)} className={inp}>
-              <option value="water_level">Water level</option>
-              <option value="voltage">Voltage</option>
-              <option value="flow_rate">Flow rate</option>
-              <option value="pressure">Pressure</option>
-              <option value="temperature">Temperature</option>
-              <option value="moisture">Soil moisture</option>
-              <option value="custom">Custom</option>
+              <option value="water_level">{t("devd_sensor_water_level")}</option>
+              <option value="voltage">{t("devd_sensor_voltage")}</option>
+              <option value="flow_rate">{t("devd_sensor_flow_rate")}</option>
+              <option value="pressure">{t("devd_sensor_pressure")}</option>
+              <option value="temperature">{t("devd_sensor_temperature")}</option>
+              <option value="moisture">{t("devd_sensor_moisture")}</option>
+              <option value="custom">{t("devd_sensor_custom")}</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Unit (optional)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("devd_field_unit_optional")}</label>
             <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} className={inp} placeholder="%, V, L/min" />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Channel</label>
-          <input type="text" required value={channel} onChange={(e) => setChannel(e.target.value)} className={inp} placeholder="water_level (must match firmware SENSORS[].channel)" />
+          <label className="block text-sm font-medium text-slate-700 mb-1">{t("devd_field_channel")}</label>
+          <input type="text" required value={channel} onChange={(e) => setChannel(e.target.value)} className={inp} placeholder={t("devd_channel_placeholder")} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Min threshold (optional)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("devd_field_min_threshold")}</label>
             <input type="number" step="any" value={minThreshold} onChange={(e) => setMinThreshold(e.target.value)} className={inp} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Max threshold (optional)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("devd_field_max_threshold")}</label>
             <input type="number" step="any" value={maxThreshold} onChange={(e) => setMaxThreshold(e.target.value)} className={inp} />
           </div>
         </div>
         <button type="submit" disabled={submitting}
           className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
           {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-          Add sensor
+          {t("devd_add_sensor")}
         </button>
       </form>
     </Modal>
@@ -631,6 +634,7 @@ function AddActuatorModal({ deviceId, farmId, relayCount, existingChannels, onCl
   const [maxRuntime, setMaxRuntime] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
+  const { t } = useLocale();
   const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500";
 
   async function handleSubmit(e: FormEvent) {
@@ -641,50 +645,50 @@ function AddActuatorModal({ deviceId, farmId, relayCount, existingChannels, onCl
         actuator_type: actuatorType, relay_channel: Number(relayChannel),
         max_runtime_minutes: maxRuntime ? Number(maxRuntime) : undefined,
       });
-      toast.success("Actuator added", `"${name}" is ready to control.`);
+      toast.success(t("devd_toast_actuator_added"), t("devd_toast_actuator_added_body", { name }));
       onCreated(res.data);
     } catch (err) {
-      toast.error("Failed to add actuator", err instanceof Error ? err.message : undefined);
+      toast.error(t("devd_toast_actuator_add_failed"), err instanceof Error ? err.message : undefined);
     } finally { setSubmitting(false); }
   }
 
   return (
-    <Modal title="Add actuator" onClose={onClose}>
+    <Modal title={t("devd_add_actuator")} onClose={onClose}>
       {availableChannels.length === 0 ? (
         <div className="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
           <Trash2 className="w-4 h-4 mt-0.5 shrink-0" />
-          All {relayCount} relay channels on this device are already in use.
+          {t("devd_all_channels_used", { n: relayCount })}
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
-            <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className={inp} placeholder="Main field pump" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_name")}</label>
+            <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className={inp} placeholder={t("devd_actuator_name_placeholder")} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("devd_field_type")}</label>
               <select value={actuatorType} onChange={(e) => setActuatorType(e.target.value)} className={inp}>
-                <option value="motor">Motor</option>
-                <option value="pump">Pump</option>
-                <option value="valve">Valve</option>
+                <option value="motor">{t("devd_actuator_motor")}</option>
+                <option value="pump">{t("devd_actuator_pump")}</option>
+                <option value="valve">{t("devd_actuator_valve")}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Relay channel</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("devd_field_relay_channel")}</label>
               <select value={relayChannel} onChange={(e) => setRelayChannel(e.target.value)} className={inp}>
-                {availableChannels.map((c) => <option key={c} value={c}>Relay {c}</option>)}
+                {availableChannels.map((c) => <option key={c} value={c}>{t("devd_relay_label", { n: c })}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Max runtime, minutes (optional safety cutoff)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("devd_field_max_runtime")}</label>
             <input type="number" min={0} value={maxRuntime} onChange={(e) => setMaxRuntime(e.target.value)} className={inp} placeholder="e.g. 120" />
           </div>
           <button type="submit" disabled={submitting}
             className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            Add actuator
+            {t("devd_add_actuator")}
           </button>
         </form>
       )}

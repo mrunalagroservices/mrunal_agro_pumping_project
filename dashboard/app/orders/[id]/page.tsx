@@ -9,13 +9,15 @@ import {
 import DashboardShell from "@/components/DashboardShell";
 import { httpClient } from "@/lib/api";
 import type { Order, OrderItem, Product, ApiResponse } from "@/lib/types";
+import { useLocale } from "@/contexts/LocaleContext";
+import { TranslationKey } from "@/lib/translations";
 
-const STATUS_INFO: Record<string, { label: string; text: string; bg: string; icon: typeof ShoppingBag }> = {
-  confirmed: { label: "Order Confirmed", text: "text-blue-600", bg: "bg-blue-50", icon: CheckCircle2 },
-  shipped:   { label: "Shipped",         text: "text-violet-600", bg: "bg-violet-50", icon: Truck },
-  delivered: { label: "Item Delivered",  text: "text-emerald-700", bg: "bg-emerald-50", icon: PackageCheck },
-  cancelled: { label: "Order Cancelled", text: "text-red-600", bg: "bg-red-50", icon: XCircle },
-  placed:    { label: "Order Placed",    text: "text-amber-600", bg: "bg-amber-50", icon: ShoppingBag },
+const STATUS_INFO: Record<string, { labelKey: TranslationKey; text: string; bg: string; icon: typeof ShoppingBag }> = {
+  confirmed: { labelKey: "ordersd_status_confirmed", text: "text-blue-600", bg: "bg-blue-50", icon: CheckCircle2 },
+  shipped:   { labelKey: "ordersd_status_shipped",   text: "text-violet-600", bg: "bg-violet-50", icon: Truck },
+  delivered: { labelKey: "ordersd_status_delivered", text: "text-emerald-700", bg: "bg-emerald-50", icon: PackageCheck },
+  cancelled: { labelKey: "ordersd_status_cancelled", text: "text-red-600", bg: "bg-red-50", icon: XCircle },
+  placed:    { labelKey: "ordersd_status_placed",    text: "text-amber-600", bg: "bg-amber-50", icon: ShoppingBag },
 };
 
 function statusInfo(status: string) {
@@ -38,6 +40,7 @@ function fmtTime(iso: string) {
 }
 
 function RatingBox({ productId, productName }: { productId: number; productName: string }) {
+  const { t } = useLocale();
   const [rating, setRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [comment, setComment] = useState("");
@@ -56,7 +59,7 @@ function RatingBox({ productId, productName }: { productId: number; productName:
   }
 
   if (done) {
-    return <p className="text-xs font-medium text-emerald-700 bg-violet-50 rounded-lg px-3 py-2">Thanks for rating {productName}!</p>;
+    return <p className="text-xs font-medium text-emerald-700 bg-violet-50 rounded-lg px-3 py-2">{t("ordersd_thanks_rating", { name: productName })}</p>;
   }
 
   return (
@@ -69,16 +72,16 @@ function RatingBox({ productId, productName }: { productId: number; productName:
         ))}
         <span className="flex-1" />
         <button onClick={() => setShowComment((v) => !v)} className="text-xs font-semibold text-red-500 hover:underline">
-          Write Review
+          {t("ordersd_write_review")}
         </button>
       </div>
       {showComment && (
         <div className="mt-2 flex gap-2">
-          <input value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your experience (optional)"
+          <input value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t("ordersd_review_placeholder")}
             className="flex-1 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500" />
           <button disabled={submitting || rating === 0} onClick={() => submit(rating)}
             className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg">
-            Submit
+            {t("ordersd_submit")}
           </button>
         </div>
       )}
@@ -88,6 +91,7 @@ function RatingBox({ productId, productName }: { productId: number; productName:
 
 function YouMayAlsoLike({ items }: { items: OrderItem[] }) {
   const router = useRouter();
+  const { t } = useLocale();
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -102,7 +106,7 @@ function YouMayAlsoLike({ items }: { items: OrderItem[] }) {
 
   return (
     <div className="border-t border-slate-100 pt-6">
-      <p className="text-lg font-semibold text-slate-800 mb-4">You may also like</p>
+      <p className="text-lg font-semibold text-slate-800 mb-4">{t("ordersd_you_may_also_like")}</p>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {suggestions.map((p) => (
           <button key={p.id} onClick={() => router.push(`/shop/${p.id}`)}
@@ -128,6 +132,7 @@ export default function OrderDetailPage() {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useLocale();
 
   useEffect(() => {
     httpClient.get<ApiResponse<Order[]>>("/orders/mine")
@@ -137,7 +142,7 @@ export default function OrderDetailPage() {
 
   if (loading) {
     return (
-      <DashboardShell breadcrumb={[{ label: "My Orders", href: "/orders" }, { label: "Order" }]}>
+      <DashboardShell breadcrumb={[{ label: t("orders_my_orders_title"), href: "/orders" }, { label: t("orders_order_number", { id }) }]}>
         <div className="flex items-center justify-center h-64">
           <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -147,11 +152,11 @@ export default function OrderDetailPage() {
 
   if (!order) {
     return (
-      <DashboardShell breadcrumb={[{ label: "My Orders", href: "/orders" }, { label: "Order" }]}>
+      <DashboardShell breadcrumb={[{ label: t("orders_my_orders_title"), href: "/orders" }, { label: t("orders_order_number", { id }) }]}>
         <div className="text-center py-24 text-slate-400">
           <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="font-semibold mb-2">Order not found</p>
-          <button onClick={() => router.push("/orders")} className="text-sm text-emerald-600 hover:underline">← Back to My Orders</button>
+          <p className="font-semibold mb-2">{t("ordersd_order_not_found")}</p>
+          <button onClick={() => router.push("/orders")} className="text-sm text-emerald-600 hover:underline">{t("ordersd_back_to_orders_arrow")}</button>
         </div>
       </DashboardShell>
     );
@@ -162,25 +167,25 @@ export default function OrderDetailPage() {
   const heroImage = order.items.find((i) => i.product_image)?.product_image;
 
   return (
-    <DashboardShell breadcrumb={[{ label: "My Orders", href: "/orders" }, { label: `Order #${order.id}` }]}>
+    <DashboardShell breadcrumb={[{ label: t("orders_my_orders_title"), href: "/orders" }, { label: t("orders_order_number", { id: order.id }) }]}>
       <button onClick={() => router.push("/orders")} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 mb-4">
-        <ArrowLeft className="w-4 h-4" /> Back to My Orders
+        <ArrowLeft className="w-4 h-4" /> {t("ordersd_back_to_orders")}
       </button>
 
       <div className="max-w-3xl space-y-6">
         <div className="rounded-2xl overflow-hidden bg-white border border-slate-200" style={{ height: 280 }}>
-          <PImg src={heroImage} alt={`Order #${order.id}`} className="w-full h-full" />
+          <PImg src={heroImage} alt={t("orders_order_number", { id: order.id })} className="w-full h-full" />
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Order #{order.id}</h1>
-          <p className="text-sm text-slate-400 mt-1">Placed on {fmtDate(order.created_at)}</p>
+          <h1 className="text-2xl font-bold text-slate-800">{t("orders_order_number", { id: order.id })}</h1>
+          <p className="text-sm text-slate-400 mt-1">{t("ordersd_placed_on", { date: fmtDate(order.created_at) })}</p>
         </div>
 
         <div className={`flex items-center gap-3 rounded-xl px-4 py-3.5 ${info.bg}`}>
           <StatusIcon className={`w-5 h-5 shrink-0 ${info.text}`} />
           <div>
-            <p className={`text-sm font-semibold ${info.text}`}>{info.label}</p>
+            <p className={`text-sm font-semibold ${info.text}`}>{t(info.labelKey)}</p>
             {(order.status === "delivered" || order.status === "shipped" || order.status === "cancelled") && (
               <p className={`text-xs ${info.text} opacity-80`}>{fmtDate(order.updated_at)}</p>
             )}
@@ -189,12 +194,12 @@ export default function OrderDetailPage() {
 
         <div className="grid grid-cols-2 bg-slate-50 rounded-2xl divide-x divide-slate-200">
           <div className="p-5">
-            <p className="text-sm font-semibold text-slate-800 mb-1.5">Ordered</p>
+            <p className="text-sm font-semibold text-slate-800 mb-1.5">{t("ordersd_ordered")}</p>
             <p className="text-sm text-slate-700">{fmtDate(order.created_at)}</p>
             <p className="text-xs text-slate-400">{fmtTime(order.created_at)}</p>
           </div>
           <div className="p-5 text-right">
-            <p className="text-sm font-semibold text-slate-800 mb-1.5">Payment</p>
+            <p className="text-sm font-semibold text-slate-800 mb-1.5">{t("ordersd_payment")}</p>
             <p className="text-sm text-slate-700">{order.payment_method.toUpperCase()}</p>
             <p className="text-xs text-slate-400">₹{Number(order.total).toLocaleString("en-IN")}</p>
           </div>
@@ -203,7 +208,7 @@ export default function OrderDetailPage() {
         <div className="flex items-start gap-3">
           <MapPin className="w-5 h-5 text-slate-700 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-slate-800 mb-1">Delivery address</p>
+            <p className="text-sm font-semibold text-slate-800 mb-1">{t("ordersd_delivery_address")}</p>
             <p className="text-sm text-slate-500">{order.delivery_address.name} · {order.delivery_address.phone}</p>
             <p className="text-sm text-slate-500">
               {order.delivery_address.line1}{order.delivery_address.line2 ? `, ${order.delivery_address.line2}` : ""}, {order.delivery_address.city}, {order.delivery_address.state} – {order.delivery_address.pincode}
@@ -212,7 +217,7 @@ export default function OrderDetailPage() {
         </div>
 
         <div className="border-t border-slate-100 pt-6">
-          <p className="text-lg font-semibold text-slate-800 mb-4">Order details</p>
+          <p className="text-lg font-semibold text-slate-800 mb-4">{t("ordersd_order_details")}</p>
           <div className="space-y-4">
             {order.items.map((item) => (
               <div key={item.id}>
@@ -222,7 +227,7 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800 line-clamp-1">{item.product_name}</p>
-                    <p className="text-xs text-slate-400">{item.unit} · Qty {item.qty}</p>
+                    <p className="text-xs text-slate-400">{item.unit} · {t("ordersd_qty", { n: item.qty })}</p>
                   </div>
                   <p className="text-sm font-semibold text-slate-800 shrink-0">₹{(Number(item.price) * item.qty).toLocaleString("en-IN")}</p>
                 </div>
@@ -238,21 +243,21 @@ export default function OrderDetailPage() {
 
         <div className="border-t border-slate-100 pt-5 space-y-2">
           <div className="flex justify-between text-sm text-slate-600">
-            <span>Subtotal</span>
+            <span>{t("ordersd_subtotal")}</span>
             <span>₹{Number(order.subtotal).toLocaleString("en-IN")}</span>
           </div>
           {Number(order.discount) > 0 && (
             <div className="flex justify-between text-sm text-emerald-600">
-              <span>Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</span>
+              <span>{t("ordersd_discount")}{order.coupon_code ? ` (${order.coupon_code})` : ""}</span>
               <span>−₹{Number(order.discount).toLocaleString("en-IN")}</span>
             </div>
           )}
           <div className="flex justify-between text-sm text-slate-600">
-            <span>Delivery</span>
-            <span>{Number(order.delivery_charge) === 0 ? "Free" : `₹${Number(order.delivery_charge).toLocaleString("en-IN")}`}</span>
+            <span>{t("ordersd_delivery")}</span>
+            <span>{Number(order.delivery_charge) === 0 ? t("ordersd_free") : `₹${Number(order.delivery_charge).toLocaleString("en-IN")}`}</span>
           </div>
           <div className="border-t border-slate-100 pt-2 flex justify-between text-base font-bold text-slate-800">
-            <span>Total</span>
+            <span>{t("ordersd_total")}</span>
             <span>₹{Number(order.total).toLocaleString("en-IN")}</span>
           </div>
         </div>

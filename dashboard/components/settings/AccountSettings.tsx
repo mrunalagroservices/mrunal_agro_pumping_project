@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { httpClient } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocale } from "@/contexts/LocaleContext";
+import { TranslationKey } from "@/lib/translations";
 import {
   ApiResponse, User, Address, EmergencyContact, NotificationCategory,
   NotificationPreferences, LegalDocumentSummary, LegalDocument, FaqTopic, Organization,
@@ -17,23 +19,24 @@ type MenuKey =
   | "personal" | "security" | "privacy" | "notifications" | "payments"
   | "taxes" | "translation" | "accessibility" | "legal" | "support";
 
-const MENU: { key: MenuKey; label: string; icon: typeof UserIcon }[] = [
-  { key: "personal", label: "Personal information", icon: UserIcon },
-  { key: "security", label: "Login & security", icon: ShieldCheck },
-  { key: "privacy", label: "Privacy", icon: EyeOff },
-  { key: "notifications", label: "Notifications", icon: Bell },
-  { key: "payments", label: "Payments", icon: Wallet },
-  { key: "taxes", label: "Taxes (GST)", icon: Calculator },
-  { key: "translation", label: "Translation", icon: Globe },
-  { key: "accessibility", label: "Accessibility", icon: Accessibility },
-  { key: "legal", label: "Legal", icon: BookOpen },
-  { key: "support", label: "Find support", icon: LifeBuoy },
+const MENU: { key: MenuKey; labelKey: TranslationKey; icon: typeof UserIcon }[] = [
+  { key: "personal", labelKey: "acset_menu_personal", icon: UserIcon },
+  { key: "security", labelKey: "acset_menu_security", icon: ShieldCheck },
+  { key: "privacy", labelKey: "acset_menu_privacy", icon: EyeOff },
+  { key: "notifications", labelKey: "acset_menu_notifications", icon: Bell },
+  { key: "payments", labelKey: "acset_menu_payments", icon: Wallet },
+  { key: "taxes", labelKey: "acset_menu_taxes", icon: Calculator },
+  { key: "translation", labelKey: "acset_menu_translation", icon: Globe },
+  { key: "accessibility", labelKey: "acset_menu_accessibility", icon: Accessibility },
+  { key: "legal", labelKey: "acset_menu_legal", icon: BookOpen },
+  { key: "support", labelKey: "acset_menu_support", icon: LifeBuoy },
 ];
 
 const inputCls = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500";
 const labelCls = "block text-xs font-medium text-slate-500 mb-1";
 
 function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
+  const { t } = useLocale();
   return (
     <button
       onClick={onClick}
@@ -41,22 +44,24 @@ function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolea
       className="flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors disabled:opacity-60"
     >
       {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-      Save
+      {t("common_save")}
     </button>
   );
 }
 
 function ComingSoonPanel({ title }: { title: string }) {
+  const { t } = useLocale();
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
       <p className="font-semibold text-slate-700 mb-1">{title}</p>
-      <p className="text-sm text-slate-400">Coming soon.</p>
+      <p className="text-sm text-slate-400">{t("acset_coming_soon")}</p>
     </div>
   );
 }
 
 // ─── Personal information ──────────────────────────────────────────────────
 function PersonalInfoPanel({ user, onSaved }: { user: User; onSaved: (u: User) => void }) {
+  const { t } = useLocale();
   const [preferredFirstName, setPreferredFirstName] = useState(user.preferred_first_name ?? "");
   const [residential, setResidential] = useState<Address>(user.residential_address ?? {});
   const [emergency, setEmergency] = useState<EmergencyContact>(user.emergency_contact ?? {});
@@ -83,29 +88,29 @@ function PersonalInfoPanel({ user, onSaved }: { user: User; onSaved: (u: User) =
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
       <div>
-        <p className="text-sm font-semibold text-slate-800 mb-1">Legal name</p>
+        <p className="text-sm font-semibold text-slate-800 mb-1">{t("acset_legal_name")}</p>
         <p className="text-sm text-slate-500">{user.name}</p>
       </div>
       <div className="border-t border-slate-100 pt-4">
-        <label className={labelCls}>Preferred first name</label>
-        <input className={inputCls} value={preferredFirstName} onChange={(e) => setPreferredFirstName(e.target.value)} placeholder="Not provided" />
+        <label className={labelCls}>{t("acset_preferred_first_name")}</label>
+        <input className={inputCls} value={preferredFirstName} onChange={(e) => setPreferredFirstName(e.target.value)} placeholder={t("acset_not_provided")} />
       </div>
       <div className="border-t border-slate-100 pt-4">
-        <p className="text-sm font-semibold text-slate-800 mb-2">Residential address</p>
+        <p className="text-sm font-semibold text-slate-800 mb-2">{t("acset_residential_address")}</p>
         <div className="grid grid-cols-2 gap-3">
-          <input className={inputCls} placeholder="Address line 1" value={residential.line1 ?? ""} onChange={(e) => setResidential((a) => ({ ...a, line1: e.target.value }))} />
-          <input className={inputCls} placeholder="Address line 2" value={residential.line2 ?? ""} onChange={(e) => setResidential((a) => ({ ...a, line2: e.target.value }))} />
-          <input className={inputCls} placeholder="City" value={residential.city ?? ""} onChange={(e) => setResidential((a) => ({ ...a, city: e.target.value }))} />
-          <input className={inputCls} placeholder="State" value={residential.state ?? ""} onChange={(e) => setResidential((a) => ({ ...a, state: e.target.value }))} />
-          <input className={inputCls} placeholder="Pincode" value={residential.pincode ?? ""} onChange={(e) => setResidential((a) => ({ ...a, pincode: e.target.value }))} />
+          <input className={inputCls} placeholder={t("acset_address_line1")} value={residential.line1 ?? ""} onChange={(e) => setResidential((a) => ({ ...a, line1: e.target.value }))} />
+          <input className={inputCls} placeholder={t("acset_address_line2")} value={residential.line2 ?? ""} onChange={(e) => setResidential((a) => ({ ...a, line2: e.target.value }))} />
+          <input className={inputCls} placeholder={t("acset_city")} value={residential.city ?? ""} onChange={(e) => setResidential((a) => ({ ...a, city: e.target.value }))} />
+          <input className={inputCls} placeholder={t("acset_state")} value={residential.state ?? ""} onChange={(e) => setResidential((a) => ({ ...a, state: e.target.value }))} />
+          <input className={inputCls} placeholder={t("acset_pincode")} value={residential.pincode ?? ""} onChange={(e) => setResidential((a) => ({ ...a, pincode: e.target.value }))} />
         </div>
       </div>
       <div className="border-t border-slate-100 pt-4">
-        <p className="text-sm font-semibold text-slate-800 mb-2">Emergency contact</p>
+        <p className="text-sm font-semibold text-slate-800 mb-2">{t("acset_emergency_contact")}</p>
         <div className="grid grid-cols-3 gap-3">
-          <input className={inputCls} placeholder="Name" value={emergency.name ?? ""} onChange={(e) => setEmergency((c) => ({ ...c, name: e.target.value }))} />
-          <input className={inputCls} placeholder="Phone" value={emergency.phone ?? ""} onChange={(e) => setEmergency((c) => ({ ...c, phone: e.target.value }))} />
-          <input className={inputCls} placeholder="Relationship" value={emergency.relationship ?? ""} onChange={(e) => setEmergency((c) => ({ ...c, relationship: e.target.value }))} />
+          <input className={inputCls} placeholder={t("acset_name")} value={emergency.name ?? ""} onChange={(e) => setEmergency((c) => ({ ...c, name: e.target.value }))} />
+          <input className={inputCls} placeholder={t("acset_phone")} value={emergency.phone ?? ""} onChange={(e) => setEmergency((c) => ({ ...c, phone: e.target.value }))} />
+          <input className={inputCls} placeholder={t("acset_relationship")} value={emergency.relationship ?? ""} onChange={(e) => setEmergency((c) => ({ ...c, relationship: e.target.value }))} />
         </div>
       </div>
       <div className="flex justify-end border-t border-slate-100 pt-4">
@@ -117,6 +122,7 @@ function PersonalInfoPanel({ user, onSaved }: { user: User; onSaved: (u: User) =
 
 // ─── Privacy ────────────────────────────────────────────────────────────────
 function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: (u: User) => void; onOpenLegalDoc: (slug: string) => void }) {
+  const { t } = useLocale();
   const [analyticsOptIn, setAnalyticsOptIn] = useState(user.analytics_opt_in ?? true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -124,7 +130,7 @@ function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   function errorMessage(err: unknown): string {
-    return err instanceof Error ? err.message : "Something went wrong. Please try again.";
+    return err instanceof Error ? err.message : t("acset_generic_error");
   }
 
   async function toggleAnalytics(value: boolean) {
@@ -144,7 +150,7 @@ function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: 
     setError(null);
     try {
       await httpClient.post("/auth/me/request-data-export");
-      setMessage("Request received — we'll email your data export when it's ready.");
+      setMessage(t("acset_export_requested"));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -159,7 +165,7 @@ function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: 
       const res = await httpClient.post<ApiResponse<User>>("/auth/me/request-deletion");
       onSaved(res.data);
       setConfirmingDelete(false);
-      setMessage("Account deletion requested.");
+      setMessage(t("acset_account_deletion_requested"));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -173,7 +179,7 @@ function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: 
     try {
       const res = await httpClient.post<ApiResponse<User>>("/auth/me/cancel-deletion");
       onSaved(res.data);
-      setMessage("Deletion request cancelled.");
+      setMessage(t("acset_deletion_cancelled"));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -196,19 +202,19 @@ function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: 
         </div>
       )}
       <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <p className="text-sm font-semibold text-slate-800">Data privacy</p>
+        <p className="text-sm font-semibold text-slate-800">{t("acset_data_privacy")}</p>
         <button onClick={() => onOpenLegalDoc("privacy-policy")}
           className="w-full flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-          Privacy Policy <ChevronRight className="w-4 h-4 text-slate-400" />
+          {t("acset_privacy_policy")} <ChevronRight className="w-4 h-4 text-slate-400" />
         </button>
         <button onClick={requestExport} disabled={busy}
           className="w-full flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-60">
-          Request my personal data <ChevronRight className="w-4 h-4 text-slate-400" />
+          {t("acset_request_my_data")} <ChevronRight className="w-4 h-4 text-slate-400" />
         </button>
         <div className="flex items-center justify-between border-t border-slate-100 pt-4">
           <div>
-            <p className="text-sm font-medium text-slate-800">Help improve the app</p>
-            <p className="text-xs text-slate-500 max-w-sm">Use anonymous usage data to improve features across farm management, irrigation scheduling, and the marketplace.</p>
+            <p className="text-sm font-medium text-slate-800">{t("acset_help_improve")}</p>
+            <p className="text-xs text-slate-500 max-w-sm">{t("acset_help_improve_desc")}</p>
           </div>
           <input type="checkbox" checked={analyticsOptIn} onChange={(e) => toggleAnalytics(e.target.checked)} className="accent-accent-600 w-5 h-5 shrink-0" />
         </div>
@@ -218,25 +224,25 @@ function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: 
         {user.deletion_requested_at ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-sm font-semibold text-red-700">
-              Account deletion requested on {new Date(user.deletion_requested_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}.
+              {t("acset_deletion_requested_on", { date: new Date(user.deletion_requested_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) })}
             </p>
             <button onClick={cancelDeletion} disabled={busy}
               className="mt-3 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60">
-              Cancel deletion
+              {t("acset_cancel_deletion")}
             </button>
           </div>
         ) : confirmingDelete ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-sm font-semibold text-red-700 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Delete your account?</p>
-            <p className="text-xs text-red-600 mt-1">This schedules your account, farms, devices, and order history for permanent deletion after a grace period. You can cancel anytime before it's processed.</p>
+            <p className="text-sm font-semibold text-red-700 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> {t("acset_delete_account_confirm_title")}</p>
+            <p className="text-xs text-red-600 mt-1">{t("acset_delete_account_confirm_body")}</p>
             <div className="flex gap-2 mt-3">
-              <button onClick={() => setConfirmingDelete(false)} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</button>
-              <button onClick={confirmDelete} disabled={busy} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-60">Delete my account</button>
+              <button onClick={() => setConfirmingDelete(false)} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">{t("common_cancel")}</button>
+              <button onClick={confirmDelete} disabled={busy} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-60">{t("acset_delete_my_account")}</button>
             </div>
           </div>
         ) : (
           <button onClick={() => setConfirmingDelete(true)} className="w-full flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-            Delete my account <ChevronRight className="w-4 h-4 text-red-300" />
+            {t("acset_delete_my_account")} <ChevronRight className="w-4 h-4 text-red-300" />
           </button>
         )}
       </div>
@@ -245,39 +251,39 @@ function PrivacyPanel({ user, onSaved, onOpenLegalDoc }: { user: User; onSaved: 
 }
 
 // ─── Notifications ──────────────────────────────────────────────────────────
-const NOTIF_SECTIONS: { title: string; categories: { key: NotificationCategory; label: string }[] }[] = [
-  {
-    title: "Farm offers & tips",
-    categories: [
-      { key: "promo_offers", label: "Promotions and offers" },
-      { key: "farming_tips", label: "Farming tips" },
-    ],
-  },
-  {
-    title: "Mrunal Agro updates",
-    categories: [
-      { key: "news_updates", label: "News and features" },
-      { key: "feedback_requests", label: "Feedback requests" },
-      { key: "service_alerts", label: "Service alerts" },
-    ],
-  },
-  {
-    title: "Account activity and policies",
-    categories: [
-      { key: "account_activity", label: "Account activity" },
-      { key: "order_policies", label: "Order policies" },
-    ],
-  },
-  {
-    title: "Reminders & support",
-    categories: [
-      { key: "schedule_reminders", label: "Schedule reminders" },
-      { key: "support_messages", label: "Messages" },
-    ],
-  },
-];
-
 function NotificationsPanel({ user, onSaved }: { user: User; onSaved: (u: User) => void }) {
+  const { t } = useLocale();
+  const NOTIF_SECTIONS: { title: string; categories: { key: NotificationCategory; label: string }[] }[] = [
+    {
+      title: t("acset_notif_section_farm_offers"),
+      categories: [
+        { key: "promo_offers", label: t("acset_notif_promo_offers") },
+        { key: "farming_tips", label: t("acset_notif_farming_tips") },
+      ],
+    },
+    {
+      title: t("acset_notif_section_app_updates"),
+      categories: [
+        { key: "news_updates", label: t("acset_notif_news_updates") },
+        { key: "feedback_requests", label: t("acset_notif_feedback_requests") },
+        { key: "service_alerts", label: t("acset_notif_service_alerts") },
+      ],
+    },
+    {
+      title: t("acset_notif_section_account"),
+      categories: [
+        { key: "account_activity", label: t("acset_notif_account_activity") },
+        { key: "order_policies", label: t("acset_notif_order_policies") },
+      ],
+    },
+    {
+      title: t("acset_notif_section_reminders"),
+      categories: [
+        { key: "schedule_reminders", label: t("acset_notif_schedule_reminders") },
+        { key: "support_messages", label: t("acset_notif_support_messages") },
+      ],
+    },
+  ];
   const [prefs, setPrefs] = useState<NotificationPreferences>(user.notification_preferences ?? ({} as NotificationPreferences));
   const [saving, setSaving] = useState(false);
 
@@ -324,6 +330,7 @@ function NotificationsPanel({ user, onSaved }: { user: User; onSaved: (u: User) 
 
 // ─── Payments ───────────────────────────────────────────────────────────────
 function PaymentsPanel({ user, onSaved }: { user: User; onSaved: (u: User) => void }) {
+  const { t } = useLocale();
   const [method, setMethod] = useState(user.preferred_payment_method ?? "cod");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -343,9 +350,9 @@ function PaymentsPanel({ user, onSaved }: { user: User; onSaved: (u: User) => vo
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-      <p className="text-sm font-semibold text-slate-800">Preferred payment method</p>
+      <p className="text-sm font-semibold text-slate-800">{t("acset_preferred_payment_method")}</p>
       <div className="flex gap-2">
-        {([["cod", "Cash on Delivery"], ["card", "Card"], ["upi", "UPI"]] as const).map(([value, label]) => (
+        {([["cod", t("acset_payment_cod")], ["card", t("acset_payment_card")], ["upi", t("acset_payment_upi")]] as const).map(([value, label]) => (
           <button key={value} onClick={() => setMethod(value)}
             className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${method === value ? "bg-accent-600 text-white border-accent-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
             {label}
@@ -361,6 +368,7 @@ function PaymentsPanel({ user, onSaved }: { user: User; onSaved: (u: User) => vo
 
 // ─── Legal ──────────────────────────────────────────────────────────────────
 function LegalPanel({ openRequest }: { openRequest: { slug: string; nonce: number } | null }) {
+  const { t } = useLocale();
   const [docs, setDocs] = useState<LegalDocumentSummary[]>([]);
   const [active, setActive] = useState<LegalDocument | null>(null);
   const [loading, setLoading] = useState(true);
@@ -369,8 +377,9 @@ function LegalPanel({ openRequest }: { openRequest: { slug: string; nonce: numbe
   useEffect(() => {
     httpClient.get<ApiResponse<LegalDocumentSummary[]>>("/legal/documents")
       .then((res) => setDocs(res.data))
-      .catch(() => setError("Could not load legal documents."))
+      .catch(() => setError(t("acset_legal_docs_load_error")))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function open(slug: string) {
@@ -379,7 +388,7 @@ function LegalPanel({ openRequest }: { openRequest: { slug: string; nonce: numbe
       const res = await httpClient.get<ApiResponse<LegalDocument>>(`/legal/documents/${slug}`);
       setActive(res.data);
     } catch {
-      setError("Could not load this document.");
+      setError(t("acset_legal_doc_load_error"));
     }
   }
 
@@ -397,10 +406,10 @@ function LegalPanel({ openRequest }: { openRequest: { slug: string; nonce: numbe
   if (active) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <button onClick={() => setActive(null)} className="text-sm text-accent-600 font-medium mb-4 hover:underline">← Back to Legal</button>
+        <button onClick={() => setActive(null)} className="text-sm text-accent-600 font-medium mb-4 hover:underline">{t("acset_back_to_legal")}</button>
         <h3 className="text-lg font-semibold text-slate-800">{active.title}</h3>
         <p className="text-xs text-slate-400 mt-1 mb-5">
-          Last updated {new Date(active.updated_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+          {t("acset_last_updated", { date: new Date(active.updated_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) })}
         </p>
         <div className="space-y-5">
           {active.sections.map((s) => (
@@ -417,7 +426,7 @@ function LegalPanel({ openRequest }: { openRequest: { slug: string; nonce: numbe
   return (
     <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
       {loading ? (
-        <p className="text-sm text-slate-500 p-5">Loading...</p>
+        <p className="text-sm text-slate-500 p-5">{t("common_loading")}</p>
       ) : (
         docs.map((doc) => (
           <button key={doc.slug} onClick={() => open(doc.slug)}
@@ -433,21 +442,23 @@ function LegalPanel({ openRequest }: { openRequest: { slug: string; nonce: numbe
 
 // ─── Find support ───────────────────────────────────────────────────────────
 function SupportPanel() {
+  const { t } = useLocale();
   const [contact, setContact] = useState<Organization | null>(null);
   const [faqs, setFaqs] = useState<FaqTopic[]>([]);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    httpClient.get<ApiResponse<Organization>>("/support/contact").then((res) => setContact(res.data)).catch(() => setError("Could not load contact details."));
-    httpClient.get<ApiResponse<FaqTopic[]>>("/support/faqs").then((res) => setFaqs(res.data)).catch(() => setError("Could not load FAQs."));
+    httpClient.get<ApiResponse<Organization>>("/support/contact").then((res) => setContact(res.data)).catch(() => setError(t("acset_contact_load_error")));
+    httpClient.get<ApiResponse<FaqTopic[]>>("/support/faqs").then((res) => setFaqs(res.data)).catch(() => setError(t("acset_faqs_load_error")));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="space-y-4">
       {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>}
       <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-        <p className="text-sm font-semibold text-slate-800 mb-1">How can we help?</p>
+        <p className="text-sm font-semibold text-slate-800 mb-1">{t("acset_how_can_we_help")}</p>
         {contact?.support_email && (
           <a href={`mailto:${contact.support_email}`} className="flex items-center gap-3 border border-slate-200 rounded-lg px-4 py-3 text-sm hover:bg-slate-50 transition-colors">
             <Mail className="w-4 h-4 text-slate-500" /> {contact.support_email}
@@ -459,12 +470,12 @@ function SupportPanel() {
             {contact.support_hours && <span className="text-slate-400 text-xs ml-1">· {contact.support_hours}</span>}
           </a>
         )}
-        {!contact && !error && <p className="text-sm text-slate-400 flex items-center gap-2"><Clock className="w-4 h-4" /> Loading contact details...</p>}
+        {!contact && !error && <p className="text-sm text-slate-400 flex items-center gap-2"><Clock className="w-4 h-4" /> {t("acset_loading_contact")}</p>}
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200">
         <p className="text-sm font-semibold text-slate-800 px-5 pt-5 pb-2 flex items-center gap-2">
-          <MessageCircleQuestion className="w-4 h-4 text-accent-600" /> Frequently asked questions
+          <MessageCircleQuestion className="w-4 h-4 text-accent-600" /> {t("acset_faqs_title")}
         </p>
         <div className="divide-y divide-slate-100">
           {faqs.map((faq) => (
@@ -482,6 +493,7 @@ function SupportPanel() {
 
 // ─── Root ───────────────────────────────────────────────────────────────────
 export default function AccountSettings() {
+  const { t } = useLocale();
   const { user, updateUser } = useAuth();
   const [active, setActive] = useState<MenuKey>("personal");
   const [legalOpenRequest, setLegalOpenRequest] = useState<{ slug: string; nonce: number } | null>(null);
@@ -491,7 +503,7 @@ export default function AccountSettings() {
     setLegalOpenRequest((prev) => ({ slug, nonce: (prev?.nonce ?? 0) + 1 }));
   }
 
-  if (!user) return <p className="text-sm text-slate-500">Loading account...</p>;
+  if (!user) return <p className="text-sm text-slate-500">{t("acset_loading_account")}</p>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 max-w-4xl">
@@ -507,7 +519,7 @@ export default function AccountSettings() {
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              {item.label}
+              {t(item.labelKey)}
             </button>
           );
         })}
@@ -515,13 +527,13 @@ export default function AccountSettings() {
 
       <div>
         {active === "personal" && <PersonalInfoPanel user={user} onSaved={updateUser} />}
-        {active === "security" && <ComingSoonPanel title="Login & security" />}
+        {active === "security" && <ComingSoonPanel title={t("acset_menu_security")} />}
         {active === "privacy" && <PrivacyPanel user={user} onSaved={updateUser} onOpenLegalDoc={openLegalDoc} />}
         {active === "notifications" && <NotificationsPanel user={user} onSaved={updateUser} />}
         {active === "payments" && <PaymentsPanel user={user} onSaved={updateUser} />}
-        {active === "taxes" && <ComingSoonPanel title="Taxes (GST)" />}
-        {active === "translation" && <ComingSoonPanel title="Translation" />}
-        {active === "accessibility" && <ComingSoonPanel title="Accessibility" />}
+        {active === "taxes" && <ComingSoonPanel title={t("acset_menu_taxes")} />}
+        {active === "translation" && <ComingSoonPanel title={t("acset_menu_translation")} />}
+        {active === "accessibility" && <ComingSoonPanel title={t("acset_menu_accessibility")} />}
         {active === "legal" && <LegalPanel openRequest={legalOpenRequest} />}
         {active === "support" && <SupportPanel />}
       </div>

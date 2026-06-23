@@ -13,6 +13,7 @@ import {
   setDefaultAddress, newId,
 } from "@/lib/savedAddresses";
 import AccountSettings from "@/components/settings/AccountSettings";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type SpecField = "pipe_diameter_mm" | "flow_velocity_ms" | "flow_rate_lpm" | "power_rating_watts";
 
@@ -58,7 +59,9 @@ function AddressFormModal({ initial, onSave, onClose }: {
   onClose: () => void;
 }) {
   const [form, setForm] = useState<Omit<SavedAddress, "id">>(initial ?? BLANK_ADDR);
+  const { t } = useLocale();
   const inp = "w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition";
+  const LABELS = [t("set_label_home"), t("set_label_farm"), t("set_label_office"), t("set_label_other")];
 
   function set(k: keyof typeof BLANK_ADDR, v: string | boolean) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -74,66 +77,66 @@ function AddressFormModal({ initial, onSave, onClose }: {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-bold text-slate-800">{initial ? "Edit Address" : "Add New Address"}</h3>
+          <h3 className="font-bold text-slate-800">{initial ? t("set_edit_address") : t("set_add_new_address")}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
         </div>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5">Label *</label>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5">{t("set_label_required")}</label>
             <div className="flex gap-2 flex-wrap mb-1">
-              {["Home", "Farm", "Office", "Other"].map((l) => (
+              {LABELS.map((l) => (
                 <button key={l} type="button" onClick={() => set("label", l)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${form.label === l ? "bg-accent-600 text-white border-accent-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
                   {l}
                 </button>
               ))}
             </div>
-            <input className={inp} value={form.label} onChange={(e) => set("label", e.target.value)} placeholder="Custom label" />
+            <input className={inp} value={form.label} onChange={(e) => set("label", e.target.value)} placeholder={t("set_custom_label")} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5">Full Name *</label>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5">{t("set_full_name_required")}</label>
               <input className={inp} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Ramesh Patil" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5">Phone *</label>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5">{t("set_phone_required")}</label>
               <input className={inp} type="tel" maxLength={15} value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="9876543210" />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5">Address Line 1 *</label>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5">{t("set_address_line1_required")}</label>
             <input className={inp} value={form.line1} onChange={(e) => set("line1", e.target.value)} placeholder="House no., Street, Village" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5">Address Line 2</label>
-            <input className={inp} value={form.line2} onChange={(e) => set("line2", e.target.value)} placeholder="Landmark (optional)" />
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5">{t("set_address_line2")}</label>
+            <input className={inp} value={form.line2} onChange={(e) => set("line2", e.target.value)} placeholder={t("set_landmark_optional")} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5">City *</label>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5">{t("set_city_required")}</label>
               <input className={inp} value={form.city} onChange={(e) => set("city", e.target.value)} placeholder="Pune" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5">Pincode *</label>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5">{t("set_pincode_required")}</label>
               <input className={inp} type="tel" maxLength={6} value={form.pincode} onChange={(e) => set("pincode", e.target.value)} placeholder="411001" />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5">State *</label>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5">{t("set_state_required")}</label>
             <select className={inp} value={form.state} onChange={(e) => set("state", e.target.value)}>
-              <option value="">Select state</option>
+              <option value="">{t("set_select_state")}</option>
               {STATES.map((s) => <option key={s}>{s}</option>)}
             </select>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={form.isDefault} onChange={(e) => set("isDefault", e.target.checked)} className="accent-accent-600 w-4 h-4" />
-            <span className="text-sm text-slate-600">Set as default address</span>
+            <span className="text-sm text-slate-600">{t("set_set_as_default")}</span>
           </label>
         </div>
         <div className="flex gap-3 mt-5">
-          <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">{t("set_cancel")}</button>
           <button onClick={submit} disabled={!valid} className="flex-1 py-2.5 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors">
-            {initial ? "Save Changes" : "Add Address"}
+            {initial ? t("set_save_changes") : t("set_add_address")}
           </button>
         </div>
       </div>
@@ -143,6 +146,7 @@ function AddressFormModal({ initial, onSave, onClose }: {
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<"settings" | "account">("settings");
+  const { t } = useLocale();
 
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [rateInput, setRateInput] = useState("");
@@ -174,7 +178,7 @@ export default function SettingsPage() {
   }
 
   function handleDeleteAddress(id: string) {
-    if (!confirm("Remove this address?")) return;
+    if (!confirm(t("set_remove_address_confirm"))) return;
     setAddresses(deleteAddress(id));
   }
 
@@ -247,16 +251,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <DashboardShell breadcrumb={[{ label: "Settings" }]}>
+    <DashboardShell breadcrumb={[{ label: t("nav_settings") }]}>
       {/* Tab switcher */}
       <div className="flex gap-1 mb-6 bg-slate-100 rounded-2xl p-1 w-fit">
         <button onClick={() => setTab("settings")}
           className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "settings" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-          <Settings className="w-4 h-4" /> Farm Settings
+          <Settings className="w-4 h-4" /> {t("set_farm_settings_tab")}
         </button>
         <button onClick={() => setTab("account")}
           className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${tab === "account" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-          <UserCog className="w-4 h-4" /> Account
+          <UserCog className="w-4 h-4" /> {t("set_account_tab")}
         </button>
       </div>
 
@@ -272,19 +276,19 @@ export default function SettingsPage() {
               <IndianRupee className="w-4 h-4 text-emerald-700" />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-800">Electricity tariff</p>
+              <p className="text-sm font-medium text-slate-800">{t("set_electricity_tariff")}</p>
               <p className="text-xs text-slate-500">
-                Used to estimate the cost of running your pumps in the Analytics page
+                {t("set_electricity_tariff_sub")}
               </p>
             </div>
           </div>
           {loading ? (
-            <p className="text-sm text-slate-500">Loading...</p>
+            <p className="text-sm text-slate-500">{t("common_loading")}</p>
           ) : (
             <div className="flex items-end gap-3">
               <div className="flex-1 max-w-[200px]">
                 <label className="block text-xs font-medium text-slate-500 mb-1">
-                  Rate (₹ per kWh)
+                  {t("set_rate_per_kwh")}
                 </label>
                 <input
                   type="number"
@@ -307,7 +311,7 @@ export default function SettingsPage() {
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                Save
+                {t("set_save")}
               </button>
             </div>
           )}
@@ -319,18 +323,17 @@ export default function SettingsPage() {
               <Gauge className="w-4 h-4 text-violet-700" />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-800">Pump specifications</p>
+              <p className="text-sm font-medium text-slate-800">{t("set_pump_specs")}</p>
               <p className="text-xs text-slate-500">
-                Enter pipe size and flow velocity, or a rated flow rate from the pump nameplate, to
-                estimate water usage. Add a power rating to estimate electricity usage.
+                {t("set_pump_specs_sub")}
               </p>
             </div>
           </div>
 
           {loading ? (
-            <p className="text-sm text-slate-500">Loading...</p>
+            <p className="text-sm text-slate-500">{t("common_loading")}</p>
           ) : actuators.length === 0 ? (
-            <p className="text-sm text-slate-500">No pumps registered yet.</p>
+            <p className="text-sm text-slate-500">{t("set_no_pumps_yet")}</p>
           ) : (
             <div className="space-y-3">
               {actuators.map((actuator) => {
@@ -348,7 +351,7 @@ export default function SettingsPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">
-                          Pipe diameter (mm)
+                          {t("set_pipe_diameter")}
                         </label>
                         <input
                           type="number"
@@ -361,7 +364,7 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">
-                          Flow velocity (m/s)
+                          {t("set_flow_velocity")}
                         </label>
                         <input
                           type="number"
@@ -374,7 +377,7 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">
-                          Rated flow rate (L/min)
+                          {t("set_rated_flow_rate")}
                         </label>
                         <input
                           type="number"
@@ -388,7 +391,7 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">
-                          Power rating (W)
+                          {t("set_power_rating")}
                         </label>
                         <input
                           type="number"
@@ -402,9 +405,9 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex items-center justify-between mt-3">
                       <p className="text-xs text-slate-500">
-                        Effective flow rate:{" "}
+                        {t("set_effective_flow_rate")}{" "}
                         <span className="font-medium text-slate-700">
-                          {effectiveLpm != null ? `${effectiveLpm.toFixed(1)} L/min` : "not configured"}
+                          {effectiveLpm != null ? `${effectiveLpm.toFixed(1)} L/min` : t("set_not_configured")}
                         </span>
                       </p>
                       <button
@@ -419,7 +422,7 @@ export default function SettingsPage() {
                         ) : (
                           <Save className="w-3.5 h-3.5" />
                         )}
-                        Save
+                        {t("set_save")}
                       </button>
                     </div>
                   </div>
@@ -436,24 +439,24 @@ export default function SettingsPage() {
                 <MapPin className="w-4 h-4 text-green-700" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-800">Saved Addresses</p>
-                <p className="text-xs text-slate-500">Pre-fill delivery address at checkout</p>
+                <p className="text-sm font-medium text-slate-800">{t("set_saved_addresses")}</p>
+                <p className="text-xs text-slate-500">{t("set_prefill_checkout")}</p>
               </div>
             </div>
             <button
               onClick={() => setAddrModal("new")}
               className="flex items-center gap-1.5 px-3 py-2 bg-accent-600 hover:bg-accent-700 text-white text-xs font-semibold rounded-lg transition-colors"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Address
+              <Plus className="w-3.5 h-3.5" /> {t("set_add_address")}
             </button>
           </div>
 
           {addresses.length === 0 ? (
             <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-xl">
               <MapPin className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm text-slate-400">No saved addresses yet</p>
+              <p className="text-sm text-slate-400">{t("set_no_addresses_yet")}</p>
               <button onClick={() => setAddrModal("new")} className="mt-2 text-xs text-accent-600 font-semibold hover:underline">
-                + Add your first address
+                {t("set_add_first_address")}
               </button>
             </div>
           ) : (
@@ -468,14 +471,14 @@ export default function SettingsPage() {
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${addr.isDefault ? "bg-accent-600 text-white" : "bg-slate-100 text-slate-600"}`}>
                         {addr.label}
                       </span>
-                      {addr.isDefault && <span className="flex items-center gap-1 text-[10px] font-semibold text-accent-600"><Star className="w-3 h-3 fill-accent-600" /> Default</span>}
+                      {addr.isDefault && <span className="flex items-center gap-1 text-[10px] font-semibold text-accent-600"><Star className="w-3 h-3 fill-accent-600" /> {t("set_default_badge")}</span>}
                     </div>
                     <p className="text-sm font-semibold text-slate-800">{addr.name} · {addr.phone}</p>
                     <p className="text-xs text-slate-500 truncate">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}, {addr.city}, {addr.state} – {addr.pincode}</p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     {!addr.isDefault && (
-                      <button onClick={() => handleSetDefault(addr.id)} title="Set as default"
+                      <button onClick={() => handleSetDefault(addr.id)} title={t("set_set_as_default_title")}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 transition-colors">
                         <Star className="w-4 h-4" />
                       </button>

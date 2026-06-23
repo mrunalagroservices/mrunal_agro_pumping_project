@@ -5,9 +5,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Loader2, XCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocale } from "@/contexts/LocaleContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function LoginPage() {
   const { login, register, isAuthenticated, isLoading } = useAuth();
+  const { t } = useLocale();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [submitting, setSubmitting] = useState(false);
@@ -42,15 +45,18 @@ export default function LoginPage() {
         });
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      setError(msg === "Unauthorized" ? "Incorrect email or password. Please try again." : msg);
+      const msg = err instanceof Error ? err.message : t("login_generic_error");
+      setError(msg === "Unauthorized" ? t("login_unauthorized_error") : msg);
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
           <Image
@@ -62,9 +68,7 @@ export default function LoginPage() {
             priority
           />
           <p className="text-sm text-slate-500">
-            {mode === "login"
-              ? "Sign in to manage your farm pumps"
-              : "Create your organization account"}
+            {mode === "login" ? t("login_subtitle_signin") : t("login_subtitle_register")}
           </p>
         </div>
 
@@ -73,7 +77,7 @@ export default function LoginPage() {
             {mode === "register" && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Organization name
+                  {t("login_org_name")}
                 </label>
                 <input
                   type="text"
@@ -81,7 +85,7 @@ export default function LoginPage() {
                   value={organizationName}
                   onChange={(e) => setOrganizationName(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
-                  placeholder="Green Valley Farms"
+                  placeholder={t("login_org_name_placeholder")}
                 />
               </div>
             )}
@@ -89,7 +93,7 @@ export default function LoginPage() {
             {mode === "register" && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Your name
+                  {t("login_your_name")}
                 </label>
                 <input
                   type="text"
@@ -97,14 +101,14 @@ export default function LoginPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
-                  placeholder="Ramesh Patil"
+                  placeholder={t("login_your_name_placeholder")}
                 />
               </div>
             )}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Email
+                {t("login_email")}
               </label>
               <input
                 type="email"
@@ -118,7 +122,7 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Password
+                {t("login_password")}
               </label>
               <input
                 type="password"
@@ -133,7 +137,7 @@ export default function LoginPage() {
             {mode === "register" && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Phone (optional)
+                  {t("login_phone_optional")}
                 </label>
                 <input
                   type="tel"
@@ -158,7 +162,7 @@ export default function LoginPage() {
               className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              {mode === "login" ? "Sign in" : "Create account"}
+              {mode === "login" ? t("login_signin") : t("login_create_account_btn")}
             </button>
           </form>
         </div>
@@ -166,7 +170,7 @@ export default function LoginPage() {
         <p className="text-center text-sm text-slate-500 mt-4">
           {mode === "login" ? (
             <>
-              Don&apos;t have an organization yet?{" "}
+              {t("login_no_org_yet")}{" "}
               <button
                 onClick={() => {
                   setMode("register");
@@ -174,12 +178,12 @@ export default function LoginPage() {
                 }}
                 className="text-accent-700 font-medium hover:underline"
               >
-                Create one
+                {t("login_create_account")}
               </button>
             </>
           ) : (
             <>
-              Already have an account?{" "}
+              {t("login_have_account")}{" "}
               <button
                 onClick={() => {
                   setMode("login");
@@ -187,7 +191,7 @@ export default function LoginPage() {
                 }}
                 className="text-accent-700 font-medium hover:underline"
               >
-                Sign in
+                {t("login_signin")}
               </button>
             </>
           )}

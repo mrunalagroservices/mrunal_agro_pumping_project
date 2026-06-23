@@ -11,6 +11,7 @@ import { CartItem, cartFromStorage, cartToStorage } from "@/lib/products";
 import { getSavedAddresses, SavedAddress } from "@/lib/savedAddresses";
 import { httpClient } from "@/lib/api";
 import type { ApiResponse, ShopSettings } from "@/lib/types";
+import { useLocale } from "@/contexts/LocaleContext";
 
 // ── Image fallback ─────────────────────────────────────────────────────────────
 function PImg({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
@@ -40,26 +41,27 @@ const STATES = [
 
 // ── Success Screen ─────────────────────────────────────────────────────────────
 function SuccessScreen({ orderId, total, onContinue }: { orderId: number; total: number; onContinue: () => void }) {
+  const { t } = useLocale();
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-6">
         <CheckCircle2 className="w-12 h-12 text-emerald-600" />
       </div>
-      <h2 className="text-2xl font-black text-slate-800 mb-2">Order Placed!</h2>
-      <p className="text-slate-500 mb-1">Your order has been confirmed.</p>
-      <p className="text-xs text-slate-400 mb-1">Order ID: <span className="font-mono font-bold text-emerald-600">#{orderId}</span></p>
-      <p className="text-emerald-600 font-semibold text-sm mb-8">Expected delivery by <strong>{deliveryDate()}</strong></p>
+      <h2 className="text-2xl font-black text-slate-800 mb-2">{t("co_order_placed")}</h2>
+      <p className="text-slate-500 mb-1">{t("co_order_confirmed")}</p>
+      <p className="text-xs text-slate-400 mb-1">{t("co_order_id")} <span className="font-mono font-bold text-emerald-600">#{orderId}</span></p>
+      <p className="text-emerald-600 font-semibold text-sm mb-8">{t("co_expected_delivery", { date: deliveryDate() })}</p>
       <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-8 text-left space-y-2 text-sm text-slate-600 w-72 shadow-sm">
-        <p>📦 Order #{orderId} confirmed · ₹{total.toLocaleString("en-IN")} {}</p>
-        <p>🚚 Will be dispatched by tomorrow</p>
-        <p>📞 Our team will call before delivery</p>
+        <p>{t("co_order_confirmed_detail", { id: orderId, total: total.toLocaleString("en-IN") })}</p>
+        <p>{t("co_dispatched_tomorrow")}</p>
+        <p>{t("co_team_will_call")}</p>
       </div>
       <div className="flex gap-3">
         <button onClick={onContinue} className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full transition-colors">
-          Continue Shopping
+          {t("co_continue_shopping")}
         </button>
         <button onClick={() => window.location.href = "/orders"} className="px-8 py-3 border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-bold rounded-full transition-colors">
-          View My Orders
+          {t("co_view_my_orders")}
         </button>
       </div>
     </div>
@@ -69,6 +71,7 @@ function SuccessScreen({ orderId, total, onContinue }: { orderId: number; total:
 // ── Main Checkout Page ─────────────────────────────────────────────────────────
 export default function CheckoutPage() {
   const router = useRouter();
+  const { t } = useLocale();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [savedAddrs, setSavedAddrs] = useState<SavedAddress[]>([]);
   const [selectedSavedId, setSelectedSavedId] = useState<string | null>(null);
@@ -132,7 +135,7 @@ export default function CheckoutPage() {
       const res = await httpClient.post<ApiResponse<{ coupon: { code: string; type: "percent" | "flat"; value: number }; discount: number }>>("/shop-settings/validate-coupon", { code, subtotal });
       setAppliedCoupon({ code, type: res.data.coupon.type, value: res.data.coupon.value, discount: res.data.discount });
     } catch (err: unknown) {
-      setCouponError(err instanceof Error ? err.message : "Invalid coupon code");
+      setCouponError(err instanceof Error ? err.message : t("co_invalid_coupon"));
     } finally {
       setCouponLoading(false);
     }
@@ -167,7 +170,7 @@ export default function CheckoutPage() {
       cartToStorage([]);
       setPlacedOrderId(res.data.id);
     } catch (err: unknown) {
-      setPlaceError(err instanceof Error ? err.message : "Failed to place order. Please try again.");
+      setPlaceError(err instanceof Error ? err.message : t("co_order_failed"));
     } finally {
       setPlacing(false);
     }
@@ -177,19 +180,19 @@ export default function CheckoutPage() {
 
   if (placedOrderId !== null) {
     return (
-      <DashboardShell breadcrumb={[{ label: "Market", href: "/shop" }, { label: "Checkout" }]}>
+      <DashboardShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: t("co_checkout_title") }]}>
         <SuccessScreen orderId={placedOrderId} total={total} onContinue={() => router.push("/shop")} />
       </DashboardShell>
     );
   }
 
   return (
-    <DashboardShell breadcrumb={[{ label: "Market", href: "/shop" }, { label: "Checkout" }]}>
+    <DashboardShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: t("co_checkout_title") }]}>
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.push("/shop")} className="flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-600 transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Back to Market
+          <ArrowLeft className="w-4 h-4" /> {t("co_back_to_market")}
         </button>
-        <h1 className="text-2xl font-black text-slate-800">Checkout</h1>
+        <h1 className="text-2xl font-black text-slate-800">{t("co_checkout_title")}</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -198,10 +201,10 @@ export default function CheckoutPage() {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h2 className="font-bold text-slate-800">Delivery Address</h2>
+              <h2 className="font-bold text-slate-800">{t("co_delivery_address")}</h2>
               <button onClick={() => { setShowAddrForm(true); setSelectedSavedId(null); }}
                 className="flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700">
-                <Plus className="w-3.5 h-3.5" /> New Address
+                <Plus className="w-3.5 h-3.5" /> {t("co_new_address")}
               </button>
             </div>
 
@@ -210,11 +213,11 @@ export default function CheckoutPage() {
                 <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
                   <MapPin className="w-6 h-6 text-slate-400" />
                 </div>
-                <p className="font-semibold text-slate-700 mb-1">No address saved</p>
-                <p className="text-xs text-slate-400 mb-4">Add an address to track your delivery</p>
+                <p className="font-semibold text-slate-700 mb-1">{t("co_no_address_saved")}</p>
+                <p className="text-xs text-slate-400 mb-4">{t("co_add_address_track")}</p>
                 <button onClick={() => setShowAddrForm(true)}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-full transition-colors">
-                  + Add New Address
+                  {t("co_add_new_address")}
                 </button>
               </div>
             ) : (
@@ -228,7 +231,7 @@ export default function CheckoutPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${selectedSavedId === sa.id ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600"}`}>{sa.label}</span>
-                        {sa.isDefault && <span className="text-[10px] font-semibold text-amber-600">★ Default</span>}
+                        {sa.isDefault && <span className="text-[10px] font-semibold text-amber-600">{t("co_default_badge")}</span>}
                       </div>
                       <p className="text-sm font-semibold text-slate-800">{sa.name} · {sa.phone}</p>
                       <p className="text-xs text-slate-500 line-clamp-1">{sa.line1}, {sa.city}, {sa.state} – {sa.pincode}</p>
@@ -242,36 +245,36 @@ export default function CheckoutPage() {
             {showAddrForm && (
               <div className="px-5 py-4 border-t border-slate-100 space-y-3">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-sm font-bold text-slate-700">Enter new address</p>
+                  <p className="text-sm font-bold text-slate-700">{t("co_enter_new_address")}</p>
                   <button onClick={() => setShowAddrForm(false)}><X className="w-4 h-4 text-slate-400" /></button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">Name *</label>
-                    <input className={inp} value={addr.name} onChange={(e) => setAddr((a) => ({ ...a, name: e.target.value }))} placeholder="Full name" />
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">{t("co_name_required")}</label>
+                    <input className={inp} value={addr.name} onChange={(e) => setAddr((a) => ({ ...a, name: e.target.value }))} placeholder={t("co_full_name")} />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">Phone *</label>
-                    <input className={inp} type="tel" maxLength={15} value={addr.phone} onChange={(e) => setAddr((a) => ({ ...a, phone: e.target.value }))} placeholder="Phone number" />
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">{t("co_phone_required")}</label>
+                    <input className={inp} type="tel" maxLength={15} value={addr.phone} onChange={(e) => setAddr((a) => ({ ...a, phone: e.target.value }))} placeholder={t("co_phone_number")} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">Address *</label>
-                  <input className={inp} value={addr.line1} onChange={(e) => setAddr((a) => ({ ...a, line1: e.target.value }))} placeholder="House no., Street, Village" />
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">{t("co_address_required")}</label>
+                  <input className={inp} value={addr.line1} onChange={(e) => setAddr((a) => ({ ...a, line1: e.target.value }))} placeholder={t("co_address_placeholder")} />
                 </div>
-                <input className={inp} value={addr.line2} onChange={(e) => setAddr((a) => ({ ...a, line2: e.target.value }))} placeholder="Landmark (optional)" />
+                <input className={inp} value={addr.line2} onChange={(e) => setAddr((a) => ({ ...a, line2: e.target.value }))} placeholder={t("co_landmark_optional")} />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">City *</label>
-                    <input className={inp} value={addr.city} onChange={(e) => setAddr((a) => ({ ...a, city: e.target.value }))} placeholder="City" />
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">{t("co_city_required")}</label>
+                    <input className={inp} value={addr.city} onChange={(e) => setAddr((a) => ({ ...a, city: e.target.value }))} placeholder={t("co_city_placeholder")} />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">Pincode *</label>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">{t("co_pincode_required")}</label>
                     <input className={inp} type="tel" maxLength={6} value={addr.pincode} onChange={(e) => setAddr((a) => ({ ...a, pincode: e.target.value }))} placeholder="411001" />
                   </div>
                 </div>
                 <select className={inp} value={addr.state} onChange={(e) => setAddr((a) => ({ ...a, state: e.target.value }))}>
-                  <option value="">Select state *</option>
+                  <option value="">{t("co_select_state")}</option>
                   {STATES.map((s) => <option key={s}>{s}</option>)}
                 </select>
               </div>
@@ -281,8 +284,8 @@ export default function CheckoutPage() {
           <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3">
             <Truck className="w-5 h-5 text-emerald-600 shrink-0" />
             <div>
-              <p className="text-sm font-bold text-emerald-800">Delivery by {deliveryDate()}</p>
-              <p className="text-xs text-emerald-600">Cash on Delivery · Free</p>
+              <p className="text-sm font-bold text-emerald-800">{t("co_delivery_by", { date: deliveryDate() })}</p>
+              <p className="text-xs text-emerald-600">{t("co_cod_free")}</p>
             </div>
           </div>
         </div>
@@ -291,7 +294,7 @@ export default function CheckoutPage() {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
             <div className="px-5 py-4 border-b border-slate-100">
-              <h2 className="font-bold text-slate-800">Choose how to pay</h2>
+              <h2 className="font-bold text-slate-800">{t("co_choose_payment")}</h2>
             </div>
             <div className="p-4 space-y-3">
               {/* COD — the only completable option right now */}
@@ -299,8 +302,8 @@ export default function CheckoutPage() {
                 <input type="radio" className="accent-emerald-600 w-4 h-4" checked readOnly />
                 <Banknote className="w-5 h-5 text-emerald-600 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-800">Cash on Delivery</p>
-                  <p className="text-xs text-emerald-600 font-medium">Free delivery · Pay when you receive</p>
+                  <p className="text-sm font-semibold text-slate-800">{t("co_cod")}</p>
+                  <p className="text-xs text-emerald-600 font-medium">{t("co_cod_pay_when")}</p>
                 </div>
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
               </label>
@@ -310,10 +313,10 @@ export default function CheckoutPage() {
                 <input type="radio" className="w-4 h-4" disabled />
                 <CreditCard className="w-5 h-5 text-slate-400 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-500">Debit / Credit Card</p>
+                  <p className="text-sm font-semibold text-slate-500">{t("co_debit_credit_card")}</p>
                   <p className="text-xs text-slate-400">Visa, Mastercard, RuPay</p>
                 </div>
-                <span className="text-[10px] font-bold text-slate-400 bg-slate-200 px-2 py-1 rounded-full">Coming soon</span>
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-200 px-2 py-1 rounded-full">{t("co_coming_soon")}</span>
               </div>
 
               {/* UPI — disabled until Razorpay is wired in */}
@@ -321,10 +324,10 @@ export default function CheckoutPage() {
                 <input type="radio" className="w-4 h-4" disabled />
                 <Smartphone className="w-5 h-5 text-slate-400 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-500">UPI / GPay / PhonePe</p>
-                  <p className="text-xs text-slate-400">Pay with any UPI app</p>
+                  <p className="text-sm font-semibold text-slate-500">{t("co_upi_label")}</p>
+                  <p className="text-xs text-slate-400">{t("co_upi_sub")}</p>
                 </div>
-                <span className="text-[10px] font-bold text-slate-400 bg-slate-200 px-2 py-1 rounded-full">Coming soon</span>
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-200 px-2 py-1 rounded-full">{t("co_coming_soon")}</span>
               </div>
             </div>
           </div>
@@ -332,8 +335,10 @@ export default function CheckoutPage() {
           {/* Cart items */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h2 className="font-bold text-slate-800">Cart · {cart.length} item{cart.length !== 1 ? "s" : ""}</h2>
-              <p className="text-xs text-slate-400">Review before checkout</p>
+              <h2 className="font-bold text-slate-800">
+                {cart.length === 1 ? t("co_cart_count_one", { n: cart.length }) : t("co_cart_count_other", { n: cart.length })}
+              </h2>
+              <p className="text-xs text-slate-400">{t("co_review_before_checkout")}</p>
             </div>
             <div className="divide-y divide-slate-100">
               {cart.map(({ product: p, qty }) => (
@@ -343,7 +348,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-slate-800 line-clamp-1">{p.name}</p>
-                    <p className="text-xs text-slate-400">{p.unit} · ₹{p.price} per item</p>
+                    <p className="text-xs text-slate-400">{t("co_per_item", { unit: p.unit ?? "", price: p.price })}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button onClick={() => changeQty(p.id, -1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-600">
@@ -365,12 +370,12 @@ export default function CheckoutPage() {
         <div className="space-y-4">
           {/* Coupon */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <h2 className="font-bold text-slate-800 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-emerald-600" /> Discount Code</h2>
+            <h2 className="font-bold text-slate-800 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-emerald-600" /> {t("co_discount_code")}</h2>
             {appliedCoupon ? (
               <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
                 <div>
                   <p className="text-sm font-bold text-emerald-700">{appliedCoupon.code}</p>
-                  <p className="text-xs text-emerald-600 font-semibold">−₹{appliedCoupon.discount} saved ✓</p>
+                  <p className="text-xs text-emerald-600 font-semibold">{t("co_saved_check", { n: appliedCoupon.discount })}</p>
                 </div>
                 <button onClick={() => { setAppliedCoupon(null); setCouponInput(""); }} className="text-red-400 hover:text-red-600 ml-2">
                   <X className="w-4 h-4" />
@@ -382,16 +387,16 @@ export default function CheckoutPage() {
                   <input className={`${inp} flex-1`} value={couponInput}
                     onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
-                    placeholder="Enter coupon code" />
+                    placeholder={t("co_enter_coupon")} />
                   <button onClick={applyCoupon} disabled={couponLoading || !couponInput.trim()}
                     className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors">
-                    {couponLoading ? "…" : "Apply"}
+                    {couponLoading ? "…" : t("co_apply")}
                   </button>
                 </div>
                 {couponError && <p className="text-xs text-red-500 mt-1.5">{couponError}</p>}
                 {shopSettings?.coupons?.length ? (
                   <p className="text-xs text-slate-400 mt-2">
-                    Available: {shopSettings.coupons.filter((c) => c.is_active).map((c) => c.code).join(" · ")}
+                    {t("co_available_coupons", { codes: shopSettings.coupons.filter((c) => c.is_active).map((c) => c.code).join(" · ") })}
                   </p>
                 ) : null}
               </>
@@ -400,24 +405,24 @@ export default function CheckoutPage() {
 
           {/* Order summary */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <h2 className="font-bold text-slate-800 mb-4">Order Summary</h2>
+            <h2 className="font-bold text-slate-800 mb-4">{t("co_order_summary")}</h2>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between text-slate-600">
-                <span>Subtotal ({cart.reduce((s, i) => s + i.qty, 0)} items)</span>
+                <span>{t("co_subtotal_items", { n: cart.reduce((s, i) => s + i.qty, 0) })}</span>
                 <span>₹{subtotal.toLocaleString("en-IN")}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-emerald-600 font-medium">
-                  <span>Discount ({appliedCoupon?.code})</span>
+                  <span>{t("co_discount_with_code", { code: appliedCoupon?.code ?? "" })}</span>
                   <span>−₹{discount}</span>
                 </div>
               )}
               <div className="flex justify-between text-slate-600">
-                <span>Shipping</span>
-                <span className={deliveryCharge === 0 ? "text-emerald-600 font-semibold" : ""}>{deliveryCharge === 0 ? "Free" : `₹${deliveryCharge}`}</span>
+                <span>{t("co_shipping")}</span>
+                <span className={deliveryCharge === 0 ? "text-emerald-600 font-semibold" : ""}>{deliveryCharge === 0 ? t("co_free") : `₹${deliveryCharge}`}</span>
               </div>
               <div className="border-t border-slate-200 pt-3 flex justify-between font-black text-base text-slate-900">
-                <span>Total</span>
+                <span>{t("co_total")}</span>
                 <span>₹{total.toLocaleString("en-IN")}</span>
               </div>
             </div>
@@ -438,14 +443,14 @@ export default function CheckoutPage() {
               className="w-full mt-4 flex items-center justify-center gap-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-base"
             >
               {placing ? (
-                <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing…</>
+                <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t("co_processing")}</>
               ) : (
-                <><Lock className="w-4 h-4" /> Checkout · ₹{total.toLocaleString("en-IN")}</>
+                <><Lock className="w-4 h-4" /> {t("co_checkout_amount", { total: total.toLocaleString("en-IN") })}</>
               )}
             </button>
             {(!addrComplete || !payComplete) && (
               <p className="text-center text-xs text-slate-400 mt-2">
-                {!addrComplete ? "Add delivery address to continue" : "Complete payment details to continue"}
+                {!addrComplete ? t("co_add_address_continue") : t("co_complete_payment_continue")}
               </p>
             )}
           </div>

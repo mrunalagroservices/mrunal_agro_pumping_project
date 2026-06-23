@@ -36,6 +36,7 @@ import { socketClient } from "@/lib/socket";
 import { ApiResponse, Farm, Device, Actuator } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type Tab = "farms" | "electricity" | "antitheft";
 
@@ -45,15 +46,15 @@ interface PowerWindow { on: Date; off: Date | null; }
 
 interface DayRecord { label: string; dateKey: string; windows: PowerWindow[]; totalMinutes: number; }
 
-function timeSince(dateStr: string | null | undefined): string {
-  if (!dateStr) return "Never seen";
+function timeSince(dateStr: string | null | undefined, t: (k: any, p?: any) => string): string {
+  if (!dateStr) return t("farms_never_seen");
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t("farms_just_now");
+  if (mins < 60) return t("farms_mins_ago", { mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  if (hours < 24) return t("farms_hours_ago", { hours });
+  return t("farms_days_ago", { days: Math.floor(hours / 24) });
 }
 
 function fmtTime(d: Date): string {
@@ -67,7 +68,7 @@ function fmtHours(minutes: number): string {
   return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
 
-function buildDayRecords(events: PowerEvent[], deviceOnline: boolean): DayRecord[] {
+function buildDayRecords(events: PowerEvent[], deviceOnline: boolean, t: (k: any, p?: any) => string): DayRecord[] {
   // Build last 7 day buckets
   const days: DayRecord[] = [];
   const now = new Date();
@@ -75,7 +76,7 @@ function buildDayRecords(events: PowerEvent[], deviceOnline: boolean): DayRecord
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const key = d.toISOString().slice(0, 10);
-    const label = i === 0 ? "Today" : i === 1 ? "Yesterday"
+    const label = i === 0 ? t("common_today") : i === 1 ? t("common_yesterday")
       : d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
     days.push({ label, dateKey: key, windows: [], totalMinutes: 0 });
   }
@@ -111,6 +112,7 @@ function buildDayRecords(events: PowerEvent[], deviceOnline: boolean): DayRecord
 export default function FarmsPage() {
   const { user, isAuthenticated } = useAuth();
   const toast = useToast();
+  const { t } = useLocale();
 
   const [tab, setTab] = useState<Tab>("farms");
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -225,7 +227,7 @@ export default function FarmsPage() {
   }
 
   function useCurrentLocation() {
-    if (!navigator.geolocation) { setLocationError("Geolocation not supported"); return; }
+    if (!navigator.geolocation) { setLocationError(t("farms_geolocation_unsupported")); return; }
     setLocating(true); setLocationError(null);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -252,20 +254,20 @@ export default function FarmsPage() {
         longitude: farmLng ? Number(farmLng) : undefined,
       });
       setShowFarmModal(false); resetFarmForm(); loadAll();
-      toast.success("Farm created", `"${farmName}" has been added successfully.`);
+      toast.success(t("farms_toast_created_title"), t("farms_toast_created_body", { name: farmName }));
     } catch (err) {
-      toast.error("Failed to create farm", err instanceof Error ? err.message : undefined);
+      toast.error(t("farms_toast_create_failed"), err instanceof Error ? err.message : undefined);
     } finally { setFarmSubmitting(false); }
   }
 
   async function handleDeleteFarm(id: number) {
-    if (!confirm("Delete this farm? Devices assigned to it will become unassigned.")) return;
+    if (!confirm(t("farms_confirm_delete_farm"))) return;
     try {
       await httpClient.delete<ApiResponse<null>>(`/farms/${id}`);
       loadAll();
-      toast.success("Farm deleted");
+      toast.success(t("farms_toast_deleted"));
     } catch (err) {
-      toast.error("Failed to delete farm", err instanceof Error ? err.message : undefined);
+      toast.error(t("farms_toast_delete_failed"), err instanceof Error ? err.message : undefined);
     }
   }
 
@@ -288,9 +290,9 @@ export default function FarmsPage() {
       setCreatedDevice(res.data);
       setShowDeviceModal(false);
       loadAll();
-      toast.success("Device created", "Copy the API key shown — it won't be displayed again.");
+      toast.success(t("farms_toast_device_created"), t("farms_toast_device_created_body"));
     } catch (err) {
-      toast.error("Failed to create device", err instanceof Error ? err.message : undefined);
+      toast.error(t("farms_toast_device_create_failed"), err instanceof Error ? err.message : undefined);
     } finally { setDevSubmitting(false); }
   }
 
@@ -363,7 +365,7 @@ export default function FarmsPage() {
   const offlineCount = devices.length - onlineCount;
 
   return (
-    <DashboardShell breadcrumb={[{ label: "Farms & Devices" }]}>
+    <DashboardShell breadcrumb={[{ label: t("nav_farms_devices") }]}>
       {/* ── Tab bar ── */}
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
@@ -374,7 +376,7 @@ export default function FarmsPage() {
             }`}
           >
             <Cpu className="w-4 h-4" />
-            Farms & Devices
+            {t("nav_farms_devices")}
           </button>
           <button
             onClick={() => setTab("electricity")}
@@ -383,7 +385,7 @@ export default function FarmsPage() {
             }`}
           >
             <Zap className="w-4 h-4" />
-            Electricity
+            {t("farms_tab_electricity")}
             {onlineCount > 0 && tab !== "electricity" && (
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
             )}
@@ -395,7 +397,7 @@ export default function FarmsPage() {
             }`}
           >
             <ShieldAlert className="w-4 h-4" />
-            Anti-Theft
+            {t("farms_tab_antitheft")}
           </button>
         </div>
 
@@ -406,20 +408,20 @@ export default function FarmsPage() {
               onClick={() => openAddDevice()}
               className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg px-4 py-2 transition-colors"
             >
-              <Cpu className="w-4 h-4" /> Add device
+              <Cpu className="w-4 h-4" /> {t("farms_add_device")}
             </button>
             <button
               onClick={() => { resetFarmForm(); setShowFarmModal(true); }}
               className="flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
             >
-              <Plus className="w-4 h-4" /> Add farm
+              <Plus className="w-4 h-4" /> {t("farms_add_farm")}
             </button>
           </div>
         )}
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-500">Loading…</p>
+        <p className="text-sm text-slate-500">{t("common_loading")}</p>
       ) : (
         <>
           {/* ════════════════════════════════════════════════════════════
@@ -429,7 +431,7 @@ export default function FarmsPage() {
             <>
               {farms.length === 0 && unassigned.length === 0 ? (
                 <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
-                  <p className="text-slate-500 text-sm">No farms yet. Add your first farm to get started.</p>
+                  <p className="text-slate-500 text-sm">{t("farms_no_farms_yet")}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -454,11 +456,13 @@ export default function FarmsPage() {
                             href={`/farms/${farm.id}`}
                             className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl transition-colors shrink-0"
                           >
-                            <Droplets className="w-3.5 h-3.5" /> Zones & Plans
+                            <Droplets className="w-3.5 h-3.5" /> {t("farms_zones_plans")}
                           </Link>
                           <span className="flex items-center gap-1 text-xs text-slate-500 shrink-0">
                             <Cpu className="w-3.5 h-3.5" />
-                            {farmDevices.length} device{farmDevices.length !== 1 ? "s" : ""}
+                            {farmDevices.length === 1
+                              ? t("farms_device_count_one", { n: farmDevices.length })
+                              : t("farms_device_count_other", { n: farmDevices.length })}
                           </span>
                           <div className="relative shrink-0">
                             <button onClick={() => setOpenMenuId((id) => (id === farm.id ? null : farm.id))}
@@ -471,11 +475,11 @@ export default function FarmsPage() {
                                 <div className="absolute right-0 top-8 z-20 w-32 bg-white rounded-lg border border-slate-200 shadow-lg py-1">
                                   <button onClick={() => { setEditFarm(farm); setOpenMenuId(null); }}
                                     className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">
-                                    <Pencil className="w-3.5 h-3.5" /> Edit
+                                    <Pencil className="w-3.5 h-3.5" /> {t("common_edit")}
                                   </button>
                                   <button onClick={() => { setOpenMenuId(null); handleDeleteFarm(farm.id); }}
                                     className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
-                                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                                    <Trash2 className="w-3.5 h-3.5" /> {t("common_delete")}
                                   </button>
                                 </div>
                               </>
@@ -485,7 +489,7 @@ export default function FarmsPage() {
                         {!isCollapsed && (
                           <div className="px-5 py-4">
                             {farmDevices.length === 0 ? (
-                              <p className="text-sm text-slate-400 italic mb-3">No devices assigned to this farm yet.</p>
+                              <p className="text-sm text-slate-400 italic mb-3">{t("farms_no_devices_assigned")}</p>
                             ) : (
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                                 {farmDevices.map((d) => (
@@ -500,11 +504,11 @@ export default function FarmsPage() {
                                     </div>
                                     {d.status === "online" ? (
                                       <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 shrink-0">
-                                        <Wifi className="w-3.5 h-3.5" /> Online
+                                        <Wifi className="w-3.5 h-3.5" /> {t("common_online")}
                                       </span>
                                     ) : (
                                       <span className="flex items-center gap-1 text-xs font-medium text-slate-400 shrink-0">
-                                        <WifiOff className="w-3.5 h-3.5" /> Offline
+                                        <WifiOff className="w-3.5 h-3.5" /> {t("common_offline")}
                                       </span>
                                     )}
                                   </Link>
@@ -513,7 +517,7 @@ export default function FarmsPage() {
                             )}
                             <button onClick={() => openAddDevice(farm.id)}
                               className="flex items-center gap-1.5 text-xs font-medium text-accent-700 hover:text-accent-800 hover:bg-accent-50 px-3 py-1.5 rounded-lg border border-dashed border-accent-300 transition-colors">
-                              <Plus className="w-3.5 h-3.5" /> Add device to this farm
+                              <Plus className="w-3.5 h-3.5" /> {t("farms_add_device_to_farm")}
                             </button>
                           </div>
                         )}
@@ -524,8 +528,8 @@ export default function FarmsPage() {
                   {unassigned.length > 0 && (
                     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
                       <div className="px-5 py-4 border-b border-slate-100">
-                        <h3 className="font-semibold text-slate-600 text-sm">Unassigned devices</h3>
-                        <p className="text-xs text-slate-400 mt-0.5">Not linked to any farm</p>
+                        <h3 className="font-semibold text-slate-600 text-sm">{t("farms_unassigned_devices")}</h3>
+                        <p className="text-xs text-slate-400 mt-0.5">{t("farms_not_linked")}</p>
                       </div>
                       <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {unassigned.map((d) => (
@@ -540,11 +544,11 @@ export default function FarmsPage() {
                             </div>
                             {d.status === "online" ? (
                               <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 shrink-0">
-                                <Wifi className="w-3.5 h-3.5" /> Online
+                                <Wifi className="w-3.5 h-3.5" /> {t("common_online")}
                               </span>
                             ) : (
                               <span className="flex items-center gap-1 text-xs font-medium text-slate-400 shrink-0">
-                                <WifiOff className="w-3.5 h-3.5" /> Offline
+                                <WifiOff className="w-3.5 h-3.5" /> {t("common_offline")}
                               </span>
                             )}
                           </Link>
@@ -570,7 +574,9 @@ export default function FarmsPage() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-emerald-700">{onlineCount}</p>
-                    <p className="text-xs text-emerald-600 font-medium">Device{onlineCount !== 1 ? "s" : ""} with power now</p>
+                    <p className="text-xs text-emerald-600 font-medium">
+                      {onlineCount === 1 ? t("farms_devices_with_power_one") : t("farms_devices_with_power_other")}
+                    </p>
                   </div>
                 </div>
                 <div className="bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 flex items-center gap-4">
@@ -579,7 +585,7 @@ export default function FarmsPage() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-slate-500">{offlineCount}</p>
-                    <p className="text-xs text-slate-500 font-medium">No power / offline</p>
+                    <p className="text-xs text-slate-500 font-medium">{t("farms_no_power_offline")}</p>
                   </div>
                 </div>
               </div>
@@ -588,8 +594,8 @@ export default function FarmsPage() {
               <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-4 flex items-start gap-3">
                 <Zap className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <div className="text-sm text-amber-800 space-y-1">
-                  <p><strong>Battery-powered ESP32:</strong> Since your device runs 24/7 on battery, it stays online even when farm electricity is cut.</p>
-                  <p>Connect a small <strong>AC voltage detection module</strong> (or optocoupler circuit) to an ESP32 GPIO pin. When mains power is present → GPIO HIGH → ESP32 sends <code className="bg-amber-100 px-1 rounded text-xs">power_on</code>. When cut → sends <code className="bg-amber-100 px-1 rounded text-xs">power_off</code>. The timeline below is built from these events.</p>
+                  <p><strong>{t("farms_battery_esp32_title")}</strong> {t("farms_battery_esp32_body")}</p>
+                  <p>{t("farms_ac_module_body")}</p>
                 </div>
               </div>
 
@@ -597,7 +603,7 @@ export default function FarmsPage() {
               {devices.length === 0 ? (
                 <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
                   <ZapOff className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm text-slate-500">No devices added yet.</p>
+                  <p className="text-sm text-slate-500">{t("farms_no_devices_added")}</p>
                 </div>
               ) : (
                 [...farms.map((farm) => ({ farm, devList: devicesByFarm.get(farm.id) ?? [] })),
@@ -613,7 +619,7 @@ export default function FarmsPage() {
                           <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-slate-700 text-sm truncate">
-                              {farm ? farm.name : "Unassigned devices"}
+                              {farm ? farm.name : t("farms_unassigned_devices")}
                             </p>
                             {farm?.location && <p className="text-xs text-slate-400 truncate">{farm.location}</p>}
                           </div>
@@ -626,7 +632,7 @@ export default function FarmsPage() {
                             const notifyOn = notifyEnabled.has(d.id);
                             const events = powerHistory.get(d.id) ?? [];
                             const isLoadingHistory = historyLoading.has(d.id);
-                            const dayRecords = buildDayRecords(events, hasPower);
+                            const dayRecords = buildDayRecords(events, hasPower, t);
                             const hasAnyHistory = dayRecords.some((r) => r.windows.length > 0);
 
                             return (
@@ -642,9 +648,9 @@ export default function FarmsPage() {
                                     <p className="font-semibold text-slate-800 text-sm">{d.name}</p>
                                     <div className="flex items-center gap-2 mt-0.5">
                                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${hasPower ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                                        {hasPower ? "⚡ Power ON" : "No Power"}
+                                        {hasPower ? t("farms_power_on_badge") : t("farms_no_power_badge")}
                                       </span>
-                                      <span className="text-xs text-slate-400">{timeSince(d.last_seen_at)}</span>
+                                      <span className="text-xs text-slate-400">{timeSince(d.last_seen_at, t)}</span>
                                     </div>
                                   </div>
                                   <button
@@ -653,18 +659,18 @@ export default function FarmsPage() {
                                       notifyOn ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
                                     }`}
                                   >
-                                    {notifyOn ? <><Bell className="w-3.5 h-3.5" /> Notify ON</> : <><BellOff className="w-3.5 h-3.5" /> Notify OFF</>}
+                                    {notifyOn ? <><Bell className="w-3.5 h-3.5" /> {t("farms_notify_on")}</> : <><BellOff className="w-3.5 h-3.5" /> {t("farms_notify_off")}</>}
                                   </button>
                                 </div>
 
                                 {/* 7-day power timeline */}
                                 {isLoadingHistory ? (
                                   <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading history…
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("farms_loading_history")}
                                   </div>
                                 ) : !hasAnyHistory ? (
                                   <div className="bg-slate-50 rounded-lg px-4 py-3 text-xs text-slate-400 italic">
-                                    No power events recorded yet. Once AC detection is wired and firmware sends events, the daily timeline will appear here.
+                                    {t("farms_no_power_events")}
                                   </div>
                                 ) : (
                                   <div className="space-y-2">
@@ -674,7 +680,7 @@ export default function FarmsPage() {
                                         <div className="w-24 shrink-0 pt-1">
                                           <p className="text-xs font-semibold text-slate-600">{day.label}</p>
                                           {day.totalMinutes > 0 && (
-                                            <p className="text-[10px] text-slate-400">{fmtHours(day.totalMinutes)} total</p>
+                                            <p className="text-[10px] text-slate-400">{t("farms_total_suffix", { x: fmtHours(day.totalMinutes) })}</p>
                                           )}
                                         </div>
 
@@ -683,7 +689,7 @@ export default function FarmsPage() {
                                           {day.windows.length === 0 ? (
                                             <div className="flex items-center gap-1.5 h-6">
                                               <div className="flex-1 h-1.5 rounded-full bg-slate-100" />
-                                              <span className="text-[10px] text-slate-300">No power</span>
+                                              <span className="text-[10px] text-slate-300">{t("farms_no_power_short")}</span>
                                             </div>
                                           ) : (
                                             <div className="space-y-1">
@@ -701,7 +707,7 @@ export default function FarmsPage() {
                                                       </span>
                                                     ) : (
                                                       <span className="text-[11px] font-semibold text-emerald-600 shrink-0 animate-pulse">
-                                                        Now ●
+                                                        {t("farms_now_indicator")}
                                                       </span>
                                                     )}
                                                   </div>
@@ -740,10 +746,9 @@ export default function FarmsPage() {
               <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-4 flex items-start gap-3">
                 <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-red-700 mb-1">Requires CT current sensor hardware</p>
+                  <p className="text-sm font-semibold text-red-700 mb-1">{t("farms_antitheft_requires_title")}</p>
                   <p className="text-sm text-red-600">
-                    Anti-theft works by monitoring the <strong>actual current</strong> drawn by your motor. If the motor is commanded ON but current drops to 0A, it means the wire was cut — the app will alert you immediately.
-                    You need a <strong>SCT-013 current transformer</strong> clipped around the motor wire, connected to your ESP32.
+                    {t("farms_antitheft_requires_body")}
                   </p>
                 </div>
               </div>
@@ -755,18 +760,18 @@ export default function FarmsPage() {
                     <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
                       <ShieldCheck className="w-4 h-4 text-emerald-600" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-700">Normal operation</p>
+                    <p className="text-sm font-semibold text-slate-700">{t("farms_normal_operation")}</p>
                   </div>
-                  <p className="text-xs text-slate-500">Motor is ON → current is high (e.g. 8A). All normal, no alert.</p>
+                  <p className="text-xs text-slate-500">{t("farms_normal_operation_body")}</p>
                 </div>
                 <div className="bg-white border border-red-100 rounded-xl px-4 py-4">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center">
                       <ShieldAlert className="w-4 h-4 text-red-500" />
                     </div>
-                    <p className="text-sm font-semibold text-red-700">Wire cut detected</p>
+                    <p className="text-sm font-semibold text-red-700">{t("farms_wire_cut_detected")}</p>
                   </div>
-                  <p className="text-xs text-slate-500">Motor is ON but current drops to 0A → wire forcefully cut → instant alert sent.</p>
+                  <p className="text-xs text-slate-500">{t("farms_wire_cut_body")}</p>
                 </div>
               </div>
 
@@ -774,8 +779,8 @@ export default function FarmsPage() {
               {actuators.filter((a) => a.farm_id).length === 0 ? (
                 <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
                   <ShieldOff className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm text-slate-500">No motors/actuators found.</p>
-                  <p className="text-xs text-slate-400 mt-1">Add actuators to your devices first.</p>
+                  <p className="text-sm text-slate-500">{t("farms_no_motors_found")}</p>
+                  <p className="text-xs text-slate-400 mt-1">{t("farms_add_actuators_first")}</p>
                 </div>
               ) : (
                 farms.map((farm) => {
@@ -789,7 +794,11 @@ export default function FarmsPage() {
                           <p className="font-semibold text-slate-700 text-sm truncate">{farm.name}</p>
                           {farm.location && <p className="text-xs text-slate-400 truncate">{farm.location}</p>}
                         </div>
-                        <span className="text-xs text-slate-400">{farmActuators.length} motor{farmActuators.length !== 1 ? "s" : ""}</span>
+                        <span className="text-xs text-slate-400">
+                          {farmActuators.length === 1
+                            ? t("farms_motor_count_one", { n: farmActuators.length })
+                            : t("farms_motor_count_other", { n: farmActuators.length })}
+                        </span>
                       </div>
 
                       <div className="divide-y divide-slate-100">
@@ -812,7 +821,7 @@ export default function FarmsPage() {
                                   <div className="flex items-center gap-2">
                                     <p className="font-medium text-slate-800 text-sm truncate">{a.name}</p>
                                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isRunning ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                                      {isRunning ? "Running" : "Off"}
+                                      {isRunning ? t("farms_running") : t("farms_off")}
                                     </span>
                                   </div>
                                   <p className="text-xs text-slate-400 mt-0.5 capitalize">{a.actuator_type}</p>
@@ -832,7 +841,7 @@ export default function FarmsPage() {
                                 <div className="mt-4 ml-15 pl-15 border-l-2 border-red-100 ml-[60px] pl-4 space-y-3">
                                   <div className="flex items-center gap-3">
                                     <Settings2 className="w-4 h-4 text-red-400 shrink-0" />
-                                    <label className="text-xs font-medium text-slate-600 shrink-0">Expected current (Amperes)</label>
+                                    <label className="text-xs font-medium text-slate-600 shrink-0">{t("farms_expected_current")}</label>
                                     <input
                                       type="number"
                                       step="0.1"
@@ -851,11 +860,11 @@ export default function FarmsPage() {
                                   }`}>
                                     <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
                                     {!threshold
-                                      ? "Set expected current above to activate monitoring"
-                                      : `Alert will fire if current drops below ${Number(threshold) * 0.5}A while motor is ON`}
+                                      ? t("farms_set_expected_current")
+                                      : t("farms_alert_fires_below", { threshold: Number(threshold) * 0.5 })}
                                   </div>
                                   <p className="text-[11px] text-slate-400">
-                                    Requires CT sensor (SCT-013) connected to ESP32 analog pin. Firmware update needed.
+                                    {t("farms_requires_ct_sensor")}
                                   </p>
                                 </div>
                               )}
@@ -874,37 +883,37 @@ export default function FarmsPage() {
 
       {/* ── Add Farm modal ── */}
       {showFarmModal && (
-        <Modal title="Add farm" onClose={() => { setShowFarmModal(false); resetFarmForm(); }}>
+        <Modal title={t("farms_add_farm")} onClose={() => { setShowFarmModal(false); resetFarmForm(); }}>
           <form onSubmit={handleCreateFarm} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_name")}</label>
               <input type="text" required value={farmName} onChange={(e) => setFarmName(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                 placeholder="North Field" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-slate-700">Location (optional)</label>
+                <label className="block text-sm font-medium text-slate-700">{t("farms_field_location_optional")}</label>
                 <button type="button" onClick={useCurrentLocation} disabled={locating}
                   className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline disabled:opacity-60">
                   {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
-                  Use current location
+                  {t("farms_use_current_location")}
                 </button>
               </div>
               <input type="text" value={farmLocation} onChange={(e) => setFarmLocation(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
-                placeholder="Village, Taluka, District" />
+                placeholder={t("farms_placeholder_village")} />
               {locationError && <p className="text-xs text-red-600 mt-1">{locationError}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Latitude (optional)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_latitude_optional")}</label>
                 <input type="number" step="any" value={farmLat} onChange={(e) => setFarmLat(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                   placeholder="18.5204" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Longitude (optional)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_longitude_optional")}</label>
                 <input type="number" step="any" value={farmLng} onChange={(e) => setFarmLng(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                   placeholder="73.8567" />
@@ -913,7 +922,7 @@ export default function FarmsPage() {
             <button type="submit" disabled={farmSubmitting}
               className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {farmSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Add farm
+              {t("farms_add_farm")}
             </button>
           </form>
         </Modal>
@@ -921,24 +930,24 @@ export default function FarmsPage() {
 
       {/* ── Add Device modal ── */}
       {showDeviceModal && !createdDevice && (
-        <Modal title="Add device" onClose={closeDeviceModal}>
+        <Modal title={t("farms_add_device")} onClose={closeDeviceModal}>
           <form onSubmit={handleCreateDevice} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_name")}</label>
               <input type="text" required value={devName} onChange={(e) => setDevName(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
-                placeholder="Field Gateway 1" />
+                placeholder={t("farms_placeholder_field_gateway")} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Farm (optional)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_farm_optional")}</label>
               <select value={devFarmId} onChange={(e) => setDevFarmId(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
-                <option value="">Unassigned</option>
+                <option value="">{t("home_unassigned")}</option>
                 {farms.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Relay count</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_relay_count")}</label>
               <input type="number" min={1} max={16} required value={devRelayCount}
                 onChange={(e) => setDevRelayCount(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500" />
@@ -946,7 +955,7 @@ export default function FarmsPage() {
             <button type="submit" disabled={devSubmitting}
               className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {devSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Add device
+              {t("farms_add_device")}
             </button>
           </form>
         </Modal>
@@ -954,12 +963,10 @@ export default function FarmsPage() {
 
       {/* ── API key reveal after device creation ── */}
       {createdDevice && (
-        <Modal title="Device created" onClose={closeDeviceModal}>
+        <Modal title={t("farms_modal_device_created_title")} onClose={closeDeviceModal}>
           <div className="space-y-4">
             <p className="text-sm text-slate-600">
-              Use these values in the ESP32 firmware&apos;s{" "}
-              <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">config.h</code> file.
-              The API key is shown only once — copy it now.
+              {t("farms_device_created_instructions")}
             </p>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">ORG_ID</label>
@@ -977,7 +984,7 @@ export default function FarmsPage() {
             </div>
             <button onClick={closeDeviceModal}
               className="w-full bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors">
-              Done
+              {t("farms_done")}
             </button>
           </div>
         </Modal>
@@ -1002,9 +1009,10 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
   const [locationError, setLocationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
+  const { t } = useLocale();
 
   function useCurrentLocation() {
-    if (!navigator.geolocation) { setLocationError("Geolocation not supported"); return; }
+    if (!navigator.geolocation) { setLocationError(t("farms_geolocation_unsupported")); return; }
     setLocating(true); setLocationError(null);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -1030,45 +1038,45 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
         latitude: latitude ? Number(latitude) : null,
         longitude: longitude ? Number(longitude) : null,
       });
-      toast.success("Farm updated", `"${name}" has been saved.`);
+      toast.success(t("farms_toast_updated_title"), t("farms_toast_updated_body", { name }));
       onSaved();
     } catch (err) {
-      toast.error("Failed to update farm", err instanceof Error ? err.message : undefined);
+      toast.error(t("farms_toast_update_failed"), err instanceof Error ? err.message : undefined);
     } finally { setSubmitting(false); }
   }
 
   return (
-    <Modal title="Edit farm" onClose={onClose}>
+    <Modal title={t("farms_modal_edit_farm_title")} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_name")}</label>
           <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
             placeholder="North Field" />
         </div>
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="block text-sm font-medium text-slate-700">Location (optional)</label>
+            <label className="block text-sm font-medium text-slate-700">{t("farms_field_location_optional")}</label>
             <button type="button" onClick={useCurrentLocation} disabled={locating}
               className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline disabled:opacity-60">
               {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
-              Use current location
+              {t("farms_use_current_location")}
             </button>
           </div>
           <input type="text" value={location} onChange={(e) => setLocation(e.target.value)}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
-            placeholder="Village, Taluka, District" />
+            placeholder={t("farms_placeholder_village")} />
           {locationError && <p className="text-xs text-red-600 mt-1">{locationError}</p>}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Latitude</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_latitude")}</label>
             <input type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               placeholder="18.5204" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Longitude</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_longitude")}</label>
             <input type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               placeholder="73.8567" />
@@ -1077,7 +1085,7 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
         <button type="submit" disabled={submitting}
           className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
           {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-          Save changes
+          {t("farms_save_changes")}
         </button>
       </form>
     </Modal>

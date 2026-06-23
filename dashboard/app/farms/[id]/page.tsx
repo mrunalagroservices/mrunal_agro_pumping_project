@@ -13,6 +13,7 @@ import {
   ApiResponse, Farm, Actuator, Zone, IrrigationPlan,
   IrrigationPlanStep, IrrigationRun, IrrigationRunLog,
 } from "@/lib/types";
+import { useLocale } from "@/contexts/LocaleContext";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,7 @@ function ZoneCard({
   onValve: (id: number, state: "on" | "off") => void;
 }) {
   const valveOn = zone.valve_state === "on";
+  const { t } = useLocale();
   return (
     <div className={`bg-white border-2 rounded-2xl p-4 transition-colors ${valveOn ? "border-emerald-400 bg-emerald-50/30" : "border-slate-200"}`}>
       <div className="flex items-start justify-between mb-3">
@@ -76,10 +78,10 @@ function ZoneCard({
         {zone.valve_actuator_id ? (
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-600">{zone.valve_name || "Solenoid Valve"}</p>
+              <p className="text-xs font-semibold text-slate-600">{zone.valve_name || t("farmd_solenoid_valve_default")}</p>
               <div className={`flex items-center gap-1 text-xs font-bold mt-0.5 ${valveOn ? "text-emerald-600" : "text-slate-400"}`}>
                 <span className={`w-2 h-2 rounded-full ${valveOn ? "bg-emerald-500 animate-pulse" : "bg-slate-300"}`} />
-                {valveOn ? "OPEN — water flowing" : "CLOSED"}
+                {valveOn ? t("farmd_valve_open") : t("farmd_valve_closed")}
               </div>
             </div>
             <button
@@ -90,13 +92,13 @@ function ZoneCard({
                   : "bg-emerald-600 text-white hover:bg-emerald-700"
               }`}
             >
-              {valveOn ? "Close Valve" : "Open Valve"}
+              {valveOn ? t("farmd_close_valve") : t("farmd_open_valve")}
             </button>
           </div>
         ) : (
           <p className="text-xs text-slate-400 italic flex items-center gap-1">
             <AlertTriangle className="w-3 h-3 text-amber-400" />
-            No valve assigned — edit zone to link one
+            {t("farmd_no_valve_link")}
           </p>
         )}
       </div>
@@ -117,6 +119,7 @@ function ZoneModal({
   const [form, setForm] = useState<Partial<Zone>>(zone ?? {});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLocale();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -125,7 +128,7 @@ function ZoneModal({
     try {
       await onSave(form);
     } catch (err) {
-      setError((err as Error).message || "Failed to save zone");
+      setError((err as Error).message || t("farmd_save_zone_failed"));
       setSaving(false);
     }
   }
@@ -133,44 +136,44 @@ function ZoneModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
-        <h3 className="font-bold text-lg text-slate-800 mb-5">{zone?.id ? "Edit Zone" : "Add Zone"}</h3>
+        <h3 className="font-bold text-lg text-slate-800 mb-5">{zone?.id ? t("farmd_edit_zone") : t("farmd_add_zone")}</h3>
         {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-3 py-2">{error}</div>}
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className={labelCls}>Zone Name *</label>
+            <label className={labelCls}>{t("farmd_zone_name")}</label>
             <input required className={inputCls} value={form.name ?? ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="e.g. Zone A, North Field" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Crop Type</label>
+              <label className={labelCls}>{t("farmd_crop_type")}</label>
               <select className={inputCls} value={form.crop_type ?? ""} onChange={(e) => setForm((p) => ({ ...p, crop_type: e.target.value || null }))}>
-                <option value="">Select crop…</option>
+                <option value="">{t("farmd_select_crop")}</option>
                 {CROPS.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label className={labelCls}>Area (sqm)</label>
+              <label className={labelCls}>{t("farmd_area_sqm")}</label>
               <input type="number" min={0} className={inputCls} value={form.area_sqm ?? ""} onChange={(e) => setForm((p) => ({ ...p, area_sqm: e.target.value ? Number(e.target.value) : null }))} placeholder="500" />
             </div>
           </div>
           <div>
-            <label className={labelCls}>Solenoid Valve Actuator</label>
+            <label className={labelCls}>{t("farmd_solenoid_valve_actuator")}</label>
             <select className={inputCls} value={form.valve_actuator_id ?? ""} onChange={(e) => setForm((p) => ({ ...p, valve_actuator_id: e.target.value ? Number(e.target.value) : null }))}>
-              <option value="">No valve assigned</option>
+              <option value="">{t("farmd_no_valve_assigned_option")}</option>
               {actuators.map((a) => (
                 <option key={a.id} value={a.id}>{a.name} ({a.actuator_type})</option>
               ))}
             </select>
-            <p className="text-xs text-slate-400 mt-1">Select the actuator that controls water flow to this zone</p>
+            <p className="text-xs text-slate-400 mt-1">{t("farmd_select_valve_help")}</p>
           </div>
           <div>
-            <label className={labelCls}>Description</label>
-            <input className={inputCls} value={form.description ?? ""} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value || null }))} placeholder="Optional notes" />
+            <label className={labelCls}>{t("farmd_description")}</label>
+            <input className={inputCls} value={form.description ?? ""} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value || null }))} placeholder={t("farmd_description_placeholder")} />
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
+            <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">{t("common_cancel")}</button>
             <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl">
-              {saving ? "Saving…" : "Save Zone"}
+              {saving ? t("farmd_saving") : t("farmd_save_zone")}
             </button>
           </div>
         </form>
@@ -197,6 +200,7 @@ function PlanModal({
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLocale();
 
   const totalMins = steps.reduce((s, st) => s + st.duration_minutes, 0);
 
@@ -227,7 +231,7 @@ function PlanModal({
     try {
       await onSave({ name, motor_actuator_id: motorId, steps });
     } catch (err) {
-      setError((err as Error).message || "Failed to save plan");
+      setError((err as Error).message || t("farmd_save_plan_failed"));
       setSaving(false);
     }
   }
@@ -235,27 +239,27 @@ function PlanModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <h3 className="font-bold text-lg text-slate-800 mb-5">{plan?.id ? "Edit Plan" : "Create Irrigation Plan"}</h3>
+        <h3 className="font-bold text-lg text-slate-800 mb-5">{plan?.id ? t("farmd_edit_plan") : t("farmd_create_plan")}</h3>
         {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-3 py-2">{error}</div>}
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className={labelCls}>Plan Name *</label>
+            <label className={labelCls}>{t("farmd_plan_name")}</label>
             <input required className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Morning Irrigation, Monsoon Plan" />
           </div>
           <div>
-            <label className={labelCls}>Motor / Pump Actuator</label>
+            <label className={labelCls}>{t("farmd_motor_pump_actuator")}</label>
             <select className={inputCls} value={motorId ?? ""} onChange={(e) => setMotorId(e.target.value ? Number(e.target.value) : null)}>
-              <option value="">No motor (valve-only plan)</option>
+              <option value="">{t("farmd_no_motor_option")}</option>
               {actuators.map((a) => <option key={a.id} value={a.id}>{a.name} ({a.actuator_type})</option>)}
             </select>
-            <p className="text-xs text-slate-400 mt-1">Motor turns ON when plan starts and OFF when it ends</p>
+            <p className="text-xs text-slate-400 mt-1">{t("farmd_motor_help")}</p>
           </div>
 
           {/* Steps */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className={labelCls + " mb-0"}>Zone Steps (in order)</label>
-              <span className="text-xs text-emerald-700 font-semibold">Total: {fmt(totalMins)}</span>
+              <label className={labelCls + " mb-0"}>{t("farmd_zone_steps")}</label>
+              <span className="text-xs text-emerald-700 font-semibold">{t("farmd_total_colon", { x: fmt(totalMins) })}</span>
             </div>
             <div className="space-y-2">
               {steps.map((step, i) => (
@@ -266,7 +270,7 @@ function PlanModal({
                     value={step.zone_id ?? ""}
                     onChange={(e) => updateStep(i, "zone_id", e.target.value)}
                   >
-                    <option value="">Select zone…</option>
+                    <option value="">{t("farmd_select_zone_option")}</option>
                     {zones.map((z) => <option key={z.id} value={z.id}>{z.name}{z.crop_type ? ` (${z.crop_type})` : ""}</option>)}
                   </select>
                   <div className="flex items-center gap-1 shrink-0">
@@ -287,26 +291,26 @@ function PlanModal({
               ))}
             </div>
             <button type="button" onClick={addStep} className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700">
-              <Plus className="w-3.5 h-3.5" /> Add Zone Step
+              <Plus className="w-3.5 h-3.5" /> {t("farmd_add_zone_step")}
             </button>
           </div>
 
           {/* Preview timeline */}
           <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
-            <p className="text-xs font-bold text-emerald-700 mb-2">Execution Order</p>
+            <p className="text-xs font-bold text-emerald-700 mb-2">{t("farmd_execution_order")}</p>
             <div className="flex flex-wrap gap-0 items-center">
               {(() => {
                 const pills: React.ReactNode[] = [];
                 if (motorId) pills.push(
-                  <span key="on" className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full leading-5 shrink-0">Motor ON</span>
+                  <span key="on" className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full leading-5 shrink-0">{t("farmd_motor_on_pill")}</span>
                 );
                 steps.forEach((s, i) => pills.push(
                   <span key={`step-${i}`} className="flex items-center gap-1 text-xs bg-white border border-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full leading-5 shrink-0">
-                    {s.zone_name || `Zone ${i + 1}`} · {s.duration_minutes}min
+                    {s.zone_name || t("farmd_zone_fallback", { n: i + 1 })} · {s.duration_minutes}min
                   </span>
                 ));
                 if (motorId) pills.push(
-                  <span key="off" className="text-xs bg-slate-600 text-white px-2 py-0.5 rounded-full leading-5 shrink-0">Motor OFF</span>
+                  <span key="off" className="text-xs bg-slate-600 text-white px-2 py-0.5 rounded-full leading-5 shrink-0">{t("farmd_motor_off_pill")}</span>
                 );
                 return pills.map((pill, i) => (
                   <span key={i} className="flex items-center">
@@ -319,9 +323,9 @@ function PlanModal({
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">Cancel</button>
+            <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50">{t("common_cancel")}</button>
             <button type="submit" disabled={saving || !name.trim()} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl">
-              {saving ? "Saving…" : "Save Plan"}
+              {saving ? t("farmd_saving") : t("farmd_save_plan")}
             </button>
           </div>
         </form>
@@ -342,6 +346,7 @@ function LiveRunner({
   const [status, setStatus] = useState<{ run: IrrigationRun; steps: IrrigationRunLog[] } | null>(null);
   const [stopping, setStopping] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { t } = useLocale();
 
   const poll = useCallback(async () => {
     try {
@@ -385,13 +390,13 @@ function LiveRunner({
         <div className="flex items-center gap-2">
           <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${r?.status === "running" ? (run.is_simulation ? "bg-violet-500" : "bg-emerald-500") : "bg-slate-400"}`} />
           <span className="font-bold text-sm text-slate-800">
-            {run.is_simulation ? "🧪 Simulating" : "▶ Running"}: {r?.plan_name ?? "…"}
+            {run.is_simulation ? t("farmd_simulating") : t("farmd_running_label")}: {r?.plan_name ?? "…"}
           </span>
-          {run.is_simulation && <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold">3× speed</span>}
+          {run.is_simulation && <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold">{t("farmd_speed_3x")}</span>}
         </div>
         {r?.status === "running" && (
           <button onClick={stop} disabled={stopping} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold rounded-xl transition-colors">
-            <Square className="w-3.5 h-3.5" /> {stopping ? "Stopping…" : "Emergency Stop"}
+            <Square className="w-3.5 h-3.5" /> {stopping ? t("farmd_stopping") : t("farmd_emergency_stop")}
           </button>
         )}
       </div>
@@ -411,7 +416,7 @@ function LiveRunner({
           return (
             <div key={step.step_order} className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${isActive ? "bg-white border border-emerald-200" : "bg-slate-50"}`}>
               <div className={`w-3 h-3 rounded-full shrink-0 ${stepColors[step.status] ?? "bg-slate-200"} ${isActive ? "animate-pulse" : ""}`} />
-              <span className="font-semibold text-sm text-slate-700 flex-1">{step.zone_name || `Step ${step.step_order}`}</span>
+              <span className="font-semibold text-sm text-slate-700 flex-1">{step.zone_name || t("farmd_step_fallback", { n: step.step_order })}</span>
               <span className="text-xs text-slate-500">{fmt(step.duration_minutes)}</span>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${
                 step.status === "completed" ? "bg-emerald-100 text-emerald-700"
@@ -428,7 +433,7 @@ function LiveRunner({
 
       {r && r.status !== "running" && (
         <div className={`mt-4 text-center text-sm font-bold ${r.status === "completed" ? "text-emerald-700" : "text-red-600"}`}>
-          {r.status === "completed" ? "✓ Plan completed successfully" : "✗ Plan was stopped"}
+          {r.status === "completed" ? t("farmd_plan_completed") : t("farmd_plan_stopped")}
         </div>
       )}
     </div>
@@ -446,6 +451,7 @@ function PlanCard({
   onRun: (id: number, mode: "real" | "simulation") => void;
 }) {
   const totalMins = plan.steps.reduce((s, st) => s + st.duration_minutes, 0);
+  const { t } = useLocale();
 
   return (
     <div className={`bg-white border-2 rounded-2xl p-4 transition-colors ${plan.is_active ? "border-slate-200" : "border-slate-100 opacity-60"}`}>
@@ -473,27 +479,27 @@ function PlanCard({
         {plan.steps.map((step, i) => (
           <span key={i} className="inline-flex items-center gap-1 text-xs bg-slate-50 border border-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
             <Droplets className="w-2.5 h-2.5 text-emerald-500" />
-            {step.zone_name || `Zone ${i + 1}`} · {step.duration_minutes}min
+            {step.zone_name || t("farmd_zone_fallback", { n: i + 1 })} · {step.duration_minutes}min
           </span>
         ))}
       </div>
 
       <div className="flex items-center justify-between border-t border-slate-100 pt-3">
         <span className="text-xs text-slate-500 flex items-center gap-1">
-          <Clock className="w-3 h-3" /> Total {fmt(totalMins)}
+          <Clock className="w-3 h-3" /> {t("farmd_total_label", { x: fmt(totalMins) })}
         </span>
         <div className="flex gap-2">
           <button
             onClick={() => onRun(plan.id, "simulation")}
             className="flex items-center gap-1.5 px-3 py-1.5 border border-violet-200 bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-bold rounded-xl transition-colors"
           >
-            <FlaskConical className="w-3.5 h-3.5" /> Simulate
+            <FlaskConical className="w-3.5 h-3.5" /> {t("farmd_simulate_btn")}
           </button>
           <button
             onClick={() => onRun(plan.id, "real")}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors"
           >
-            <Play className="w-3.5 h-3.5" /> Run Now
+            <Play className="w-3.5 h-3.5" /> {t("farmd_run_now_btn")}
           </button>
         </div>
       </div>
@@ -522,6 +528,7 @@ export default function FarmDetailPage() {
   const [planModal, setPlanModal] = useState<Partial<IrrigationPlan> | null | false>(false);
   const [activeRun, setActiveRun] = useState<{ run_id: number; is_simulation: boolean } | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
+  const { t } = useLocale();
 
   const loadFarm = useCallback(async () => {
     try {
@@ -580,7 +587,7 @@ export default function FarmDetailPage() {
   }
 
   async function deleteZone(id: number) {
-    if (!confirm("Delete this zone?")) return;
+    if (!confirm(t("farmd_delete_zone_confirm"))) return;
     await httpClient.delete<ApiResponse<unknown>>(`/zones/${id}`);
     await loadZones();
   }
@@ -603,7 +610,7 @@ export default function FarmDetailPage() {
   }
 
   async function deletePlan(id: number) {
-    if (!confirm("Delete this irrigation plan?")) return;
+    if (!confirm(t("farmd_delete_plan_confirm"))) return;
     await httpClient.delete<ApiResponse<unknown>>(`/irrigation/plans/${id}`);
     await loadPlans();
   }
@@ -614,13 +621,13 @@ export default function FarmDetailPage() {
       const res = await httpClient.post<ApiResponse<{ run_id: number; is_simulation: boolean }>>(`/irrigation/plans/${planId}/run`, { mode });
       setActiveRun(res.data);
     } catch (err: unknown) {
-      setRunError((err as Error).message ?? "Failed to start plan");
+      setRunError((err as Error).message ?? t("farmd_start_plan_failed"));
     }
   }
 
   if (loading) {
     return (
-      <DashboardShell breadcrumb={[{ label: "Farms", href: "/farms" }, { label: "Farm" }]}>
+      <DashboardShell breadcrumb={[{ label: t("home_farms"), href: "/farms" }, { label: t("farmd_breadcrumb_farm_fallback") }]}>
         <div className="flex items-center justify-center h-64">
           <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -629,10 +636,10 @@ export default function FarmDetailPage() {
   }
 
   return (
-    <DashboardShell breadcrumb={[{ label: "Farms", href: "/farms" }, { label: farm?.name ?? "Farm" }]}>
+    <DashboardShell breadcrumb={[{ label: t("home_farms"), href: "/farms" }, { label: farm?.name ?? t("farmd_breadcrumb_farm_fallback") }]}>
       {/* Back */}
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-5 transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Farms
+        <ArrowLeft className="w-4 h-4" /> {t("farmd_back_to_farms")}
       </button>
 
       {/* Farm header */}
@@ -642,9 +649,9 @@ export default function FarmDetailPage() {
           {farm?.location && <p className="text-sm text-slate-500">{farm.location}</p>}
         </div>
         <div className="flex gap-4 text-center">
-          <div><p className="text-xl font-black text-emerald-700">{zones.length}</p><p className="text-xs text-slate-500">Zones</p></div>
-          <div><p className="text-xl font-black text-emerald-700">{plans.length}</p><p className="text-xs text-slate-500">Plans</p></div>
-          <div><p className="text-xl font-black text-emerald-700">{actuators.length}</p><p className="text-xs text-slate-500">Actuators</p></div>
+          <div><p className="text-xl font-black text-emerald-700">{zones.length}</p><p className="text-xs text-slate-500">{t("farmd_zones_stat")}</p></div>
+          <div><p className="text-xl font-black text-emerald-700">{plans.length}</p><p className="text-xs text-slate-500">{t("farmd_plans_stat")}</p></div>
+          <div><p className="text-xl font-black text-emerald-700">{actuators.length}</p><p className="text-xs text-slate-500">{t("farmd_actuators_stat")}</p></div>
         </div>
       </div>
 
@@ -667,11 +674,11 @@ export default function FarmDetailPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl mb-5 w-fit">
-        {([["zones", "Zones", Droplets], ["plans", "Irrigation Plans", Settings2], ["history", "Run History", History]] as const).map(([t, label, Icon]) => (
+        {([["zones", t("farmd_tab_zones"), Droplets], ["plans", t("farmd_tab_plans"), Settings2], ["history", t("farmd_tab_history"), History]] as const).map(([tabKey, label, Icon]) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === t ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+            key={tabKey}
+            onClick={() => setTab(tabKey)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === tabKey ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
           >
             <Icon className="w-4 h-4" /> {label}
           </button>
@@ -682,21 +689,23 @@ export default function FarmDetailPage() {
       {tab === "zones" && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-slate-500">{zones.length} zone{zones.length !== 1 ? "s" : ""} — each zone has one solenoid valve</p>
+            <p className="text-sm text-slate-500">
+              {zones.length === 1 ? t("farmd_zone_count_one", { n: zones.length }) : t("farmd_zone_count_other", { n: zones.length })}
+            </p>
             <button
               onClick={() => setZoneModal({})}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors"
             >
-              <Plus className="w-4 h-4" /> Add Zone
+              <Plus className="w-4 h-4" /> {t("farmd_add_zone")}
             </button>
           </div>
           {zones.length === 0 ? (
             <div className="text-center py-20 bg-white border border-dashed border-slate-200 rounded-2xl">
               <Droplets className="w-10 h-10 text-slate-200 mx-auto mb-2" />
-              <p className="text-slate-400 font-medium">No zones yet</p>
-              <p className="text-sm text-slate-400 mt-1">Add zones to represent areas of your farm</p>
+              <p className="text-slate-400 font-medium">{t("farmd_no_zones_yet")}</p>
+              <p className="text-sm text-slate-400 mt-1">{t("farmd_no_zones_sub")}</p>
               <button onClick={() => setZoneModal({})} className="mt-4 px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700">
-                Add First Zone
+                {t("farmd_add_first_zone")}
               </button>
             </div>
           ) : (
@@ -713,27 +722,29 @@ export default function FarmDetailPage() {
       {tab === "plans" && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-slate-500">{plans.length} irrigation plan{plans.length !== 1 ? "s" : ""}</p>
+            <p className="text-sm text-slate-500">
+              {plans.length === 1 ? t("farmd_plan_count_one", { n: plans.length }) : t("farmd_plan_count_other", { n: plans.length })}
+            </p>
             <button
               onClick={() => setPlanModal({})}
               disabled={zones.length === 0}
-              title={zones.length === 0 ? "Add zones first" : ""}
+              title={zones.length === 0 ? t("farmd_add_zones_first_title") : ""}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors"
             >
-              <Plus className="w-4 h-4" /> Create Plan
+              <Plus className="w-4 h-4" /> {t("farmd_create_plan_btn")}
             </button>
           </div>
           {zones.length === 0 && (
             <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" />
-              Add zones first before creating irrigation plans
+              {t("farmd_add_zones_first_banner")}
             </div>
           )}
           {plans.length === 0 ? (
             <div className="text-center py-20 bg-white border border-dashed border-slate-200 rounded-2xl">
               <Settings2 className="w-10 h-10 text-slate-200 mx-auto mb-2" />
-              <p className="text-slate-400 font-medium">No irrigation plans yet</p>
-              <p className="text-sm text-slate-400 mt-1">Create a plan to define zone watering sequences</p>
+              <p className="text-slate-400 font-medium">{t("farmd_no_plans_yet")}</p>
+              <p className="text-sm text-slate-400 mt-1">{t("farmd_no_plans_sub")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -751,7 +762,7 @@ export default function FarmDetailPage() {
           {history.length === 0 ? (
             <div className="text-center py-20 bg-white border border-dashed border-slate-200 rounded-2xl">
               <History className="w-10 h-10 text-slate-200 mx-auto mb-2" />
-              <p className="text-slate-400 font-medium">No runs yet</p>
+              <p className="text-slate-400 font-medium">{t("farmd_no_runs_yet")}</p>
             </div>
           ) : (
             history.map((run) => (
@@ -794,6 +805,7 @@ function RunHistoryCard({ run }: { run: IrrigationRun }) {
   };
   const steps: IrrigationRunLog[] = Array.isArray(run.steps) ? run.steps : [];
   const totalMins = steps.reduce((s, st) => s + st.duration_minutes, 0);
+  const { t } = useLocale();
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
@@ -803,16 +815,18 @@ function RunHistoryCard({ run }: { run: IrrigationRun }) {
           {run.status}
         </span>
         {run.is_simulation && <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold shrink-0">simulation</span>}
-        <span className="font-semibold text-sm text-slate-700 flex-1">{run.plan_name ?? "Manual Run"}</span>
+        <span className="font-semibold text-sm text-slate-700 flex-1">{run.plan_name ?? t("farmd_manual_run")}</span>
         <span className="text-xs text-slate-400 shrink-0">{new Date(run.started_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })}</span>
-        <span className="text-xs text-slate-400 shrink-0 ml-2">{run.total_steps} step{run.total_steps !== 1 ? "s" : ""} · {fmt(totalMins)}</span>
+        <span className="text-xs text-slate-400 shrink-0 ml-2">
+          {run.total_steps === 1 ? t("farmd_step_count_one", { n: run.total_steps }) : t("farmd_step_count_other", { n: run.total_steps })} · {fmt(totalMins)}
+        </span>
       </button>
       {open && steps.length > 0 && (
         <div className="border-t border-slate-100 px-4 py-3 space-y-1.5">
           {steps.map((s) => (
             <div key={s.step_order} className="flex items-center gap-3 text-sm">
               <span className={`w-2 h-2 rounded-full shrink-0 ${s.status === "completed" ? "bg-emerald-500" : s.status === "aborted" ? "bg-red-400" : "bg-slate-300"}`} />
-              <span className="text-slate-700 flex-1">{s.zone_name || `Step ${s.step_order}`}</span>
+              <span className="text-slate-700 flex-1">{s.zone_name || t("farmd_step_fallback", { n: s.step_order })}</span>
               <span className="text-slate-400 text-xs">{fmt(s.duration_minutes)}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${s.status === "completed" ? "bg-emerald-50 text-emerald-700" : s.status === "aborted" ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500"}`}>
                 {s.status}

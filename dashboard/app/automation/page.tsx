@@ -7,21 +7,23 @@ import Modal from "@/components/Modal";
 import { httpClient } from "@/lib/api";
 import { ApiResponse, AutomationRule, Schedule, Sensor, Actuator } from "@/lib/types";
 import { useToast } from "@/contexts/ToastContext";
-
-const CONDITION_LABELS: Record<string, string> = {
-  "<": "is below",
-  ">": "is above",
-  "<=": "is at or below",
-  ">=": "is at or above",
-  "==": "equals",
-};
-const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+import { useLocale } from "@/contexts/LocaleContext";
 
 type Tab = "rules" | "schedules";
 
 export default function AutomationPage() {
   const [tab, setTab] = useState<Tab>("rules");
   const toast = useToast();
+  const { t } = useLocale();
+
+  const CONDITION_LABELS: Record<string, string> = {
+    "<": t("auto_condition_below"),
+    ">": t("auto_condition_above"),
+    "<=": t("auto_condition_below_eq"),
+    ">=": t("auto_condition_above_eq"),
+    "==": t("auto_condition_equals"),
+  };
+  const DAY_LABELS = [t("auto_day_sun"), t("auto_day_mon"), t("auto_day_tue"), t("auto_day_wed"), t("auto_day_thu"), t("auto_day_fri"), t("auto_day_sat")];
 
   // ── shared data ─────────────────────────────────────────────────────────────
   const [sensors, setSensors] = useState<Sensor[]>([]);
@@ -98,9 +100,9 @@ export default function AutomationPage() {
         action_duration_minutes: actionDuration ? Number(actionDuration) : 0,
       });
       setShowRuleModal(false); resetRuleForm(); loadAll();
-      toast.success("Rule created", `"${ruleName}" will trigger automatically.`);
+      toast.success(t("auto_toast_rule_created"), t("auto_toast_rule_created_body", { name: ruleName }));
     } catch (err) {
-      toast.error("Failed to create rule", err instanceof Error ? err.message : undefined);
+      toast.error(t("auto_toast_rule_create_failed"), err instanceof Error ? err.message : undefined);
     } finally { setRuleSubmitting(false); }
   }
 
@@ -108,20 +110,20 @@ export default function AutomationPage() {
     try {
       await httpClient.put<ApiResponse<AutomationRule>>(`/automation-rules/${rule.id}`, { is_active: !rule.is_active });
       setRules((prev) => prev.map((r) => r.id === rule.id ? { ...r, is_active: !rule.is_active } : r));
-      toast.info(rule.is_active ? "Rule paused" : "Rule activated");
+      toast.info(rule.is_active ? t("auto_toast_rule_paused") : t("auto_toast_rule_activated"));
     } catch (err) {
-      toast.error("Failed to update rule", err instanceof Error ? err.message : undefined);
+      toast.error(t("auto_toast_rule_update_failed"), err instanceof Error ? err.message : undefined);
     }
   }
 
   async function deleteRule(id: number) {
-    if (!confirm("Delete this automation rule?")) return;
+    if (!confirm(t("auto_confirm_delete_rule"))) return;
     try {
       await httpClient.delete<ApiResponse<null>>(`/automation-rules/${id}`);
       loadAll();
-      toast.success("Rule deleted");
+      toast.success(t("auto_toast_rule_deleted"));
     } catch (err) {
-      toast.error("Failed to delete rule", err instanceof Error ? err.message : undefined);
+      toast.error(t("auto_toast_rule_delete_failed"), err instanceof Error ? err.message : undefined);
     }
   }
 
@@ -139,7 +141,7 @@ export default function AutomationPage() {
 
   async function handleCreateSchedule(e: FormEvent) {
     e.preventDefault();
-    if (daysOfWeek.length === 0) { toast.warning("Select at least one day", "Choose which days this schedule runs."); return; }
+    if (daysOfWeek.length === 0) { toast.warning(t("auto_toast_select_day_title"), t("auto_toast_select_day_body")); return; }
     setSchedSubmitting(true);
     try {
       await httpClient.post<ApiResponse<Schedule>>("/schedules", {
@@ -150,9 +152,9 @@ export default function AutomationPage() {
         duration_minutes: Number(durationMinutes),
       });
       setShowSchedModal(false); resetSchedForm(); loadAll();
-      toast.success("Schedule created", `"${schedName}" is now active.`);
+      toast.success(t("auto_toast_sched_created"), t("auto_toast_sched_created_body", { name: schedName }));
     } catch (err) {
-      toast.error("Failed to create schedule", err instanceof Error ? err.message : undefined);
+      toast.error(t("auto_toast_sched_create_failed"), err instanceof Error ? err.message : undefined);
     } finally { setSchedSubmitting(false); }
   }
 
@@ -160,20 +162,20 @@ export default function AutomationPage() {
     try {
       await httpClient.put<ApiResponse<Schedule>>(`/schedules/${s.id}`, { is_active: !s.is_active });
       setSchedules((prev) => prev.map((x) => x.id === s.id ? { ...x, is_active: !s.is_active } : x));
-      toast.info(s.is_active ? "Schedule paused" : "Schedule activated");
+      toast.info(s.is_active ? t("auto_toast_sched_paused") : t("auto_toast_sched_activated"));
     } catch (err) {
-      toast.error("Failed to update schedule", err instanceof Error ? err.message : undefined);
+      toast.error(t("auto_toast_sched_update_failed"), err instanceof Error ? err.message : undefined);
     }
   }
 
   async function deleteSchedule(id: number) {
-    if (!confirm("Delete this schedule?")) return;
+    if (!confirm(t("auto_confirm_delete_sched"))) return;
     try {
       await httpClient.delete<ApiResponse<null>>(`/schedules/${id}`);
       loadAll();
-      toast.success("Schedule deleted");
+      toast.success(t("auto_toast_sched_deleted"));
     } catch (err) {
-      toast.error("Failed to delete schedule", err instanceof Error ? err.message : undefined);
+      toast.error(t("auto_toast_sched_delete_failed"), err instanceof Error ? err.message : undefined);
     }
   }
 
@@ -181,7 +183,7 @@ export default function AutomationPage() {
   const inp = "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500";
 
   return (
-    <DashboardShell breadcrumb={[{ label: "Automation & Schedules" }]}>
+    <DashboardShell breadcrumb={[{ label: t("nav_automation_schedules") }]}>
       {/* ── Tab bar + Add button ── */}
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
@@ -192,7 +194,7 @@ export default function AutomationPage() {
             }`}
           >
             <Zap className="w-4 h-4" />
-            Automation Rules
+            {t("auto_tab_rules")}
             {rules.length > 0 && (
               <span className="bg-amber-100 text-amber-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
                 {rules.length}
@@ -206,7 +208,7 @@ export default function AutomationPage() {
             }`}
           >
             <CalendarClock className="w-4 h-4" />
-            Schedules
+            {t("auto_tab_schedules")}
             {schedules.length > 0 && (
               <span className="bg-accent-100 text-accent-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
                 {schedules.length}
@@ -221,7 +223,7 @@ export default function AutomationPage() {
             disabled={sensors.length === 0 || actuators.length === 0}
             className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
           >
-            <Plus className="w-4 h-4" /> Add rule
+            <Plus className="w-4 h-4" /> {t("auto_add_rule")}
           </button>
         ) : (
           <button
@@ -229,13 +231,13 @@ export default function AutomationPage() {
             disabled={actuators.length === 0}
             className="flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
           >
-            <Plus className="w-4 h-4" /> Add schedule
+            <Plus className="w-4 h-4" /> {t("auto_add_schedule")}
           </button>
         )}
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-500">Loading…</p>
+        <p className="text-sm text-slate-500">{t("common_loading")}</p>
       ) : (
         <>
           {/* ── Automation Rules tab ── */}
@@ -243,15 +245,15 @@ export default function AutomationPage() {
             <>
               {(sensors.length === 0 || actuators.length === 0) && (
                 <div className="bg-amber-50 border border-amber-100 text-amber-700 text-sm rounded-lg px-4 py-3 mb-4">
-                  You need at least one sensor and one actuator before creating automation rules.
+                  {t("auto_need_sensor_actuator")}
                 </div>
               )}
               {rules.length === 0 ? (
                 <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
                   <Zap className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm text-slate-500">No automation rules yet.</p>
+                  <p className="text-sm text-slate-500">{t("auto_no_rules_yet")}</p>
                   <p className="text-xs text-slate-400 mt-1">
-                    Rules trigger an actuator when a sensor crosses a threshold.
+                    {t("auto_rules_explain")}
                   </p>
                 </div>
               ) : (
@@ -265,22 +267,22 @@ export default function AutomationPage() {
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-slate-800">{rule.name}</p>
                           <p className="text-sm text-slate-500 truncate">
-                            When{" "}
+                            {t("auto_rule_when")}{" "}
                             <span className="font-medium text-slate-700">{rule.trigger_sensor_name}</span>{" "}
                             {CONDITION_LABELS[rule.trigger_condition] ?? rule.trigger_condition}{" "}
                             <span className="font-medium text-slate-700">{rule.trigger_value}</span>
-                            , turn{" "}
+                            , {t("auto_rule_turn")}{" "}
                             <span className="font-medium text-slate-700">{rule.action_actuator_name}</span>{" "}
                             <span className="font-medium text-slate-700">{rule.action_state}</span>
                             {rule.action_state === "on" && rule.action_duration_minutes
-                              ? ` for ${rule.action_duration_minutes} min`
+                              ? t("auto_rule_for_min", { n: rule.action_duration_minutes })
                               : ""}
                           </p>
                           {rule.trigger_count > 0 && (
                             <p className="text-xs text-slate-400 mt-1">
-                              Triggered {rule.trigger_count} time(s)
+                              {t("auto_triggered_times", { n: rule.trigger_count })}
                               {rule.last_triggered_at
-                                ? ` · last ${new Date(rule.last_triggered_at).toLocaleString()}`
+                                ? t("auto_last_triggered", { date: new Date(rule.last_triggered_at).toLocaleString() })
                                 : ""}
                             </p>
                           )}
@@ -295,7 +297,7 @@ export default function AutomationPage() {
                               : "bg-slate-100 text-slate-500"
                           }`}
                         >
-                          {rule.is_active ? "Active" : "Paused"}
+                          {rule.is_active ? t("auto_active") : t("auto_paused")}
                         </button>
                         <button onClick={() => deleteRule(rule.id)} className="text-slate-400 hover:text-red-600">
                           <Trash2 className="w-4 h-4" />
@@ -313,15 +315,15 @@ export default function AutomationPage() {
             <>
               {actuators.length === 0 && (
                 <div className="bg-amber-50 border border-amber-100 text-amber-700 text-sm rounded-lg px-4 py-3 mb-4">
-                  You need at least one actuator registered before creating schedules.
+                  {t("auto_need_actuator")}
                 </div>
               )}
               {schedules.length === 0 ? (
                 <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
                   <CalendarClock className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm text-slate-500">No schedules yet.</p>
+                  <p className="text-sm text-slate-500">{t("auto_no_schedules_yet")}</p>
                   <p className="text-xs text-slate-400 mt-1">
-                    Schedules run motors at fixed times on selected days.
+                    {t("auto_schedules_explain")}
                   </p>
                 </div>
               ) : (
@@ -335,8 +337,8 @@ export default function AutomationPage() {
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-slate-800">{s.name}</p>
                           <p className="text-sm text-slate-500">
-                            <span className="font-medium text-slate-700">{s.actuator_name}</span>{" "}
-                            at {s.start_time?.slice(0, 5)} for {s.duration_minutes} min
+                            <span className="font-medium text-slate-700">{s.actuator_name}</span>
+                            {t("auto_sched_at_for", { time: s.start_time?.slice(0, 5) ?? "", min: s.duration_minutes })}
                           </p>
                           <p className="text-xs text-slate-400 mt-1">
                             {DAY_LABELS.map((label, i) => (
@@ -359,7 +361,7 @@ export default function AutomationPage() {
                             s.is_active ? "bg-accent-100 text-accent-700" : "bg-slate-100 text-slate-500"
                           }`}
                         >
-                          {s.is_active ? "Active" : "Paused"}
+                          {s.is_active ? t("auto_active") : t("auto_paused")}
                         </button>
                         <button onClick={() => deleteSchedule(s.id)} className="text-slate-400 hover:text-red-600">
                           <Trash2 className="w-4 h-4" />
@@ -376,55 +378,55 @@ export default function AutomationPage() {
 
       {/* ── Add Rule modal ── */}
       {showRuleModal && (
-        <Modal title="Add automation rule" onClose={() => { setShowRuleModal(false); resetRuleForm(); }}>
+        <Modal title={t("auto_modal_add_rule")} onClose={() => { setShowRuleModal(false); resetRuleForm(); }}>
           <form onSubmit={handleCreateRule} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_name")}</label>
               <input type="text" required value={ruleName} onChange={(e) => setRuleName(e.target.value)}
-                className={inp} placeholder="Auto-start pump on low water level" />
+                className={inp} placeholder={t("auto_rule_name_placeholder")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">When sensor</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t("auto_when_sensor")}</label>
                 <select value={triggerSensorId} onChange={(e) => setTriggerSensorId(e.target.value)} className={inp}>
                   {sensors.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Condition</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t("auto_condition")}</label>
                 <select value={triggerCondition} onChange={(e) => setTriggerCondition(e.target.value)} className={inp}>
-                  <option value="<">is below (&lt;)</option>
-                  <option value="<=">is at or below (&lt;=)</option>
-                  <option value=">">is above (&gt;)</option>
-                  <option value=">=">is at or above (&gt;=)</option>
-                  <option value="==">equals (==)</option>
+                  <option value="<">{t("auto_condition_below")} (&lt;)</option>
+                  <option value="<=">{t("auto_condition_below_eq")} (&lt;=)</option>
+                  <option value=">">{t("auto_condition_above")} (&gt;)</option>
+                  <option value=">=">{t("auto_condition_above_eq")} (&gt;=)</option>
+                  <option value="==">{t("auto_condition_equals")} (==)</option>
                 </select>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Threshold value</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("auto_threshold_value")}</label>
               <input type="number" step="any" required value={triggerValue}
                 onChange={(e) => setTriggerValue(e.target.value)} className={inp} placeholder="e.g. 20" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Then turn</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t("auto_then_turn")}</label>
                 <select value={actionActuatorId} onChange={(e) => setActionActuatorId(e.target.value)} className={inp}>
                   {actuators.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">State</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t("auto_state")}</label>
                 <select value={actionState} onChange={(e) => setActionState(e.target.value)} className={inp}>
-                  <option value="on">On</option>
-                  <option value="off">Off</option>
+                  <option value="on">{t("auto_state_on")}</option>
+                  <option value="off">{t("auto_state_off")}</option>
                 </select>
               </div>
             </div>
             {actionState === "on" && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Run for, minutes (0 = until manually stopped)
+                  {t("auto_run_for_min_label")}
                 </label>
                 <input type="number" min={0} value={actionDuration}
                   onChange={(e) => setActionDuration(e.target.value)} className={inp} placeholder="0" />
@@ -433,7 +435,7 @@ export default function AutomationPage() {
             <button type="submit" disabled={ruleSubmitting}
               className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {ruleSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Add rule
+              {t("auto_add_rule")}
             </button>
           </form>
         </Modal>
@@ -441,32 +443,32 @@ export default function AutomationPage() {
 
       {/* ── Add Schedule modal ── */}
       {showSchedModal && (
-        <Modal title="Add schedule" onClose={() => { setShowSchedModal(false); resetSchedForm(); }}>
+        <Modal title={t("auto_modal_add_schedule")} onClose={() => { setShowSchedModal(false); resetSchedForm(); }}>
           <form onSubmit={handleCreateSchedule} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_name")}</label>
               <input type="text" required value={schedName} onChange={(e) => setSchedName(e.target.value)}
-                className={inp} placeholder="Morning irrigation" />
+                className={inp} placeholder={t("auto_sched_name_placeholder")} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Actuator</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("auto_actuator_label")}</label>
               <select value={schedActuatorId} onChange={(e) => setSchedActuatorId(e.target.value)} className={inp}>
                 {actuators.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Start time</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t("auto_start_time")}</label>
                 <input type="time" required value={startTime} onChange={(e) => setStartTime(e.target.value)} className={inp} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Duration (minutes)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t("auto_duration_minutes")}</label>
                 <input type="number" min={1} required value={durationMinutes}
                   onChange={(e) => setDurationMinutes(e.target.value)} className={inp} placeholder="30" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Repeat on</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("auto_repeat_on")}</label>
               <div className="flex gap-1.5">
                 {DAY_LABELS.map((label, i) => (
                   <button type="button" key={i} onClick={() => toggleDay(i)}
@@ -481,7 +483,7 @@ export default function AutomationPage() {
             <button type="submit" disabled={schedSubmitting}
               className="w-full flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white font-medium text-sm rounded-lg px-4 py-2.5 transition-colors disabled:opacity-60">
               {schedSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Add schedule
+              {t("auto_add_schedule")}
             </button>
           </form>
         </Modal>

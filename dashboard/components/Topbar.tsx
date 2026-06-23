@@ -18,16 +18,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
-const mobileMenuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-  { icon: Warehouse, label: "Farms & Devices", href: "/farms" },
-  { icon: Zap, label: "Automation & Schedules", href: "/automation" },
-  { icon: Bell, label: "Alerts", href: "/alerts" },
-  { icon: BarChart3, label: "Analytics", href: "/analytics" },
-  { icon: Map, label: "Map", href: "/map" },
-  { icon: Settings, label: "Settings", href: "/settings" },
-];
+import { useLocale } from "@/contexts/LocaleContext";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export interface BreadcrumbItem {
   label: string;
@@ -38,6 +30,17 @@ export default function Topbar({ breadcrumb }: { breadcrumb: BreadcrumbItem[] })
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { logout } = useAuth();
+  const { t } = useLocale();
+
+  const mobileMenuItems = [
+    { icon: LayoutDashboard, label: t("nav_dashboard"), href: "/" },
+    { icon: Warehouse, label: t("nav_farms_devices"), href: "/farms" },
+    { icon: Zap, label: t("nav_automation_schedules"), href: "/automation" },
+    { icon: Bell, label: t("nav_alerts"), href: "/alerts" },
+    { icon: BarChart3, label: t("nav_analytics"), href: "/analytics" },
+    { icon: Map, label: t("nav_map"), href: "/map" },
+    { icon: Settings, label: t("nav_settings"), href: "/settings" },
+  ];
 
   return (
     <header className="sticky top-0 z-20 bg-white border-b border-slate-200">
@@ -58,10 +61,10 @@ export default function Topbar({ breadcrumb }: { breadcrumb: BreadcrumbItem[] })
           </div>
           <nav className="flex items-center gap-1.5 text-sm min-w-0 overflow-hidden">
             {breadcrumb.length === 0 ? (
-              <span className="font-semibold text-slate-800 truncate">Home</span>
+              <span className="font-semibold text-slate-800 truncate">{t("topbar_home")}</span>
             ) : (
               <Link href="/" className="text-slate-500 hover:text-slate-700 shrink-0">
-                Home
+                {t("topbar_home")}
               </Link>
             )}
             {breadcrumb.map((item, idx) => {
@@ -92,6 +95,7 @@ export default function Topbar({ breadcrumb }: { breadcrumb: BreadcrumbItem[] })
             })}
           </nav>
         </div>
+        <LanguageSwitcher />
       </div>
 
       {mobileOpen && (
@@ -123,7 +127,7 @@ export default function Topbar({ breadcrumb }: { breadcrumb: BreadcrumbItem[] })
             className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600"
           >
             <LogOut className="w-5 h-5" />
-            Logout
+            {t("nav_logout")}
           </button>
         </nav>
       )}

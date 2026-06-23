@@ -21,6 +21,8 @@ import { httpClient } from "@/lib/api";
 import { socketClient } from "@/lib/socket";
 import { ApiResponse, Alert, Device, Farm, Actuator, Order } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocale } from "@/contexts/LocaleContext";
+import { TranslationKey } from "@/lib/translations";
 
 const STATUS_COLORS: Record<string, string> = {
   placed:    "bg-amber-100 text-amber-700",
@@ -30,8 +32,17 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-red-100 text-red-600",
 };
 
+const STATUS_KEYS: Record<string, TranslationKey> = {
+  placed: "status_placed",
+  confirmed: "status_confirmed",
+  shipped: "status_shipped",
+  delivered: "status_delivered",
+  cancelled: "status_cancelled",
+};
+
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
+  const { t } = useLocale();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
   const [actuators, setActuators] = useState<Actuator[]>([]);
@@ -110,34 +121,34 @@ export default function HomePage() {
   return (
     <DashboardShell breadcrumb={[]}>
       {loading ? (
-        <p className="text-sm text-slate-500">Loading...</p>
+        <p className="text-sm text-slate-500">{t("common_loading")}</p>
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               icon={Warehouse}
-              label="Farms"
+              label={t("home_farms")}
               value={farms.length}
               textColor="text-emerald-700"
               bgLight="bg-emerald-50"
             />
             <StatCard
               icon={Cpu}
-              label="Devices online"
+              label={t("home_devices_online")}
               value={`${onlineDevices} / ${devices.length}`}
               textColor="text-sky-700"
               bgLight="bg-sky-50"
             />
             <StatCard
               icon={Power}
-              label="Active motors"
+              label={t("home_active_motors")}
               value={activeMotors}
               textColor="text-accent-700"
               bgLight="bg-accent-50"
             />
             <StatCard
               icon={Bell}
-              label="Open alerts"
+              label={t("home_open_alerts")}
               value={alerts.length}
               textColor="text-amber-700"
               bgLight="bg-amber-50"
@@ -147,20 +158,20 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl border border-slate-200">
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-                <h2 className="font-semibold text-slate-800">Devices</h2>
+                <h2 className="font-semibold text-slate-800">{t("home_devices")}</h2>
                 <Link
                   href="/devices"
                   className="text-sm text-accent-700 font-medium hover:underline"
                 >
-                  View all
+                  {t("home_view_all")}
                 </Link>
               </div>
               <div className="divide-y divide-slate-100">
                 {devices.length === 0 && (
                   <p className="px-5 py-4 text-sm text-slate-500">
-                    No devices yet.{" "}
+                    {t("home_no_devices_yet")}{" "}
                     <Link href="/devices" className="text-accent-700 underline">
-                      Add one
+                      {t("home_add_one")}
                     </Link>
                   </p>
                 )}
@@ -175,16 +186,16 @@ export default function HomePage() {
                         {d.name}
                       </p>
                       <p className="text-xs text-slate-500">
-                        {d.farm_name || "Unassigned"}
+                        {d.farm_name || t("home_unassigned")}
                       </p>
                     </div>
                     {d.status === "online" ? (
                       <span className="flex items-center gap-1 text-xs font-medium text-emerald-600">
-                        <Wifi className="w-4 h-4" /> Online
+                        <Wifi className="w-4 h-4" /> {t("common_online")}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-xs font-medium text-slate-400">
-                        <WifiOff className="w-4 h-4" /> Offline
+                        <WifiOff className="w-4 h-4" /> {t("common_offline")}
                       </span>
                     )}
                   </Link>
@@ -194,18 +205,18 @@ export default function HomePage() {
 
             <div className="bg-white rounded-xl border border-slate-200">
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-                <h2 className="font-semibold text-slate-800">Open alerts</h2>
+                <h2 className="font-semibold text-slate-800">{t("home_open_alerts")}</h2>
                 <Link
                   href="/alerts"
                   className="text-sm text-accent-700 font-medium hover:underline"
                 >
-                  View all
+                  {t("home_view_all")}
                 </Link>
               </div>
               <div className="divide-y divide-slate-100">
                 {alerts.length === 0 && (
                   <p className="px-5 py-4 text-sm text-slate-500">
-                    No open alerts. Everything looks good.
+                    {t("home_no_open_alerts")}
                   </p>
                 )}
                 {alerts.slice(0, 6).map((a) => (
@@ -236,20 +247,20 @@ export default function HomePage() {
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
                 <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-slate-400" /> Farm Map
+                  <MapPin className="w-4 h-4 text-slate-400" /> {t("home_farm_map")}
                 </h2>
                 <Link
                   href="/map"
                   className="text-sm text-accent-700 font-medium hover:underline"
                 >
-                  View full map
+                  {t("home_view_full_map")}
                 </Link>
               </div>
               {farms.filter((f) => f.latitude != null && f.longitude != null).length === 0 ? (
                 <p className="px-5 py-8 text-sm text-slate-500 text-center">
-                  No farm locations pinned yet.{" "}
+                  {t("home_no_farm_locations")}{" "}
                   <Link href="/map" className="text-accent-700 underline">
-                    Add one
+                    {t("home_add_one")}
                   </Link>
                 </p>
               ) : (
@@ -262,13 +273,13 @@ export default function HomePage() {
             <div className="bg-white rounded-xl border border-slate-200">
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
                 <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-                  <ClipboardList className="w-4 h-4 text-slate-400" /> My Orders
+                  <ClipboardList className="w-4 h-4 text-slate-400" /> {t("home_my_orders")}
                 </h2>
                 <Link
                   href="/orders"
                   className="text-sm text-accent-700 font-medium hover:underline"
                 >
-                  View all
+                  {t("home_view_all")}
                 </Link>
               </div>
               <div className="divide-y divide-slate-100">
@@ -276,9 +287,9 @@ export default function HomePage() {
                   <div className="px-5 py-8 text-center">
                     <Package className="w-8 h-8 text-slate-200 mx-auto mb-2" />
                     <p className="text-sm text-slate-500">
-                      No orders yet.{" "}
+                      {t("home_no_orders_yet")}{" "}
                       <Link href="/shop" className="text-accent-700 underline">
-                        Go to Market
+                        {t("home_go_to_market")}
                       </Link>
                     </p>
                   </div>
@@ -292,14 +303,14 @@ export default function HomePage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-slate-800">
-                          Order #{o.id}
+                          {t("home_order_number", { id: o.id })}
                         </p>
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${
                             STATUS_COLORS[o.status] || "bg-slate-100 text-slate-600"
                           }`}
                         >
-                          {o.status}
+                          {STATUS_KEYS[o.status] ? t(STATUS_KEYS[o.status]) : o.status}
                         </span>
                       </div>
                       <p className="text-xs text-slate-500">

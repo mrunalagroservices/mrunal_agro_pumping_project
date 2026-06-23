@@ -10,6 +10,7 @@ import DashboardShell from "@/components/DashboardShell";
 import type { Product, ShopSettings, ApiResponse } from "@/lib/types";
 import { CartItem, cartFromStorage, cartToStorage } from "@/lib/products";
 import { httpClient } from "@/lib/api";
+import { useLocale } from "@/contexts/LocaleContext";
 
 const DEFAULT_SETTINGS: ShopSettings = {
   price_range: { min: 0, max: 5000 },
@@ -63,6 +64,7 @@ function FilterSidebar({ categories, ratingOptions, priceRange, products, select
   const [catOpen, setCatOpen] = useState(true);
   const [priceOpen, setPriceOpen] = useState(true);
   const [ratingOpen, setRatingOpen] = useState(true);
+  const { t } = useLocale();
   const catCounts = categories.reduce((acc, c) => { acc[c] = products.filter((p) => p.category === c).length; return acc; }, {} as Record<string, number>);
   const dirty = selectedCats.length > 0 || minPrice > priceRange.min || maxPrice < priceRange.max || minRating > 0;
   const inp = "w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition";
@@ -70,10 +72,10 @@ function FilterSidebar({ categories, ratingOptions, priceRange, products, select
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 sticky top-4 w-56">
       <div className="flex items-center justify-between mb-4">
-        <p className="font-bold text-slate-800 flex items-center gap-2"><SlidersHorizontal className="w-4 h-4" /> Filter</p>
-        {dirty && <button onClick={onClear} className="text-xs text-emerald-600 font-semibold hover:underline">Clear all</button>}
+        <p className="font-bold text-slate-800 flex items-center gap-2"><SlidersHorizontal className="w-4 h-4" /> {t("shop_filter")}</p>
+        {dirty && <button onClick={onClear} className="text-xs text-emerald-600 font-semibold hover:underline">{t("shop_clear_all")}</button>}
       </div>
-      <Section title="Category" open={catOpen} toggle={() => setCatOpen((o) => !o)}>
+      <Section title={t("shop_category")} open={catOpen} toggle={() => setCatOpen((o) => !o)}>
         <div className="space-y-2.5 mt-1">
           {categories.map((c) => (
             <label key={c} className="flex items-center justify-between cursor-pointer group">
@@ -86,25 +88,25 @@ function FilterSidebar({ categories, ratingOptions, priceRange, products, select
           ))}
         </div>
       </Section>
-      <Section title="Price Range" open={priceOpen} toggle={() => setPriceOpen((o) => !o)}>
+      <Section title={t("shop_price_range")} open={priceOpen} toggle={() => setPriceOpen((o) => !o)}>
         <div className="flex gap-2 mt-2">
           <div className="flex-1">
-            <p className="text-[10px] text-slate-400 mb-1">Min (₹)</p>
+            <p className="text-[10px] text-slate-400 mb-1">{t("shop_min_rs")}</p>
             <input type="number" className={inp} value={minPrice} min={priceRange.min} onChange={(e) => onPriceChange(Number(e.target.value), maxPrice)} />
           </div>
           <div className="flex-1">
-            <p className="text-[10px] text-slate-400 mb-1">Max (₹)</p>
+            <p className="text-[10px] text-slate-400 mb-1">{t("shop_max_rs")}</p>
             <input type="number" className={inp} value={maxPrice} min={1} onChange={(e) => onPriceChange(minPrice, Number(e.target.value))} />
           </div>
         </div>
-        <p className="text-[10px] text-slate-400 mt-1">Range: ₹{priceRange.min} – ₹{priceRange.max.toLocaleString("en-IN")}</p>
+        <p className="text-[10px] text-slate-400 mt-1">{t("shop_range_label", { min: priceRange.min, max: priceRange.max.toLocaleString("en-IN") })}</p>
       </Section>
-      <Section title="Min Rating" open={ratingOpen} toggle={() => setRatingOpen((o) => !o)}>
+      <Section title={t("shop_min_rating")} open={ratingOpen} toggle={() => setRatingOpen((o) => !o)}>
         <div className="flex gap-1.5 mt-2 flex-wrap">
           {ratingOptions.map((r) => (
             <button key={r} onClick={() => onRatingChange(r)}
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${minRating === r ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-200 text-slate-600 hover:border-emerald-300"}`}>
-              {r === 0 ? "All" : <><Star className="w-3 h-3 fill-current" /> {r}+</>}
+              {r === 0 ? t("shop_all") : <><Star className="w-3 h-3 fill-current" /> {r}+</>}
             </button>
           ))}
         </div>
@@ -120,14 +122,15 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
   onRemove: (e: React.MouseEvent) => void; onWishlist: (e: React.MouseEvent) => void;
 }) {
   const disc = p.original_price > p.price ? Math.round((1 - p.price / p.original_price) * 100) : 0;
+  const { t } = useLocale();
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col group" onClick={onOpen}>
       <div className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
         <PImg src={p.image_url} alt={p.name} className="w-full h-full transition-transform duration-300 group-hover:scale-105" />
         <div className="absolute top-2 left-2">
           {p.is_best_seller
-            ? <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Best Seller</span>
-            : <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">New Arrival</span>}
+            ? <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{t("shop_best_seller")}</span>
+            : <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{t("shop_new_arrival")}</span>}
         </div>
         {disc > 0 && <span className="absolute top-2 right-9 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{disc}%</span>}
         <button onClick={onWishlist} className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-sm transition-colors ${wishlisted ? "bg-red-50" : "bg-white/80 hover:bg-white"}`}>
@@ -148,8 +151,8 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
           <span className="text-base font-bold text-emerald-600">₹{p.price.toLocaleString("en-IN")}</span>
           <span className="text-xs text-slate-400 line-through">₹{p.original_price.toLocaleString("en-IN")}</span>
         </div>
-        {p.stock_quantity <= 20 && p.stock_quantity > 0 && <p className="text-[10px] text-red-500 font-medium mt-0.5">Only {p.stock_quantity} left!</p>}
-        {p.stock_quantity === 0 && <p className="text-[10px] text-red-600 font-bold mt-0.5">Out of stock</p>}
+        {p.stock_quantity <= 20 && p.stock_quantity > 0 && <p className="text-[10px] text-red-500 font-medium mt-0.5">{t("shop_only_left", { n: p.stock_quantity })}</p>}
+        {p.stock_quantity === 0 && <p className="text-[10px] text-red-600 font-bold mt-0.5">{t("shop_out_of_stock")}</p>}
       </div>
       <div className="px-3 pb-3" onClick={(e) => e.stopPropagation()}>
         {inCart > 0 ? (
@@ -163,7 +166,7 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
         ) : (
           <button onClick={onAdd} disabled={p.stock_quantity === 0}
             className="w-full py-2 border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-600 hover:text-white text-xs font-bold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-            {p.stock_quantity === 0 ? "Out of Stock" : "+ Add to Cart"}
+            {p.stock_quantity === 0 ? t("shop_out_of_stock_btn") : t("shop_add_to_cart")}
           </button>
         )}
       </div>
@@ -174,6 +177,7 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 export default function ShopPage() {
   const router = useRouter();
+  const { t } = useLocale();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<ShopSettings>(DEFAULT_SETTINGS);
@@ -274,7 +278,7 @@ export default function ShopPage() {
   function toggleCat(c: string) { setSelectedCats((p) => p.includes(c) ? p.filter((x) => x !== c) : [...p, c]); }
 
   return (
-    <DashboardShell breadcrumb={[{ label: "Market" }]}>
+    <DashboardShell breadcrumb={[{ label: t("shop_market_title") }]}>
       {/* Hero Banner */}
       <div className="relative -mx-4 lg:-mx-6 -mt-4 lg:-mt-6 mb-8 overflow-hidden rounded-b-2xl" style={{ height: 240 }}>
         <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=1400&h=400&q=80"
@@ -282,19 +286,19 @@ export default function ShopPage() {
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/50 to-transparent flex items-center">
           <div className="px-8 lg:px-12 max-w-lg">
-            <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Mrunal Agro Market</p>
-            <h1 className="text-white text-3xl lg:text-4xl font-black leading-tight mb-3">Quality Farm<br />Essentials</h1>
+            <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">{t("shop_hero_tag")}</p>
+            <h1 className="text-white text-3xl lg:text-4xl font-black leading-tight mb-3">{t("shop_hero_title")}</h1>
             <p className="text-slate-300 text-sm mb-5">{settings.categories.join(" · ")}</p>
             <button onClick={() => document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth" })}
               className="bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-5 py-2.5 rounded-full text-sm transition-colors">
-              Shop Now →
+              {t("shop_shop_now")}
             </button>
           </div>
         </div>
         <div className="absolute bottom-3 right-4 hidden lg:flex items-center gap-4 text-white/70 text-xs font-medium">
-          <span>✓ Trusted Shipping</span>
-          <span>↺ Easy Returns</span>
-          <span>🔒 Secure Shopping</span>
+          <span>{t("shop_trusted_shipping")}</span>
+          <span>{t("shop_easy_returns")}</span>
+          <span>{t("shop_secure_shopping")}</span>
         </div>
       </div>
 
@@ -302,20 +306,20 @@ export default function ShopPage() {
       <div className="flex items-center gap-3 mb-6 flex-wrap" id="products-section">
         <div className="relative flex-1 min-w-48 max-w-lg">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search seeds, fertilizers, tools…"
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("shop_search_placeholder")}
             className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
           {search && <button onClick={() => setSearch("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>}
         </div>
         <button onClick={() => setMobileFilterOpen(true)} className="lg:hidden flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-full text-sm font-medium bg-white text-slate-600 shadow-sm">
-          <SlidersHorizontal className="w-4 h-4" /> Filter
+          <SlidersHorizontal className="w-4 h-4" /> {t("shop_filter")}
         </button>
         <button onClick={() => router.push("/orders")}
           className="flex items-center gap-2 px-4 py-2.5 border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-semibold rounded-full hover:bg-emerald-100 transition-colors">
-          <ClipboardList className="w-4 h-4" /> My Orders
+          <ClipboardList className="w-4 h-4" /> {t("shop_my_orders")}
         </button>
         <button onClick={() => router.push("/shop/checkout")}
           className="relative flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-full transition-colors shadow-sm">
-          <ShoppingCart className="w-4 h-4" /> Cart
+          <ShoppingCart className="w-4 h-4" /> {t("shop_cart")}
           {cartCount > 0 && <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{cartCount}</span>}
         </button>
       </div>
@@ -326,7 +330,7 @@ export default function ShopPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileFilterOpen(false)} />
           <div className="relative w-72 bg-white h-full overflow-y-auto p-4 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <p className="font-bold text-slate-800">Filters</p>
+              <p className="font-bold text-slate-800">{t("shop_filters_title")}</p>
               <button onClick={() => setMobileFilterOpen(false)}><X className="w-5 h-5 text-slate-500" /></button>
             </div>
             <FilterSidebar categories={settings.categories} ratingOptions={settings.rating_options} priceRange={settings.price_range}
@@ -334,7 +338,7 @@ export default function ShopPage() {
               minPrice={minPrice} maxPrice={maxPrice} onPriceChange={(a, b) => { setMinPrice(a); setMaxPrice(b); }}
               minRating={minRating} onRatingChange={setMinRating} onClear={clearFilters} />
             <button onClick={() => setMobileFilterOpen(false)} className="mt-4 w-full py-3 bg-emerald-600 text-white font-bold rounded-xl">
-              View {filtered.length} Products
+              {t("shop_view_n_products", { n: filtered.length })}
             </button>
           </div>
         </div>
@@ -357,18 +361,20 @@ export default function ShopPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-base font-bold text-slate-800">{filtered.length} result{filtered.length !== 1 ? "s" : ""}</p>
+                <p className="text-base font-bold text-slate-800">
+                  {filtered.length === 1 ? t("shop_result_one", { n: filtered.length }) : t("shop_result_other", { n: filtered.length })}
+                </p>
                 {(selectedCats.length > 0 || search) && (
                   <p className="text-xs text-slate-400">{search && `"${search}"`}{selectedCats.length > 0 && ` · ${selectedCats.join(", ")}`}</p>
                 )}
               </div>
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
                 className="border border-slate-200 rounded-full px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-700 shadow-sm">
-                <option value="popular">Sort by: Popular</option>
-                <option value="price_asc">Price: Low → High</option>
-                <option value="price_desc">Price: High → Low</option>
-                <option value="rating">Top Rated</option>
-                <option value="discount">Best Discount</option>
+                <option value="popular">{t("shop_sort_popular")}</option>
+                <option value="price_asc">{t("shop_sort_price_asc")}</option>
+                <option value="price_desc">{t("shop_sort_price_desc")}</option>
+                <option value="rating">{t("shop_sort_rating")}</option>
+                <option value="discount">{t("shop_sort_discount")}</option>
               </select>
             </div>
 
@@ -379,13 +385,17 @@ export default function ShopPage() {
                     <ShoppingCart className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-emerald-800">{cartCount} item{cartCount !== 1 ? "s" : ""} in cart · ₹{cartTotal.toLocaleString("en-IN")}</p>
-                    <p className="text-xs text-emerald-600">Deliver by {deliveryDate()}</p>
+                    <p className="text-sm font-bold text-emerald-800">
+                      {cartCount === 1
+                        ? t("shop_items_in_cart_one", { n: cartCount, total: cartTotal.toLocaleString("en-IN") })
+                        : t("shop_items_in_cart_other", { n: cartCount, total: cartTotal.toLocaleString("en-IN") })}
+                    </p>
+                    <p className="text-xs text-emerald-600">{t("shop_deliver_by", { date: deliveryDate() })}</p>
                   </div>
                 </div>
                 <button onClick={() => router.push("/shop/checkout")}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-full transition-colors">
-                  Checkout →
+                  {t("shop_checkout_arrow")}
                 </button>
               </div>
             )}
@@ -393,14 +403,14 @@ export default function ShopPage() {
             {products.length === 0 && !loading ? (
               <div className="text-center py-24 text-slate-400">
                 <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="font-semibold mb-2">No products available</p>
-                <p className="text-sm">Ask your admin to add products to the marketplace.</p>
+                <p className="font-semibold mb-2">{t("shop_no_products_available")}</p>
+                <p className="text-sm">{t("shop_ask_admin")}</p>
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-24 text-slate-400">
                 <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="font-semibold mb-2">No products found</p>
-                <button onClick={clearFilters} className="text-sm text-emerald-600 hover:underline">Clear filters</button>
+                <p className="font-semibold mb-2">{t("shop_no_products_found")}</p>
+                <button onClick={clearFilters} className="text-sm text-emerald-600 hover:underline">{t("shop_clear_filters")}</button>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">

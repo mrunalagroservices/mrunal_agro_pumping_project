@@ -7,6 +7,7 @@ import { httpClient } from "@/lib/api";
 import { socketClient } from "@/lib/socket";
 import { ApiResponse, Alert } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type Filter = "open" | "resolved" | "all";
 
@@ -27,6 +28,13 @@ export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [filter, setFilter] = useState<Filter>("open");
   const [loading, setLoading] = useState(true);
+  const { t } = useLocale();
+
+  const FILTER_LABELS: Record<Filter, string> = {
+    open: t("alerts_filter_open"),
+    resolved: t("alerts_filter_resolved"),
+    all: t("alerts_filter_all"),
+  };
 
   async function loadAlerts(f: Filter) {
     setLoading(true);
@@ -68,7 +76,7 @@ export default function AlertsPage() {
   }
 
   return (
-    <DashboardShell breadcrumb={[{ label: "Alerts" }]}>
+    <DashboardShell breadcrumb={[{ label: t("nav_alerts") }]}>
       <div className="flex items-center gap-2 mb-4">
         {(["open", "resolved", "all"] as Filter[]).map((f) => (
           <button
@@ -80,17 +88,17 @@ export default function AlertsPage() {
                 : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
             }`}
           >
-            {f}
+            {FILTER_LABELS[f]}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-500">Loading...</p>
+        <p className="text-sm text-slate-500">{t("common_loading")}</p>
       ) : alerts.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
           <p className="text-sm text-slate-500">
-            {filter === "open" ? "No open alerts. Everything looks good." : "No alerts found."}
+            {filter === "open" ? t("alerts_no_open") : t("alerts_no_alerts_found")}
           </p>
         </div>
       ) : (
@@ -112,7 +120,7 @@ export default function AlertsPage() {
                     {a.device_name && `${a.device_name} · `}
                     {a.alert_type} · {new Date(a.created_at).toLocaleString()}
                     {a.is_resolved && a.resolved_at
-                      ? ` · resolved ${new Date(a.resolved_at).toLocaleString()}`
+                      ? t("alerts_resolved_at", { date: new Date(a.resolved_at).toLocaleString() })
                       : ""}
                   </p>
                 </div>
@@ -122,7 +130,7 @@ export default function AlertsPage() {
                     className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 rounded-lg px-2.5 py-1.5 shrink-0"
                   >
                     <Check className="w-3.5 h-3.5" />
-                    Resolve
+                    {t("alerts_resolve_btn")}
                   </button>
                 )}
               </div>

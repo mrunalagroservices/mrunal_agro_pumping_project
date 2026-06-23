@@ -28,6 +28,7 @@ import {
   AnalyticsOverview,
   AnalyticsDailyRuntime,
 } from "@/lib/types";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type Range = "24h" | "10d";
 
@@ -61,6 +62,7 @@ export default function AnalyticsPage() {
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [dailyRuntime, setDailyRuntime] = useState<AnalyticsDailyRuntime | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useLocale();
 
   useEffect(() => {
     httpClient
@@ -107,10 +109,10 @@ export default function AnalyticsPage() {
   }));
 
   return (
-    <DashboardShell breadcrumb={[{ label: "Analytics" }]}>
+    <DashboardShell breadcrumb={[{ label: t("nav_analytics") }]}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <p className="text-sm text-slate-500">
-          Water usage, electricity consumption and runtime across your pumps
+          {t("analytics_subtitle")}
         </p>
         <div className="flex items-center gap-2">
           {farms.length > 0 && (
@@ -119,7 +121,7 @@ export default function AnalyticsPage() {
               onChange={(e) => setFarmId(e.target.value)}
               className="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-accent-500"
             >
-              <option value="">All farms</option>
+              <option value="">{t("analytics_all_farms")}</option>
               {farms.map((f) => (
                 <option key={f.id} value={f.id}>
                   {f.name}
@@ -136,7 +138,7 @@ export default function AnalyticsPage() {
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
-              Last 24 Hours
+              {t("analytics_24h")}
             </button>
             <button
               onClick={() => setRange("10d")}
@@ -146,7 +148,7 @@ export default function AnalyticsPage() {
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
-              Last 10 Days
+              {t("analytics_10d")}
             </button>
           </div>
         </div>
@@ -155,54 +157,54 @@ export default function AnalyticsPage() {
       {noSpecsConfigured && (
         <div className="flex items-center justify-between gap-3 bg-amber-50 border border-amber-100 text-amber-700 text-sm rounded-lg px-4 py-3 mb-4">
           <span>
-            Add pump specs (pipe diameter, flow rate, power rating) to see water &amp; electricity estimates.
+            {t("analytics_no_specs")}
           </span>
           <Link
             href="/settings"
             className="flex items-center gap-1 font-medium whitespace-nowrap hover:underline"
           >
             <SettingsIcon className="w-4 h-4" />
-            Go to Settings
+            {t("analytics_go_to_settings")}
           </Link>
         </div>
       )}
 
       {loading && !overview ? (
-        <p className="text-sm text-slate-500">Loading...</p>
+        <p className="text-sm text-slate-500">{t("common_loading")}</p>
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
             <StatCard
               icon={Clock}
-              label="Total Runtime"
+              label={t("analytics_total_runtime")}
               value={formatRuntime(totals?.runtime_minutes ?? 0)}
               textColor="text-violet-700"
               bgLight="bg-violet-50"
             />
             <StatCard
               icon={Droplets}
-              label="Water Pumped"
+              label={t("analytics_water_pumped")}
               value={`${formatNumber(totals?.water_liters ?? 0)} L`}
               textColor="text-sky-700"
               bgLight="bg-sky-50"
             />
             <StatCard
               icon={Zap}
-              label="Electricity Used"
+              label={t("analytics_electricity_used")}
               value={`${formatNumber(totals?.electricity_kwh ?? 0, 2)} kWh`}
               textColor="text-amber-700"
               bgLight="bg-amber-50"
             />
             <StatCard
               icon={IndianRupee}
-              label="Estimated Cost"
+              label={t("analytics_estimated_cost")}
               value={`₹${formatNumber(totals?.cost ?? 0, 2)}`}
               textColor="text-emerald-700"
               bgLight="bg-emerald-50"
             />
             <StatCard
               icon={Activity}
-              label="Currently Running"
+              label={t("analytics_currently_running")}
               value={`${totals?.currently_running ?? 0} / ${totalActuators}`}
               textColor="text-accent-700"
               bgLight="bg-accent-50"
@@ -211,39 +213,39 @@ export default function AnalyticsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <p className="text-sm font-medium text-slate-800 mb-3">Pump Runtime (min)</p>
+              <p className="text-sm font-medium text-slate-800 mb-3">{t("analytics_pump_runtime_chart")}</p>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="label" tick={{ fontSize: 10, angle: -40, textAnchor: "end" }} interval={0} height={56} />
                   <YAxis tick={{ fontSize: 11 }} width={32} />
-                  <Tooltip formatter={(value) => [`${formatNumber(Number(value))} min`, "Runtime"]} />
+                  <Tooltip formatter={(value) => [`${formatNumber(Number(value))} min`, t("analytics_runtime_tooltip")]} />
                   <Bar dataKey="runtime_minutes" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <p className="text-sm font-medium text-slate-800 mb-3">Water Pumped (L)</p>
+              <p className="text-sm font-medium text-slate-800 mb-3">{t("analytics_water_pumped_chart")}</p>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="label" tick={{ fontSize: 10, angle: -40, textAnchor: "end" }} interval={0} height={56} />
                   <YAxis tick={{ fontSize: 11 }} width={32} />
-                  <Tooltip formatter={(value) => [`${formatNumber(Number(value))} L`, "Water"]} />
+                  <Tooltip formatter={(value) => [`${formatNumber(Number(value))} L`, t("analytics_water_tooltip")]} />
                   <Bar dataKey="water_liters" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <p className="text-sm font-medium text-slate-800 mb-3">Electricity Consumed (kWh)</p>
+              <p className="text-sm font-medium text-slate-800 mb-3">{t("analytics_electricity_chart")}</p>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="label" tick={{ fontSize: 10, angle: -40, textAnchor: "end" }} interval={0} height={56} />
                   <YAxis tick={{ fontSize: 11 }} width={32} />
-                  <Tooltip formatter={(value) => [`${formatNumber(Number(value), 2)} kWh`, "Electricity"]} />
+                  <Tooltip formatter={(value) => [`${formatNumber(Number(value), 2)} kWh`, t("analytics_electricity_tooltip")]} />
                   <Bar dataKey="electricity_kwh" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -252,24 +254,24 @@ export default function AnalyticsPage() {
 
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-100">
-              <p className="text-sm font-medium text-slate-800">Per-pump breakdown</p>
+              <p className="text-sm font-medium text-slate-800">{t("analytics_per_pump_breakdown")}</p>
             </div>
             {!overview || overview.actuators.length === 0 ? (
               <p className="text-sm text-slate-500 px-4 py-6 text-center">
-                No pumps registered yet.
+                {t("analytics_no_pumps_yet")}
               </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100">
-                      <th className="px-4 py-2 font-medium">Pump</th>
-                      <th className="px-4 py-2 font-medium">Farm</th>
-                      <th className="px-4 py-2 font-medium">Type</th>
-                      <th className="px-4 py-2 font-medium text-right">Runtime</th>
-                      <th className="px-4 py-2 font-medium text-right">Water (L)</th>
-                      <th className="px-4 py-2 font-medium text-right">Electricity (kWh)</th>
-                      <th className="px-4 py-2 font-medium text-right">Cost (₹)</th>
+                      <th className="px-4 py-2 font-medium">{t("analytics_th_pump")}</th>
+                      <th className="px-4 py-2 font-medium">{t("analytics_th_farm")}</th>
+                      <th className="px-4 py-2 font-medium">{t("analytics_th_type")}</th>
+                      <th className="px-4 py-2 font-medium text-right">{t("analytics_th_runtime")}</th>
+                      <th className="px-4 py-2 font-medium text-right">{t("analytics_th_water")}</th>
+                      <th className="px-4 py-2 font-medium text-right">{t("analytics_th_electricity")}</th>
+                      <th className="px-4 py-2 font-medium text-right">{t("analytics_th_cost")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -307,22 +309,22 @@ export default function AnalyticsPage() {
 
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mt-4">
             <div className="px-4 py-3 border-b border-slate-100">
-              <p className="text-sm font-medium text-slate-800">Daily Motor Hours (Last 10 Days)</p>
-              <p className="text-xs text-slate-500">How long each pump ran, and at what times</p>
+              <p className="text-sm font-medium text-slate-800">{t("analytics_daily_motor_hours")}</p>
+              <p className="text-xs text-slate-500">{t("analytics_daily_motor_sub")}</p>
             </div>
             {!dailyRuntime || dailyRuntime.days.every((d) => d.actuators.length === 0) ? (
               <p className="text-sm text-slate-500 px-4 py-6 text-center">
-                No motor activity in the last 10 days.
+                {t("analytics_no_motor_activity")}
               </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-100">
-                      <th className="px-4 py-2 font-medium">Date</th>
-                      <th className="px-4 py-2 font-medium">Pump</th>
-                      <th className="px-4 py-2 font-medium text-right">ON Hours</th>
-                      <th className="px-4 py-2 font-medium">ON/OFF Sessions</th>
+                      <th className="px-4 py-2 font-medium">{t("analytics_th_date")}</th>
+                      <th className="px-4 py-2 font-medium">{t("analytics_th_pump")}</th>
+                      <th className="px-4 py-2 font-medium text-right">{t("analytics_th_on_hours")}</th>
+                      <th className="px-4 py-2 font-medium">{t("analytics_th_sessions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -335,7 +337,7 @@ export default function AnalyticsPage() {
                             <tr key={day.date} className="border-b border-slate-50 last:border-0">
                               <td className="px-4 py-2.5 text-slate-700">{day.label}</td>
                               <td className="px-4 py-2.5 text-slate-400" colSpan={3}>
-                                No runtime
+                                {t("analytics_no_runtime")}
                               </td>
                             </tr>
                           );

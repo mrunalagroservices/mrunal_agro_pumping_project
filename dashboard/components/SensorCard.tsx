@@ -12,8 +12,10 @@ import {
 import { ChevronDown, ChevronUp, Gauge } from "lucide-react";
 import { httpClient } from "@/lib/api";
 import { ApiResponse, Sensor, SensorReading } from "@/lib/types";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function SensorCard({ sensor }: { sensor: Sensor }) {
+  const { t } = useLocale();
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [readings, setReadings] = useState<SensorReading[]>([]);
@@ -101,10 +103,10 @@ export default function SensorCard({ sensor }: { sensor: Sensor }) {
       {expanded && (
         <div className="border-t border-slate-100 px-4 py-3">
           {loading ? (
-            <p className="text-sm text-slate-500">Loading history...</p>
+            <p className="text-sm text-slate-500">{t("sc_loading_history")}</p>
           ) : chartData.length === 0 ? (
             <p className="text-sm text-slate-500">
-              No readings in the last 24 hours.
+              {t("sc_no_readings")}
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={160}>
