@@ -53,3 +53,17 @@ JWT stored after login/registration.
 
 Pages: dashboard overview, farms, devices (with sensors + actuator on/off
 controls), automation rules, schedules, and alerts.
+
+
+
+
+
+
+
+
+TODO list:
+1. Recommended products should not be hard coded - create recommendation system
+2. AI crop health checking by clicking just photo - app
+3. Admin Fully managable dashboard
+4. Docs for deploying apps
+5. Payment systems
