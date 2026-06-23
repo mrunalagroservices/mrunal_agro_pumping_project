@@ -734,9 +734,17 @@ class _SimilarProducts extends StatelessWidget {
                           height: 100,
                           width: double.infinity,
                           color: p.iconBg,
-                          child: Center(
-                            child: Icon(p.icon, size: 40, color: p.iconColor),
-                          ),
+                          child: p.imageUrl != null
+                              ? Image.network(
+                                  p.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Center(
+                                    child: Icon(p.icon, size: 40, color: p.iconColor),
+                                  ),
+                                )
+                              : Center(
+                                  child: Icon(p.icon, size: 40, color: p.iconColor),
+                                ),
                         ),
                       ),
                       Padding(

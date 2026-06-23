@@ -558,15 +558,23 @@ class _CartItemRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 64,
+              height: 64,
               color: product.iconBg,
-              borderRadius: BorderRadius.circular(12),
+              alignment: Alignment.center,
+              child: product.imageUrl != null
+                  ? Image.network(
+                      product.imageUrl!,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(product.icon, color: product.iconColor, size: 28),
+                    )
+                  : Icon(product.icon, color: product.iconColor, size: 28),
             ),
-            alignment: Alignment.center,
-            child: Icon(product.icon, color: product.iconColor, size: 28),
           ),
           const SizedBox(width: 14),
           Expanded(
