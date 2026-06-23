@@ -108,15 +108,15 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                {t("login_email")}
+                {mode === "login" ? t("login_email_or_phone") : t("login_email")}
               </label>
               <input
-                type="email"
+                type={mode === "login" ? "text" : "email"}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
-                placeholder="you@example.com"
+                placeholder={mode === "login" ? t("login_email_or_phone_placeholder") : "you@example.com"}
               />
             </div>
 

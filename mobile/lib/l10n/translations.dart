@@ -192,6 +192,7 @@ const Map<String, Map<String, String>> kTranslations = {
   // ── Login (login_screen.dart) ────────────────────────────────────────────
   'login_subtitle': {'en': 'Sign in to manage your farm pumps', 'hi': 'अपने फार्म पंप मैनेज करने के लिए साइन इन करें', 'mr': 'तुमचे फार्म पंप मॅनेज करण्यासाठी साइन इन करा'},
   'login_email_label': {'en': 'Email', 'hi': 'ईमेल', 'mr': 'ईमेल'},
+  'login_email_or_phone_label': {'en': 'Email or Mobile Number', 'hi': 'ईमेल या मोबाइल नंबर', 'mr': 'ईमेल किंवा मोबाइल नंबर'},
   'login_password_label': {'en': 'Password', 'hi': 'पासवर्ड', 'mr': 'पासवर्ड'},
   'login_sign_in': {'en': 'Sign in', 'hi': 'साइन इन करें', 'mr': 'साइन इन करा'},
   'login_create_org': {

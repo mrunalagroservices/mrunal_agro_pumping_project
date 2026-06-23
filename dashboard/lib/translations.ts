@@ -51,6 +51,8 @@ export const translations = {
     mr: "तुमचे फार्म्स आणि डिव्हाइसेस मॅनेज करण्यासाठी साइन इन करा",
   },
   login_email: { en: "Email", hi: "ईमेल", mr: "ईमेल" },
+  login_email_or_phone: { en: "Email or Mobile Number", hi: "ईमेल या मोबाइल नंबर", mr: "ईमेल किंवा मोबाइल नंबर" },
+  login_email_or_phone_placeholder: { en: "you@example.com or 9876543210", hi: "you@example.com या 9876543210", mr: "you@example.com किंवा 9876543210" },
   login_password: { en: "Password", hi: "पासवर्ड", mr: "पासवर्ड" },
   login_signin: { en: "Sign in", hi: "साइन इन करें", mr: "साइन इन करा" },
   login_no_account: { en: "Don't have an account?", hi: "अकाउंट नहीं है?", mr: "अकाउंट नाही?" },

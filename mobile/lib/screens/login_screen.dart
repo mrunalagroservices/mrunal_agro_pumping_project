@@ -74,10 +74,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 32),
                     TextField(
                       controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
+                      keyboardType: TextInputType.text,
                       decoration: InputDecoration(
-                        labelText: context.tr('login_email_label'),
-                        hintText: 'you@example.com',
+                        labelText: context.tr('login_email_or_phone_label'),
+                        hintText: 'you@example.com / 9876543210',
                       ),
                     ),
                     const SizedBox(height: 16),
