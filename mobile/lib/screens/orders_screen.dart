@@ -60,9 +60,17 @@ _StatusInfo _statusInfo(BuildContext context, OrderModel o) {
         context.tr('orders_status_shipped_headline'),
         context.tr('orders_status_shipped_sub'),
       );
+    case 'out_for_delivery':
+      return _StatusInfo(
+        Icons.two_wheeler,
+        const Color(0xFF0D9488),
+        const Color(0xFFF0FDFA),
+        context.tr('orders_status_out_for_delivery_headline'),
+        context.tr('orders_status_out_for_delivery_sub'),
+      );
     case 'delivered':
       return _StatusInfo(
-        Icons.inventory_2_outlined,
+        Icons.thumb_up_alt,
         const Color(0xFF15803D),
         const Color(0xFFF0FDF4),
         context.tr('orders_status_delivered_headline'),
@@ -80,7 +88,7 @@ _StatusInfo _statusInfo(BuildContext context, OrderModel o) {
       );
     default:
       return _StatusInfo(
-        Icons.shopping_bag_outlined,
+        Icons.inventory_2_outlined,
         const Color(0xFFD97706),
         const Color(0xFFFFFBEB),
         context.tr('orders_status_placed_headline'),

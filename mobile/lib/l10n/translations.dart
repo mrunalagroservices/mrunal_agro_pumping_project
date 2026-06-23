@@ -774,6 +774,8 @@ const Map<String, Map<String, String>> kTranslations = {
   },
   'notif_run_completed': {'en': 'Completed successfully', 'hi': 'सफलतापूर्वक पूरा हुआ', 'mr': 'यशस्वीरित्या पूर्ण झाले'},
   'notif_run_aborted': {'en': 'Stopped before completion', 'hi': 'पूरा होने से पहले रुक गया', 'mr': 'पूर्ण होण्यापूर्वी थांबले'},
+  'notif_power_restored': {'en': 'Mains power restored', 'hi': 'मेन्स पावर बहाल हुई', 'mr': 'मेन्स पॉवर परत आली'},
+  'notif_power_cut': {'en': 'Mains power cut', 'hi': 'मेन्स पावर कट गई', 'mr': 'मेन्स पॉवर गेली'},
   'notif_msg_threshold': {
     'en': '{name} is {breach} threshold ({value}{unit})',
     'hi': '{name} थ्रेशोल्ड से {breach} है ({value}{unit})',
@@ -804,4 +806,6 @@ const Map<String, Map<String, String>> kTranslations = {
   'notif_status_cancelled': {'en': 'Cancelled', 'hi': 'कैंसल्ड', 'mr': 'कॅन्सल्ड'},
   'notif_status_completed': {'en': 'Completed', 'hi': 'पूरा हुआ', 'mr': 'पूर्ण झाले'},
   'notif_status_aborted': {'en': 'Aborted', 'hi': 'रोका गया', 'mr': 'थांबवले'},
+  'notif_status_power_on': {'en': 'Power On', 'hi': 'पावर ऑन', 'mr': 'पॉवर ऑन'},
+  'notif_status_power_off': {'en': 'Power Off', 'hi': 'पावर ऑफ', 'mr': 'पॉवर ऑफ'},
 };

@@ -31,13 +31,13 @@ IconData _statusIcon(String status) {
     case 'shipped':
       return Icons.local_shipping_outlined;
     case 'out_for_delivery':
-      return Icons.delivery_dining_outlined;
+      return Icons.two_wheeler;
     case 'delivered':
-      return Icons.inventory_2_outlined;
+      return Icons.thumb_up_alt;
     case 'cancelled':
       return Icons.cancel_outlined;
     default:
-      return Icons.shopping_bag_outlined;
+      return Icons.inventory_2_outlined;
   }
 }
 

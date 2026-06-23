@@ -43,7 +43,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     Iterable<NotificationItem> result = all;
     switch (_filter) {
       case 'farm':
-        result = result.where((n) => n.isAlert || n.isIrrigation);
+        result = result.where((n) => n.isAlert || n.isIrrigation || n.isPower);
         break;
       case 'market':
         result = result.where((n) => n.isOrder);
@@ -308,10 +308,51 @@ class _Segment extends StatelessWidget {
   }
 }
 
+// Order: box while packing, a vehicle once it's moving, thumbs-up once it
+// physically reaches the farmer.
+IconData _orderIconFor(String status) {
+  switch (status) {
+    case 'confirmed':
+      return Icons.check_circle_outline;
+    case 'shipped':
+      return Icons.local_shipping_outlined;
+    case 'out_for_delivery':
+      return Icons.two_wheeler;
+    case 'delivered':
+      return Icons.thumb_up_alt;
+    case 'cancelled':
+      return Icons.cancel_outlined;
+    default: // placed
+      return Icons.inventory_2_outlined;
+  }
+}
+
 IconData _iconFor(NotificationItem item) {
-  if (item.isOrder) return Icons.shopping_bag_outlined;
-  if (item.isIrrigation) return Icons.water_drop_outlined;
-  return Icons.water_drop;
+  if (item.isOrder) return _orderIconFor(item.status);
+  if (item.isPower) return item.isPowerOn ? Icons.bolt : Icons.flash_off;
+  if (item.isIrrigation) {
+    return item.status == 'completed' ? Icons.check_circle : Icons.error_outline;
+  }
+  if (item.isAlert) {
+    if (item.isAntitheft) return Icons.gpp_bad;
+    if (item.alertType == 'offline') return Icons.link_off;
+    if (item.alertType == 'safety_cutoff') return Icons.report_problem;
+    return Icons.warning_amber_outlined;
+  }
+  return Icons.notifications_outlined;
+}
+
+// Background color for the icon circle — color is as much the signal here as
+// the glyph (green = good/done, red = theft, grey/black = power loss).
+Color _colorFor(NotificationItem item) {
+  if (item.isOrder) return item.status == 'delivered' ? AppColors.success : AppColors.text;
+  if (item.isPower) return item.isPowerOn ? AppColors.success : const Color(0xFF334155);
+  if (item.isIrrigation) return item.status == 'completed' ? AppColors.success : AppColors.danger;
+  if (item.isAlert) {
+    if (item.isAntitheft) return AppColors.danger;
+    if (item.isTechnicalFault) return AppColors.danger;
+  }
+  return AppColors.text;
 }
 
 const _alertMessageKeyMap = {
@@ -364,7 +405,7 @@ String _messageFor(BuildContext context, NotificationItem item) {
         .replaceAll('{status}', statusWord)
         .replaceAll('{total}', '${params['total'] ?? ''}');
   }
-  if (item.isIrrigation) return context.tr(key);
+  if (item.isIrrigation || item.isPower) return context.tr(key);
 
   final mappedKey = _alertMessageKeyMap[key];
   if (mappedKey == null) return item.message;
@@ -394,6 +435,10 @@ String _statusLabel(BuildContext context, NotificationItem item) {
     return item.status == 'completed'
         ? context.tr('notif_status_completed')
         : context.tr('notif_status_aborted');
+  if (item.isPower)
+    return item.isPowerOn
+        ? context.tr('notif_status_power_on')
+        : context.tr('notif_status_power_off');
   final s = item.status;
   return s.isEmpty ? '' : s[0].toUpperCase() + s.substring(1);
 }
@@ -415,8 +460,8 @@ class _MessageRow extends StatelessWidget {
             Container(
               width: 56,
               height: 56,
-              decoration: const BoxDecoration(
-                color: AppColors.text,
+              decoration: BoxDecoration(
+                color: _colorFor(item),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
@@ -550,8 +595,8 @@ class _DetailSheetState extends State<_DetailSheet> {
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: const BoxDecoration(
-                    color: AppColors.text,
+                  decoration: BoxDecoration(
+                    color: _colorFor(item),
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,

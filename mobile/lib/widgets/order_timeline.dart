@@ -11,11 +11,11 @@ class _Step {
 }
 
 const _steps = [
-  _Step(Icons.shopping_bag_outlined, 'order_timeline_placed'),
+  _Step(Icons.inventory_2_outlined, 'order_timeline_placed'),
   _Step(Icons.check_circle_outline, 'order_timeline_confirmed'),
   _Step(Icons.local_shipping_outlined, 'order_timeline_dispatched'),
-  _Step(Icons.delivery_dining_outlined, 'order_timeline_out_for_delivery'),
-  _Step(Icons.inventory_2_outlined, 'order_timeline_delivered'),
+  _Step(Icons.two_wheeler, 'order_timeline_out_for_delivery'),
+  _Step(Icons.thumb_up_alt, 'order_timeline_delivered'),
 ];
 
 /// Vertical step tracker for an order's journey from being placed through to

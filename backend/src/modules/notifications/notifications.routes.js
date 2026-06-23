@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
     const alertsRes = await db.query(
       `SELECT a.id, a.alert_type, a.severity, a.message, a.message_template, a.message_params,
               a.is_resolved, a.created_at,
-              d.name AS device_name, s.name AS sensor_name, act.name AS actuator_name
+              d.name AS device_name, s.name AS sensor_name, s.sensor_type, act.name AS actuator_name
        FROM alerts a
        LEFT JOIN devices d ON d.id = a.device_id
        LEFT JOIN sensors s ON s.id = a.sensor_id
@@ -38,6 +38,15 @@ router.get('/', async (req, res) => {
       [orgId]
     );
 
+    const powerRes = await db.query(
+      `SELECT pe.id, pe.event_type, pe.created_at, d.name AS device_name
+       FROM power_events pe
+       LEFT JOIN devices d ON d.id = pe.device_id
+       WHERE pe.organization_id = $1
+       ORDER BY pe.created_at DESC LIMIT 50`,
+      [orgId]
+    );
+
     // title/message stay in English for the web dashboard (unchanged shape);
     // title_key/message_key + their _params let the mobile app render the
     // same content in Hindi/Marathi without re-deriving it from English text.
@@ -45,6 +54,11 @@ router.get('/', async (req, res) => {
       id: `alert-${a.id}`,
       type: 'alert',
       ref_id: a.id,
+      // alert_type ('threshold' | 'offline' | 'safety_cutoff') + sensor_type
+      // ('current' marks the anti-theft CT clamp) let the app pick a distinct
+      // icon/color per cause rather than one generic alert icon for all of them.
+      alert_type: a.alert_type,
+      sensor_type: a.sensor_type,
       title: a.device_name || a.sensor_name || a.actuator_name || 'Pump Alert',
       title_key: a.device_name || a.sensor_name || a.actuator_name ? null : 'notif_pump_alert_default',
       message: a.message,
@@ -83,7 +97,20 @@ router.get('/', async (req, res) => {
       created_at: r.completed_at,
     }));
 
-    const merged = [...alertItems, ...orderItems, ...runItems].sort(
+    const powerItems = powerRes.rows.map((p) => ({
+      id: `power-${p.id}`,
+      type: 'power',
+      ref_id: p.id,
+      title: p.device_name || 'Device',
+      title_key: p.device_name ? null : 'notif_pump_alert_default',
+      message: p.event_type === 'power_on' ? 'Mains power restored' : 'Mains power cut',
+      message_key: p.event_type === 'power_on' ? 'notif_power_restored' : 'notif_power_cut',
+      severity: null,
+      status: p.event_type,
+      created_at: p.created_at,
+    }));
+
+    const merged = [...alertItems, ...orderItems, ...runItems, ...powerItems].sort(
       (a, b) => new Date(b.created_at) - new Date(a.created_at)
     );
 
