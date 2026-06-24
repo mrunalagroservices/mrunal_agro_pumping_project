@@ -12,6 +12,16 @@ import '../widgets/language_switcher.dart';
 // Default map center: Pune, Maharashtra (used when no farm has GPS coordinates yet).
 const _defaultCenter = LatLng(18.5204, 73.8567);
 
+// Same Esri hybrid satellite imagery as the dashboard's Map editor (free,
+// no API key). World_Imagery has no global coverage below this zoom, so a
+// plain street map fills in there; maxNativeZoom stops requesting tiles past
+// each region's real resolution ceiling and upscales the last real tile
+// instead, matching FarmsMap.tsx's source-level `maxzoom` fix.
+const _satelliteMinZoom = 5.0;
+const _satelliteMaxNativeZoom = 18;
+const _fenceColor = Color(0xFFb45309);
+const _boundaryGreen = Color(0xFF16A34A);
+
 // User-supplied PNG icons (matching the ones used on the dashboard's Map
 // editor) instead of generic Material icons.
 const Map<DiagramElementType, String> _diagramElementImages = {
@@ -139,17 +149,35 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
     final elementsById = {for (final e in diagram.elements) e.id: e};
 
+    final boundaryPoints = diagram.boundary.map((p) => LatLng(p.lat, p.lng)).toList();
+
     return [
-      if (diagram.boundary.length >= 3)
+      if (boundaryPoints.length >= 3)
         PolygonLayer(
           polygons: [
             Polygon(
-              points: diagram.boundary.map((p) => LatLng(p.lat, p.lng)).toList(),
-              color: const Color(0xFF16A34A).withValues(alpha: 0.12),
-              borderColor: const Color(0xFF16A34A),
-              borderStrokeWidth: 2.5,
+              points: boundaryPoints,
+              color: _boundaryGreen.withValues(alpha: 0.12),
+              // flutter_map has no equivalent of MapLibre's image line-pattern,
+              // so the dashboard's tiled fence-PNG border is approximated here
+              // with a thick dashed line in a fence-like brown tone instead.
+              borderColor: _fenceColor,
+              borderStrokeWidth: 10,
+              pattern: StrokePattern.dashed(segments: const [14, 6]),
             ),
           ],
+        ),
+      if (boundaryPoints.length >= 3)
+        CircleLayer(
+          circles: boundaryPoints
+              .map((p) => CircleMarker(
+                    point: p,
+                    radius: 5,
+                    color: _boundaryGreen,
+                    borderColor: Colors.white,
+                    borderStrokeWidth: 1.5,
+                  ))
+              .toList(),
         ),
       PolylineLayer(
         polylines: diagram.connections
@@ -157,10 +185,15 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               final from = elementsById[c.from];
               final to = elementsById[c.to];
               if (from == null || to == null) return null;
+              final isPipe = c.type == DiagramConnectionType.pipe;
               return Polyline(
                 points: [LatLng(from.lat, from.lng), LatLng(to.lat, to.lng)],
-                color: c.type == DiagramConnectionType.wire ? _wireColor : _pipeColor,
-                strokeWidth: 3,
+                color: isPipe ? _pipeColor : _wireColor,
+                strokeWidth: isPipe ? 3 : 2,
+                // Matches the dashboard: pipes are dashed, wires are solid.
+                pattern: isPipe
+                    ? StrokePattern.dashed(segments: const [10, 6])
+                    : const StrokePattern.solid(),
               );
             })
             .whereType<Polyline>()
@@ -246,9 +279,23 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               ),
               children: [
                 TileLayer(
-                  urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                  subdomains: const ['a', 'b', 'c', 'd'],
-                  retinaMode: MediaQuery.devicePixelRatioOf(context) > 1,
+                  urlTemplate:
+                      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+                  maxZoom: _satelliteMinZoom,
+                  userAgentPackageName: 'com.mrunalagro.mobile',
+                ),
+                TileLayer(
+                  urlTemplate:
+                      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                  minZoom: _satelliteMinZoom,
+                  maxNativeZoom: _satelliteMaxNativeZoom,
+                  userAgentPackageName: 'com.mrunalagro.mobile',
+                ),
+                TileLayer(
+                  urlTemplate:
+                      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+                  minZoom: _satelliteMinZoom,
+                  maxNativeZoom: _satelliteMaxNativeZoom,
                   userAgentPackageName: 'com.mrunalagro.mobile',
                 ),
                 MarkerLayer(
