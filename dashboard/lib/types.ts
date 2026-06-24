@@ -136,7 +136,7 @@ export interface ProductReview {
 
 export type DiagramElementType = 'well' | 'motor' | 'valve' | 'electricity_pole' | 'pipe_junction';
 export type DiagramConnectionType = 'pipe' | 'wire';
-export type DiagramTool = 'select' | 'boundary' | DiagramElementType | DiagramConnectionType;
+export type DiagramTool = 'select' | 'boundary' | 'zone' | DiagramElementType | DiagramConnectionType;
 
 export interface DiagramElement {
   id: string;
@@ -190,6 +190,8 @@ export interface Zone {
   valve_actuator_id?: number | null;
   valve_name?: string | null;
   valve_state?: "on" | "off" | string | null;
+  color?: string | null;
+  boundary?: BoundaryPoint[] | null;
   created_at: string;
 }
 

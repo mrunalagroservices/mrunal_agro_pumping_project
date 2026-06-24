@@ -19,6 +19,10 @@ import { useLocale } from "@/contexts/LocaleContext";
 
 const CROPS = ["Tomatoes", "Wheat", "Sugarcane", "Cotton", "Maize", "Grapes", "Onion", "Chili", "Other"];
 
+// Used both for the zone color picker here and for the plotted polygon's
+// fill/outline color on the Map page — keep in sync with ZONE_COLORS there.
+const ZONE_COLORS = ["#16a34a", "#2563eb", "#d97706", "#dc2626", "#7c3aed", "#0891b2", "#db2777", "#65a30d"];
+
 function fmt(mins: number) {
   if (mins < 60) return `${mins} min`;
   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
@@ -142,6 +146,25 @@ function ZoneModal({
           <div>
             <label className={labelCls}>{t("farmd_zone_name")}</label>
             <input required className={inputCls} value={form.name ?? ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="e.g. Zone A, North Field" />
+          </div>
+          <div>
+            <label className={labelCls}>{t("farmd_zone_color")}</label>
+            <div className="flex gap-2">
+              {ZONE_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, color: c }))}
+                  className="w-8 h-8 rounded-full shrink-0 transition-transform"
+                  style={{
+                    background: c,
+                    transform: form.color === c ? "scale(1.15)" : "scale(1)",
+                    boxShadow: form.color === c ? `0 0 0 2px white, 0 0 0 4px ${c}` : "none",
+                  }}
+                  aria-label={c}
+                />
+              ))}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

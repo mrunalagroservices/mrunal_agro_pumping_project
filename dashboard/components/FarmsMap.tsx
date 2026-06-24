@@ -9,13 +9,43 @@ import {
   DiagramElement,
   DiagramElementType,
   DiagramTool,
+  Zone,
 } from "@/lib/types";
 import { ELEMENT_CFG } from "@/lib/diagramConfig";
 
-const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+// Satellite imagery + a transparent place-name/boundary overlay on top (a
+// "hybrid" view, like Google Maps' satellite mode) — Esri's World Imagery and
+// reference services are free and don't need an API key, unlike Mapbox/Google
+// satellite tiles.
+const MAP_STYLE: maplibregl.StyleSpecification = {
+  version: 8,
+  sources: {
+    satellite: {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+      attribution: "Esri, Maxar, Earthstar Geographics",
+    },
+    "satellite-labels": {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+    },
+  },
+  layers: [
+    { id: "satellite", type: "raster", source: "satellite" },
+    { id: "satellite-labels", type: "raster", source: "satellite-labels" },
+  ],
+};
 const DEFAULT_CENTER: [number, number] = [73.8567, 18.5204];
 const CONN_SOURCE = "diagram-connections";
 const BOUNDARY_SOURCE = "diagram-boundary";
+const ZONES_SOURCE = "diagram-zones";
+const DEFAULT_ZONE_COLOR = "#16a34a";
 
 const ELEMENT_TOOLS: DiagramElementType[] = [
   "well", "motor", "valve", "electricity_pole", "pipe_junction",
@@ -37,6 +67,8 @@ interface FarmsMapProps {
   onMapClick?: (lat: number, lng: number) => void;
   onElementClick?: (elementId: string) => void;
   onElementMove?: (elementId: string, lat: number, lng: number) => void;
+  // irrigation zones — each one's own plotted polygon, colored per zone
+  zones?: Zone[];
 }
 
 export default function FarmsMap({
@@ -53,6 +85,7 @@ export default function FarmsMap({
   onMapClick,
   onElementClick,
   onElementMove,
+  zones,
 }: FarmsMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -60,6 +93,7 @@ export default function FarmsMap({
   const diagramMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
   const connSourceReadyRef = useRef(false);
   const boundarySourceReadyRef = useRef(false);
+  const zonesSourceReadyRef = useRef(false);
 
   // Keep latest callbacks/props in refs so map event handlers never go stale.
   const onSelectRef = useRef(onSelectFarm);
@@ -153,6 +187,34 @@ export default function FarmsMap({
       });
       boundarySourceReadyRef.current = true;
       connSourceReadyRef.current = true;
+
+      // Irrigation zones — each its own colored fill+outline (or line/dots
+      // while still being plotted), driven by a per-feature "color" property.
+      map.addSource(ZONES_SOURCE, {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.addLayer({
+        id: "zones-fill",
+        type: "fill",
+        source: ZONES_SOURCE,
+        filter: ["==", ["geometry-type"], "Polygon"],
+        paint: { "fill-color": ["get", "color"], "fill-opacity": 0.18 },
+      });
+      map.addLayer({
+        id: "zones-line",
+        type: "line",
+        source: ZONES_SOURCE,
+        paint: { "line-color": ["get", "color"], "line-width": 2.5 },
+      });
+      map.addLayer({
+        id: "zones-points",
+        type: "circle",
+        source: ZONES_SOURCE,
+        filter: ["==", ["geometry-type"], "Point"],
+        paint: { "circle-color": ["get", "color"], "circle-radius": 5, "circle-stroke-color": "#fff", "circle-stroke-width": 1.5 },
+      });
+      zonesSourceReadyRef.current = true;
     });
 
     // Map click: fire in pin mode (GPS setting) or when an element tool is active.
@@ -163,7 +225,7 @@ export default function FarmsMap({
       }
       if (!editModeRef.current) return;
       const tool = activeToolRef.current;
-      if (tool === "boundary" || (tool && ELEMENT_TOOLS.includes(tool as DiagramElementType))) {
+      if (tool === "boundary" || tool === "zone" || (tool && ELEMENT_TOOLS.includes(tool as DiagramElementType))) {
         onMapClickRef.current?.(e.lngLat.lat, e.lngLat.lng);
       }
     });
@@ -414,6 +476,59 @@ export default function FarmsMap({
     const handler = () => {
       const source = map.getSource(BOUNDARY_SOURCE) as maplibregl.GeoJSONSource | undefined;
       source?.setData({ type: "FeatureCollection", features: boundaryFeatures() });
+    };
+    map.on("load", handler);
+    return () => { map.off("load", handler); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Irrigation zone polygons ─────────────────────────────────────────────
+  function zoneFeatures(): GeoJSON.Feature[] {
+    const features: GeoJSON.Feature[] = [];
+    for (const zone of zones ?? []) {
+      const points = zone.boundary ?? [];
+      if (points.length === 0) continue;
+      const color = zone.color || DEFAULT_ZONE_COLOR;
+      const coords = points.map((p) => [p.lng, p.lat]);
+      if (points.length >= 3) {
+        features.push({
+          type: "Feature",
+          properties: { color, zoneId: zone.id },
+          geometry: { type: "Polygon", coordinates: [[...coords, coords[0]]] },
+        });
+      } else if (points.length === 2) {
+        features.push({
+          type: "Feature",
+          properties: { color, zoneId: zone.id },
+          geometry: { type: "LineString", coordinates: coords },
+        });
+      }
+      for (const p of points) {
+        features.push({
+          type: "Feature",
+          properties: { color, zoneId: zone.id },
+          geometry: { type: "Point", coordinates: [p.lng, p.lat] },
+        });
+      }
+    }
+    return features;
+  }
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !zonesSourceReadyRef.current) return;
+    const source = map.getSource(ZONES_SOURCE) as maplibregl.GeoJSONSource | undefined;
+    source?.setData({ type: "FeatureCollection", features: zoneFeatures() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zones]);
+
+  // Retry zones update once source is ready (handles initial load timing).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const handler = () => {
+      const source = map.getSource(ZONES_SOURCE) as maplibregl.GeoJSONSource | undefined;
+      source?.setData({ type: "FeatureCollection", features: zoneFeatures() });
     };
     map.on("load", handler);
     return () => { map.off("load", handler); };

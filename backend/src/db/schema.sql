@@ -394,6 +394,8 @@ CREATE TABLE zones (
   area_sqm            NUMERIC,
   description         TEXT,
   valve_actuator_id   INTEGER REFERENCES actuators(id) ON DELETE SET NULL,
+  color               VARCHAR(7),  -- hex, e.g. '#16a34a' — used to render this zone's plotted boundary on the Map page
+  boundary            JSONB,       -- [{lat, lng}, ...] polygon plotted on the Map page; null until drawn
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
 // POST /zones — create zone
 router.post('/', async (req, res) => {
   try {
-    const { farm_id, name, crop_type, area_sqm, description, valve_actuator_id } = req.body;
+    const { farm_id, name, crop_type, area_sqm, description, valve_actuator_id, color } = req.body;
     if (!farm_id || !name) return res.status(400).json({ success: false, message: 'farm_id and name required' });
 
     // Verify farm belongs to this org
@@ -44,9 +44,9 @@ router.post('/', async (req, res) => {
     if (!farmCheck.rows.length) return res.status(403).json({ success: false, message: 'Farm not found' });
 
     const result = await db.query(
-      `INSERT INTO zones (farm_id, organization_id, name, crop_type, area_sqm, description, valve_actuator_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [farm_id, req.user.organization_id, name.trim(), crop_type || null, area_sqm || null, description || null, valve_actuator_id || null]
+      `INSERT INTO zones (farm_id, organization_id, name, crop_type, area_sqm, description, valve_actuator_id, color)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [farm_id, req.user.organization_id, name.trim(), crop_type || null, area_sqm || null, description || null, valve_actuator_id || null, color || null]
     );
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
@@ -55,10 +55,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /zones/:id — update zone
+// PUT /zones/:id — update zone (including its plotted map boundary/color)
 router.put('/:id', async (req, res) => {
   try {
-    const { name, crop_type, area_sqm, description, valve_actuator_id } = req.body;
+    const { name, crop_type, area_sqm, description, valve_actuator_id, color, boundary } = req.body;
     const result = await db.query(
       `UPDATE zones SET
          name              = COALESCE($1, name),
@@ -66,10 +66,16 @@ router.put('/:id', async (req, res) => {
          area_sqm          = $3,
          description       = $4,
          valve_actuator_id = $5,
+         color             = COALESCE($6, color),
+         boundary          = COALESCE($7::jsonb, boundary),
          updated_at        = NOW()
-       WHERE id = $6 AND organization_id = $7
+       WHERE id = $8 AND organization_id = $9
        RETURNING *`,
-      [name || null, crop_type ?? null, area_sqm ?? null, description ?? null, valve_actuator_id ?? null, req.params.id, req.user.organization_id]
+      [
+        name || null, crop_type ?? null, area_sqm ?? null, description ?? null, valve_actuator_id ?? null,
+        color || null, boundary !== undefined ? JSON.stringify(boundary) : null,
+        req.params.id, req.user.organization_id,
+      ]
     );
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'Zone not found' });
     res.json({ success: true, data: result.rows[0] });

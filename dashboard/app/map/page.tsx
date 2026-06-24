@@ -10,7 +10,7 @@ import FarmsMap from "@/components/FarmsMap";
 import { httpClient } from "@/lib/api";
 import {
   ApiResponse, Farm, Actuator, FarmDiagram, DiagramElement,
-  DiagramElementType, DiagramConnectionType, DiagramTool,
+  DiagramElementType, DiagramConnectionType, DiagramTool, Zone,
 } from "@/lib/types";
 import { ELEMENT_CFG, CONN_CFG } from "@/lib/diagramConfig";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -66,6 +66,20 @@ export default function MapPage() {
       .catch(() => { if (!cancelled) setViewDiagram(null); });
     return () => { cancelled = true; };
   }, [selectedFarmId, editMode]);
+
+  // ── irrigation zones for the selected farm (visible in both view + edit) ───
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [plottingZoneId, setPlottingZoneId] = useState<number | null>(null);
+  const [zoneSaving, setZoneSaving] = useState(false);
+
+  useEffect(() => {
+    if (selectedFarmId == null) { setZones([]); return; }
+    let cancelled = false;
+    httpClient.get<ApiResponse<Zone[]>>(`/zones?farm_id=${selectedFarmId}`)
+      .then((res) => { if (!cancelled) setZones(res.data ?? []); })
+      .catch(() => { if (!cancelled) setZones([]); });
+    return () => { cancelled = true; };
+  }, [selectedFarmId]);
 
   const load = useCallback(() => {
     Promise.all([
@@ -126,6 +140,7 @@ export default function MapPage() {
     setConnectingFromId(null);
     setSelectedElementId(null);
     setSaveError(null);
+    setPlottingZoneId(null);
   };
 
   const saveDiagram = async () => {
@@ -151,6 +166,7 @@ export default function MapPage() {
     setActiveTool(tool);
     setConnectingFromId(null);
     setSelectedElementId(null);
+    setPlottingZoneId(null);
   };
 
   const deleteSelectedElement = () => {
@@ -185,6 +201,42 @@ export default function MapPage() {
     setActiveTool("select");
   };
 
+  // ── irrigation zone plotting ─────────────────────────────────────────────
+  const startZonePlotting = (zone: Zone) => {
+    setZones((prev) => prev.map((z) => z.id === zone.id && !z.boundary ? { ...z, boundary: [] } : z));
+    setPlottingZoneId(zone.id);
+    setActiveTool("zone");
+  };
+
+  const undoLastZonePoint = () => {
+    if (plottingZoneId == null) return;
+    setZones((prev) => prev.map((z) =>
+      z.id === plottingZoneId && z.boundary?.length ? { ...z, boundary: z.boundary.slice(0, -1) } : z
+    ));
+  };
+
+  const clearZoneBoundary = () => {
+    if (plottingZoneId == null) return;
+    setZones((prev) => prev.map((z) => z.id === plottingZoneId ? { ...z, boundary: [] } : z));
+  };
+
+  const completeZonePlotting = async () => {
+    if (plottingZoneId == null) return;
+    const zone = zones.find((z) => z.id === plottingZoneId);
+    if (!zone) return;
+    setZoneSaving(true);
+    try {
+      await httpClient.put<ApiResponse<Zone>>(`/zones/${zone.id}`, { boundary: zone.boundary ?? [] });
+    } catch {
+      // best-effort — the polygon stays visible locally even if the save failed;
+      // re-selecting the farm will refetch and reveal whether it actually persisted
+    } finally {
+      setZoneSaving(false);
+      setPlottingZoneId(null);
+      setActiveTool("select");
+    }
+  };
+
   // ── unified map click handler ─────────────────────────────────────────────
   const handleMapClick = async (lat: number, lng: number) => {
     // Pin mode: save GPS for the selected farm
@@ -202,7 +254,17 @@ export default function MapPage() {
       return;
     }
 
-    if (!editMode || !diagram) return;
+    if (!editMode) return;
+
+    // Plotting a zone's boundary — append a point to that zone, not the diagram.
+    if (activeTool === "zone" && plottingZoneId != null) {
+      setZones((prev) => prev.map((z) =>
+        z.id === plottingZoneId ? { ...z, boundary: [...(z.boundary ?? []), { lat, lng }] } : z
+      ));
+      return;
+    }
+
+    if (!diagram) return;
 
     // Plotting the farm boundary — append a point.
     if (activeTool === "boundary") {
@@ -254,6 +316,7 @@ export default function MapPage() {
   const instruction = (() => {
     if (activeTool === "select") return selectedElementId ? t("map_instr_select_with_selection") : t("map_instr_select_empty");
     if (activeTool === "boundary") return t("map_instr_boundary");
+    if (activeTool === "zone") return t("map_instr_zone");
     if (activeTool === "pipe" || activeTool === "wire") {
       return connectingFromId ? t("map_instr_connect_dest") : t("map_instr_connect_first");
     }
@@ -367,6 +430,69 @@ export default function MapPage() {
                       <Shapes className="w-4 h-4" />
                       {(diagram?.boundary?.length ?? 0) >= 3 ? t("map_boundary_replot") : t("map_boundary_plot")}
                     </button>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 px-1">{t("map_zones")}</p>
+                  {zones.length === 0 ? (
+                    <p className="text-xs text-slate-400 bg-slate-50 rounded-lg px-3 py-2 leading-relaxed">{t("map_zones_none")}</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {zones.map((zone) => {
+                        const isPlotting = plottingZoneId === zone.id;
+                        const hasShape = (zone.boundary?.length ?? 0) >= 3;
+                        return (
+                          <div key={zone.id} className="border border-slate-200 rounded-lg px-2.5 py-2">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="w-2.5 h-2.5 rounded-full shrink-0"
+                                style={{ background: zone.color || "#16a34a" }}
+                              />
+                              <span className="text-xs font-medium text-slate-700 truncate flex-1">{zone.name}</span>
+                              {!isPlotting && (
+                                <button
+                                  onClick={() => startZonePlotting(zone)}
+                                  className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 shrink-0"
+                                >
+                                  {hasShape ? t("map_boundary_replot") : t("map_boundary_plot")}
+                                </button>
+                              )}
+                            </div>
+                            {isPlotting && (
+                              <div className="mt-2 space-y-1.5">
+                                <p className="text-[11px] text-slate-500">
+                                  {t("map_boundary_points_count", { n: zone.boundary?.length ?? 0 })}
+                                </p>
+                                <div className="flex gap-1.5">
+                                  <button
+                                    onClick={undoLastZonePoint}
+                                    disabled={!zone.boundary?.length}
+                                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                                  >
+                                    <Undo2 className="w-3 h-3" /> {t("map_boundary_undo")}
+                                  </button>
+                                  <button
+                                    onClick={clearZoneBoundary}
+                                    disabled={!zone.boundary?.length}
+                                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                                  >
+                                    <Trash2 className="w-3 h-3" /> {t("map_boundary_clear")}
+                                  </button>
+                                </div>
+                                <button
+                                  onClick={completeZonePlotting}
+                                  disabled={(zone.boundary?.length ?? 0) < 3 || zoneSaving}
+                                  className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:hover:bg-emerald-600 transition-colors"
+                                >
+                                  <Check className="w-3.5 h-3.5" /> {zoneSaving ? t("map_saving") : t("map_boundary_complete")}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
 
@@ -569,6 +695,7 @@ export default function MapPage() {
             onMapClick={handleMapClick}
             onElementClick={handleElementClick}
             onElementMove={handleElementMove}
+            zones={zones}
           />
         </div>
       </div>

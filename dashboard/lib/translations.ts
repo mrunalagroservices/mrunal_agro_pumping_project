@@ -242,6 +242,7 @@ export const translations = {
   farmd_edit_zone: { en: "Edit Zone", hi: "ज़ोन एडिट करें", mr: "झोन एडिट करा" },
   farmd_add_zone: { en: "Add Zone", hi: "ज़ोन जोड़ें", mr: "झोन जोडा" },
   farmd_zone_name: { en: "Zone Name *", hi: "ज़ोन का नाम *", mr: "झोनचे नाव *" },
+  farmd_zone_color: { en: "Map Color", hi: "मैप का रंग", mr: "मॅपचा रंग" },
   farmd_crop_type: { en: "Crop Type", hi: "फसल का प्रकार", mr: "पिकाचा प्रकार" },
   farmd_select_crop: { en: "Select crop…", hi: "फसल चुनें…", mr: "पीक निवडा…" },
   farmd_area_sqm: { en: "Area (sqm)", hi: "क्षेत्र (sqm)", mr: "क्षेत्र (sqm)" },
@@ -931,6 +932,9 @@ export const translations = {
   map_boundary_clear: { en: "Clear", hi: "साफ़ करें", mr: "साफ करा" },
   map_boundary_complete: { en: "Complete", hi: "पूर्ण करें", mr: "पूर्ण करा" },
   map_instr_boundary: { en: "Click on the map to add boundary points, then tap Complete (at least 3 points)", hi: "सीमा के पॉइंट जोड़ने के लिए मैप पर क्लिक करें, फिर पूर्ण करें दबाएं (कम से कम 3 पॉइंट)", mr: "सीमेचे पॉइंट्स जोडण्यासाठी मॅपवर क्लिक करा, नंतर पूर्ण करा दाबा (किमान 3 पॉइंट्स)" },
+  map_zones: { en: "Zones", hi: "ज़ोन", mr: "झोन" },
+  map_zones_none: { en: "No zones yet — add one from the Zones & Irrigation Plans tab on the farm's detail page.", hi: "अभी कोई ज़ोन नहीं है — फार्म के डिटेल पेज पर ज़ोन और सिंचाई योजना टैब से एक जोड़ें।", mr: "अजून कोणताही झोन नाही — फार्मच्या डिटेल पेजवरील झोन आणि सिंचन योजना टॅबमधून एक जोडा." },
+  map_instr_zone: { en: "Click on the map to add points for this zone, then tap Complete (at least 3 points)", hi: "इस ज़ोन के लिए पॉइंट जोड़ने के लिए मैप पर क्लिक करें, फिर पूर्ण करें दबाएं (कम से कम 3 पॉइंट)", mr: "या झोनसाठी पॉइंट्स जोडण्यासाठी मॅपवर क्लिक करा, नंतर पूर्ण करा दाबा (किमान 3 पॉइंट्स)" },
   admin_redirecting: { en: "Redirecting to admin panel…", hi: "एडमिन पैनल पर रीडायरेक्ट हो रहा है…", mr: "अॅडमिन पॅनलवर रीडायरेक्ट होत आहे…" },
 } as const satisfies Record<string, { en: string; hi: string; mr: string }>;
 
