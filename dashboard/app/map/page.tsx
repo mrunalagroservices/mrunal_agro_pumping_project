@@ -174,16 +174,32 @@ export default function MapPage() {
     setPlottingZoneId(null);
   };
 
-  const deleteSelectedElement = () => {
-    if (!diagram || !selectedElementId) return;
+  // Deletes an element and — since a wire/pipe is meaningless without both
+  // ends — any connection attached to it too.
+  const deleteElementById = (elementId: string) => {
+    if (!diagram) return;
     setDiagram({
       ...diagram,
-      elements: diagram.elements.filter((e) => e.id !== selectedElementId),
+      elements: diagram.elements.filter((e) => e.id !== elementId),
       connections: diagram.connections.filter(
-        (c) => c.from !== selectedElementId && c.to !== selectedElementId
+        (c) => c.from !== elementId && c.to !== elementId
       ),
     });
-    setSelectedElementId(null);
+    setSelectedElementId((prev) => (prev === elementId ? null : prev));
+  };
+
+  const deleteSelectedElement = () => {
+    if (!selectedElementId) return;
+    deleteElementById(selectedElementId);
+  };
+
+  const deleteConnectionById = (connectionId: string) => {
+    if (!diagram) return;
+    setDiagram({
+      ...diagram,
+      connections: diagram.connections.filter((c) => c.id !== connectionId),
+    });
+    setSelectedConnectionId((prev) => (prev === connectionId ? null : prev));
   };
 
   const renameSelectedElement = (label: string) => {
@@ -202,12 +218,8 @@ export default function MapPage() {
   };
 
   const deleteSelectedConnection = () => {
-    if (!diagram || !selectedConnectionId) return;
-    setDiagram({
-      ...diagram,
-      connections: diagram.connections.filter((c) => c.id !== selectedConnectionId),
-    });
-    setSelectedConnectionId(null);
+    if (!selectedConnectionId) return;
+    deleteConnectionById(selectedConnectionId);
   };
 
   // ── farm boundary plotting ──────────────────────────────────────────────────
@@ -799,7 +811,9 @@ export default function MapPage() {
             onMapClick={handleMapClick}
             onElementClick={handleElementClick}
             onElementMove={handleElementMove}
+            onElementDelete={deleteElementById}
             onConnectionClick={handleConnectionClick}
+            onConnectionDelete={deleteConnectionById}
             zones={zones}
           />
         </div>

@@ -91,7 +91,9 @@ interface FarmsMapProps {
   onMapClick?: (lat: number, lng: number) => void;
   onElementClick?: (elementId: string) => void;
   onElementMove?: (elementId: string, lat: number, lng: number) => void;
+  onElementDelete?: (elementId: string) => void;
   onConnectionClick?: (connectionId: string) => void;
+  onConnectionDelete?: (connectionId: string) => void;
   // irrigation zones — each one's own plotted polygon, colored per zone
   zones?: Zone[];
 }
@@ -111,13 +113,16 @@ export default function FarmsMap({
   onMapClick,
   onElementClick,
   onElementMove,
+  onElementDelete,
   onConnectionClick,
+  onConnectionDelete,
   zones,
 }: FarmsMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<Map<number, maplibregl.Marker>>(new Map());
   const diagramMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
+  const connDeleteMarkerRef = useRef<maplibregl.Marker | null>(null);
   const connSourceReadyRef = useRef(false);
   const boundarySourceReadyRef = useRef(false);
   const zonesSourceReadyRef = useRef(false);
@@ -131,8 +136,12 @@ export default function FarmsMap({
   onElementClickRef.current = onElementClick;
   const onElementMoveRef = useRef(onElementMove);
   onElementMoveRef.current = onElementMove;
+  const onElementDeleteRef = useRef(onElementDelete);
+  onElementDeleteRef.current = onElementDelete;
   const onConnectionClickRef = useRef(onConnectionClick);
   onConnectionClickRef.current = onConnectionClick;
+  const onConnectionDeleteRef = useRef(onConnectionDelete);
+  onConnectionDeleteRef.current = onConnectionDelete;
   const activeToolRef = useRef(activeTool);
   activeToolRef.current = activeTool;
   const editModeRef = useRef(editMode);
@@ -289,6 +298,8 @@ export default function FarmsMap({
       diagramMarkersRef.current.clear();
       markersRef.current.forEach((m) => m.remove());
       markersRef.current.clear();
+      connDeleteMarkerRef.current?.remove();
+      connDeleteMarkerRef.current = null;
       connSourceReadyRef.current = false;
       map.remove();
       mapRef.current = null;
@@ -440,10 +451,21 @@ export default function FarmsMap({
           <div class="${classes}">
             <div class="diagram-el-dot">
               <img class="diagram-el-icon" src="${cfg.icon}" alt="${escapeHtml(cfg.label)}" />
+              ${isSelected ? '<button type="button" class="diagram-el-delete" aria-label="Delete" title="Delete">×</button>' : ""}
             </div>
             <div class="diagram-el-label">${escapeHtml(element.label || cfg.label)}</div>
           </div>
         `;
+
+        if (isSelected) {
+          // innerHTML just wiped/recreated this button, so it needs its
+          // listener re-attached every render. stopPropagation keeps the
+          // click from also bubbling to el's own "select" listener above.
+          el.querySelector(".diagram-el-delete")?.addEventListener("click", (evt) => {
+            evt.stopPropagation();
+            onElementDeleteRef.current?.(element.id);
+          });
+        }
       }
     };
 
@@ -481,6 +503,41 @@ export default function FarmsMap({
 
     const source = map.getSource(CONN_SOURCE) as maplibregl.GeoJSONSource | undefined;
     source?.setData({ type: "FeatureCollection", features });
+  }, [diagram, selectedConnectionId]);
+
+  // A small delete badge at the midpoint of whichever wire/pipe is selected —
+  // lines have no marker of their own to attach a button to, unlike elements.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    connDeleteMarkerRef.current?.remove();
+    connDeleteMarkerRef.current = null;
+
+    if (!selectedConnectionId) return;
+    const conn = diagram?.connections.find((c) => c.id === selectedConnectionId);
+    if (!conn) return;
+    const elementMap = new Map<string, DiagramElement>(
+      (diagram?.elements ?? []).map((e) => [e.id, e])
+    );
+    const from = elementMap.get(conn.from);
+    const to = elementMap.get(conn.to);
+    if (!from || !to) return;
+
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "diagram-conn-delete";
+    el.setAttribute("aria-label", "Delete");
+    el.title = "Delete";
+    el.textContent = "×";
+    el.addEventListener("click", (evt) => {
+      evt.stopPropagation();
+      onConnectionDeleteRef.current?.(selectedConnectionId);
+    });
+
+    connDeleteMarkerRef.current = new maplibregl.Marker({ element: el, anchor: "center" })
+      .setLngLat([(from.lng + to.lng) / 2, (from.lat + to.lat) / 2])
+      .addTo(map);
   }, [diagram, selectedConnectionId]);
 
   // ── Farm boundary ──────────────────────────────────────────────────────────
