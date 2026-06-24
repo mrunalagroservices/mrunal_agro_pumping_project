@@ -78,21 +78,21 @@ body {
   position: relative;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  background: white;
-  border: 3px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255,255,255,0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s;
 }
 
 .diagram-el-icon {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
   pointer-events: none;
+  /* No background badge — just the icon, with a shadow for legibility
+     against the satellite imagery instead of a solid white circle. */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  transition: filter 0.15s;
 }
 
 .diagram-el-delete,
@@ -125,22 +125,20 @@ body {
 
 .diagram-el-dot:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.25);
 }
 
-.diagram-el.selected .diagram-el-dot {
-  border-color: #fbbf24;
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.5), 0 2px 8px rgba(0, 0, 0, 0.28);
+.diagram-el.selected .diagram-el-icon {
+  filter: drop-shadow(0 0 5px #fbbf24) drop-shadow(0 0 5px #fbbf24) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
 
-.diagram-el.connecting-from .diagram-el-dot {
-  border-color: #f97316;
+.diagram-el.connecting-from .diagram-el-icon {
+  filter: drop-shadow(0 0 5px #f97316) drop-shadow(0 0 5px #f97316) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
   animation: diagram-ping 1s ease-in-out infinite;
 }
 
 @keyframes diagram-ping {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.16); box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.25); }
+  50% { transform: scale(1.16); }
 }
 
 .diagram-el-label {

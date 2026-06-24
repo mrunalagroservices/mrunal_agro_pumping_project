@@ -489,18 +489,10 @@ class _DiagramElementMarker extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2.5),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 4),
-            ],
-          ),
-          padding: const EdgeInsets.all(4),
+        // No background badge — just the icon, matching the dashboard.
+        SizedBox(
+          width: 40,
+          height: 40,
           child: image != null
               ? Image.asset(image, fit: BoxFit.contain)
               : const Icon(Icons.circle, color: AppColors.subtext, size: 16),
