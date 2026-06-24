@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// Bundled font family (see assets/fonts + pubspec.yaml). Applied app-wide.
 const String kFontFamily = 'Inter';
 
-/// Single shared palette for the whole app — an Airbnb-style look (warm
-/// near-black text, light neutral grays, one pink-red brand accent) used
-/// consistently across every screen, instead of each screen defining its
-/// own private color set.
+/// Single shared palette for the whole app — warm near-black text, light
+/// neutral grays, and one vivid farm-green brand accent — used consistently
+/// across every screen, instead of each screen defining its own private
+/// color set.
 class AppColors {
   // ── Neutrals ─────────────────────────────────────────────────────────
   static const text = Color(0xFF222222);
@@ -20,9 +20,9 @@ class AppColors {
   static const surfaceMuted = Color(0xFFF7F7F7); // banners, cards
   static const chip = Color(0xFFF2F2F2); // circle buttons, pills, tiles
 
-  // ── Brand accent ("Rausch") ──────────────────────────────────────────
-  static const accent = Color(0xFFFF385C);
-  static const accentBg = Color(0xFFFFE4E9);
+  // ── Brand accent ──────────────────────────────────────────────────────
+  static const accent = Color(0xFF22A559);
+  static const accentBg = Color(0xFFDCFCE7);
 
   // ── Semantic ─────────────────────────────────────────────────────────
   static const success = Color(0xFF15803D);
@@ -35,8 +35,8 @@ class AppColors {
   static const infoBg = Color(0xFFEFF6FF);
 
   // ── One-off decorative tones (kept named for the screens that use them) ─
-  static const avatarBg = Color(0xFFFDE8EC);
-  static const avatarFg = Color(0xFFB0285A);
+  static const avatarBg = Color(0xFFDCFCE7);
+  static const avatarFg = Color(0xFF166534);
   static const newBadge = Color(0xFF2E4A5C);
 }
 
