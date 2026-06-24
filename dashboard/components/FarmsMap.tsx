@@ -16,10 +16,23 @@ import { ELEMENT_CFG } from "@/lib/diagramConfig";
 // Satellite imagery + a transparent place-name/boundary overlay on top (a
 // "hybrid" view, like Google Maps' satellite mode) — Esri's World Imagery and
 // reference services are free and don't need an API key, unlike Mapbox/Google
-// satellite tiles.
+// satellite tiles. Esri's imagery mosaic doesn't have full coverage at very
+// low (zoomed-out) levels — it serves a literal "Map data not yet available"
+// placeholder tile there — so a plain street-map layer (also Esri, also free)
+// covers that zoomed-out range instead, handing off to satellite once zoomed
+// in enough that real imagery is reliably present.
+const SATELLITE_MIN_ZOOM = 5;
 const MAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
+    "zoomed-out-fallback": {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+      attribution: "Esri",
+    },
     satellite: {
       type: "raster",
       tiles: [
@@ -37,8 +50,9 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
     },
   },
   layers: [
-    { id: "satellite", type: "raster", source: "satellite" },
-    { id: "satellite-labels", type: "raster", source: "satellite-labels" },
+    { id: "zoomed-out-fallback", type: "raster", source: "zoomed-out-fallback", maxzoom: SATELLITE_MIN_ZOOM },
+    { id: "satellite", type: "raster", source: "satellite", minzoom: SATELLITE_MIN_ZOOM },
+    { id: "satellite-labels", type: "raster", source: "satellite-labels", minzoom: SATELLITE_MIN_ZOOM },
   ],
 };
 const DEFAULT_CENTER: [number, number] = [73.8567, 18.5204];
