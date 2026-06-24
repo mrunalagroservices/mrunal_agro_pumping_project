@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +13,215 @@ import 'cart_screen.dart';
 import 'product_detail_screen.dart';
 import 'wishlist_screen.dart';
 import '../config/theme.dart';
+
+// ── Promo banners (text/icon based — no image assets needed) ────────────────
+class _Banner {
+  final List<Color> gradient;
+  final IconData icon;
+  final String titleKey;
+  final String subtitleKey;
+  const _Banner(this.gradient, this.icon, this.titleKey, this.subtitleKey);
+}
+
+const _heroBanners = [
+  _Banner([Color(0xFF16A34A), Color(0xFF15803D)], Icons.eco, 'shop_banner_seeds_title', 'shop_banner_seeds_sub'),
+  _Banner([Color(0xFFEA580C), Color(0xFFC2410C)], Icons.bug_report, 'shop_banner_pesticide_title', 'shop_banner_pesticide_sub'),
+  _Banner([Color(0xFF0891B2), Color(0xFF0E7490)], Icons.water_drop, 'shop_banner_irrigation_title', 'shop_banner_irrigation_sub'),
+  _Banner([Color(0xFF7C3AED), Color(0xFF6D28D9)], Icons.local_shipping, 'shop_banner_delivery_title', 'shop_banner_delivery_sub'),
+];
+
+const _midBanners = [
+  _Banner([Color(0xFFD97706), Color(0xFFB45309)], Icons.local_offer, 'shop_banner_offer_title', 'shop_banner_offer_sub'),
+  _Banner([Color(0xFF0EA5E9), Color(0xFF0284C7)], Icons.agriculture, 'shop_banner_tools_title', 'shop_banner_tools_sub'),
+];
+
+/// Auto-rotating full-width hero carousel at the top of the Market home —
+/// the Myntra/Flipkart/Amazon-style banner strip. Swipeable too.
+class _HeroBannerCarousel extends StatefulWidget {
+  const _HeroBannerCarousel();
+
+  @override
+  State<_HeroBannerCarousel> createState() => _HeroBannerCarouselState();
+}
+
+class _HeroBannerCarouselState extends State<_HeroBannerCarousel> {
+  final _controller = PageController();
+  Timer? _timer;
+  int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      _page = (_page + 1) % _heroBanners.length;
+      _controller.animateToPage(
+        _page,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOutCubic,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 130,
+          child: PageView.builder(
+            controller: _controller,
+            onPageChanged: (i) => setState(() => _page = i),
+            itemCount: _heroBanners.length,
+            itemBuilder: (context, i) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: _BannerCard(banner: _heroBanners[i]),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(_heroBanners.length, (i) {
+            final active = i == _page;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: active ? 18 : 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: active ? AppColors.accent : AppColors.chip,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+class _BannerCard extends StatelessWidget {
+  final _Banner banner;
+  const _BannerCard({required this.banner});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: banner.gradient,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -10,
+            bottom: -10,
+            child: Icon(banner.icon, size: 90, color: Colors.white.withValues(alpha: 0.18)),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                context.tr(banner.titleKey),
+                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                context.tr(banner.subtitleKey),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12, fontWeight: FontWeight.w400),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Single full-width promo banner used between sections / inside the grid —
+/// same visual language as the hero carousel, just static.
+class _PromoBannerStrip extends StatelessWidget {
+  final _Banner banner;
+  const _PromoBannerStrip({required this.banner});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      child: SizedBox(height: 84, child: _BannerCard(banner: banner)),
+    );
+  }
+}
+
+/// Horizontally-scrollable product row with a section title + "See all" —
+/// the "Best Sellers" / "New Arrivals" rows on a Myntra/Flipkart home tab.
+class _ProductSection extends StatelessWidget {
+  final String titleKey;
+  final List<Product> products;
+  final AppState state;
+  final void Function(Product) onOpen;
+  final void Function(Product) onToggleWishlist;
+
+  const _ProductSection({
+    required this.titleKey,
+    required this.products,
+    required this.state,
+    required this.onOpen,
+    required this.onToggleWishlist,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (products.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+          child: Text(
+            context.tr(titleKey),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text),
+          ),
+        ),
+        SizedBox(
+          height: 230,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: products.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, i) {
+              final p = products[i];
+              return SizedBox(
+                width: 150,
+                child: _ProductCard(
+                  product: p,
+                  wishlisted: state.isWishlisted(p.id),
+                  onTap: () => onOpen(p),
+                  onToggleWishlist: () => onToggleWishlist(p),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 /// Maps a category name from the backend to its translation key, falling
 /// back to the raw name for categories without a known translation.
@@ -127,6 +338,190 @@ class _ShopScreenState extends State<ShopScreen> {
           p.category.toLowerCase().contains(_searchQuery.toLowerCase());
       return matchCat && matchSearch;
     }).toList();
+  }
+
+  // Home layout (banners + sections) only when browsing with no active
+  // search/category filter — the moment the user searches or picks a
+  // category, a flat results grid (the previous default for everything) is
+  // the right UX, same as Myntra/Flipkart/Amazon switch to a results list.
+  bool get _showHome => _searchQuery.isEmpty && _selectedCategory == 'All';
+
+  List<Widget> _buildHomeSlivers(BuildContext context, AppState state, List<Product> all) {
+    final bestSellers = all.where((p) => p.isBestSeller).toList();
+    final bestSellersList = bestSellers.isNotEmpty
+        ? bestSellers
+        : (List<Product>.from(all)..sort((a, b) => b.rating.compareTo(a.rating)))
+            .take(8)
+            .toList();
+    final newArrivals = (List<Product>.from(all)..sort((a, b) => b.id.compareTo(a.id)))
+        .take(10)
+        .toList();
+
+    return [
+      const SliverToBoxAdapter(child: SizedBox(height: 16)),
+      const SliverToBoxAdapter(child: _HeroBannerCarousel()),
+      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+      SliverToBoxAdapter(
+        child: _ProductSection(
+          titleKey: 'shop_section_best_sellers',
+          products: bestSellersList,
+          state: state,
+          onOpen: _openProduct,
+          onToggleWishlist: (p) => state.toggleWishlist(p.id),
+        ),
+      ),
+      const SliverToBoxAdapter(child: SizedBox(height: 22)),
+      SliverToBoxAdapter(child: _PromoBannerStrip(banner: _midBanners[0])),
+      const SliverToBoxAdapter(child: SizedBox(height: 26)),
+      SliverToBoxAdapter(
+        child: _ProductSection(
+          titleKey: 'shop_section_new_arrivals',
+          products: newArrivals,
+          state: state,
+          onOpen: _openProduct,
+          onToggleWishlist: (p) => state.toggleWishlist(p.id),
+        ),
+      ),
+      const SliverToBoxAdapter(child: SizedBox(height: 22)),
+      SliverToBoxAdapter(child: _PromoBannerStrip(banner: _midBanners[1])),
+      const SliverToBoxAdapter(child: SizedBox(height: 26)),
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+          child: Text(
+            context.tr('shop_section_all_products'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text),
+          ),
+        ),
+      ),
+      ..._buildChunkedGridWithBanners(state, all),
+      const SliverToBoxAdapter(child: SizedBox(height: 100)),
+    ];
+  }
+
+  // Splits the full catalog into chunks of 8 products, each its own grid,
+  // with a small banner slotted in between chunks — banners "in the middle
+  // of the products" rather than only at the top/between sections.
+  List<Widget> _buildChunkedGridWithBanners(AppState state, List<Product> all) {
+    const chunkSize = 8;
+    final widgets = <Widget>[];
+    for (var start = 0; start < all.length; start += chunkSize) {
+      final chunk = all.sublist(start, (start + chunkSize).clamp(0, all.length));
+      widgets.add(
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 18,
+              childAspectRatio: 0.74,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (ctx, i) => _ProductCard(
+                product: chunk[i],
+                wishlisted: state.isWishlisted(chunk[i].id),
+                onTap: () => _openProduct(chunk[i]),
+                onToggleWishlist: () => state.toggleWishlist(chunk[i].id),
+              ),
+              childCount: chunk.length,
+            ),
+          ),
+        ),
+      );
+      final isLastChunk = start + chunkSize >= all.length;
+      if (!isLastChunk) {
+        widgets.add(const SliverToBoxAdapter(child: SizedBox(height: 18)));
+        widgets.add(
+          SliverToBoxAdapter(
+            child: _PromoBannerStrip(
+              banner: _heroBanners[(start ~/ chunkSize) % _heroBanners.length],
+            ),
+          ),
+        );
+        widgets.add(const SliverToBoxAdapter(child: SizedBox(height: 18)));
+      }
+    }
+    return widgets;
+  }
+
+  List<Widget> _buildSearchSlivers(BuildContext context, AppState state, List<Product> filtered) {
+    return [
+      // ── Delivery info banner ─────────────────────────────
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.chip,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.local_shipping_outlined, color: AppColors.text, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    context.tr('shop_free_delivery').replaceAll('{date}', _deliveryDate),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: AppColors.text),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+
+      // ── Results count ───────────────────────────────────
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+          child: Text(
+            context.tr('shop_n_products').replaceAll('{n}', '${filtered.length}'),
+            style: const TextStyle(fontSize: 11, color: AppColors.subtext, fontWeight: FontWeight.w400),
+          ),
+        ),
+      ),
+
+      // ── Product grid ────────────────────────────────────
+      filtered.isEmpty
+          ? SliverFillRemaining(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.search_off_outlined, size: 44, color: AppColors.subtext),
+                    const SizedBox(height: 12),
+                    Text(
+                      context.tr('shop_no_products'),
+                      style: const TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w400),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 18,
+                  childAspectRatio: 0.74,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (ctx, i) => _ProductCard(
+                    product: filtered[i],
+                    wishlisted: state.isWishlisted(filtered[i].id),
+                    onTap: () => _openProduct(filtered[i]),
+                    onToggleWishlist: () => state.toggleWishlist(filtered[i].id),
+                  ),
+                  childCount: filtered.length,
+                ),
+              ),
+            ),
+    ];
   }
 
   String get _deliveryDate {
@@ -384,111 +779,9 @@ class _ShopScreenState extends State<ShopScreen> {
                       ),
                     ),
 
-                    // ── Delivery info banner ─────────────────────────────
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.chip,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.local_shipping_outlined,
-                                color: AppColors.text,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  context
-                                      .tr('shop_free_delivery')
-                                      .replaceAll('{date}', _deliveryDate),
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w400,
-                                    color: AppColors.text,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // ── Results count ───────────────────────────────────
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                        child: Text(
-                          context
-                              .tr('shop_n_products')
-                              .replaceAll('{n}', '${filtered.length}'),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.subtext,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // ── Product grid ────────────────────────────────────
-                    filtered.isEmpty
-                        ? SliverFillRemaining(
-                            child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.search_off_outlined,
-                                    size: 44,
-                                    color: AppColors.subtext,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    context.tr('shop_no_products'),
-                                    style: const TextStyle(
-                                      color: AppColors.text,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                            sliver: SliverGrid(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 14,
-                                    mainAxisSpacing: 18,
-                                    childAspectRatio: 0.74,
-                                  ),
-                              delegate: SliverChildBuilderDelegate(
-                                (ctx, i) => _ProductCard(
-                                  product: filtered[i],
-                                  wishlisted: state.isWishlisted(
-                                    filtered[i].id,
-                                  ),
-                                  onTap: () => _openProduct(filtered[i]),
-                                  onToggleWishlist: () =>
-                                      state.toggleWishlist(filtered[i].id),
-                                ),
-                                childCount: filtered.length,
-                              ),
-                            ),
-                          ),
+                    ...(_showHome
+                        ? _buildHomeSlivers(context, state, all)
+                        : _buildSearchSlivers(context, state, filtered)),
                   ],
                 ),
               ),
