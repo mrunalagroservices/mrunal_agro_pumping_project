@@ -51,6 +51,8 @@ export default function MapPage() {
   const [diagram, setDiagram] = useState<FarmDiagram | null>(null);
   const [connectingFromId, setConnectingFromId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+  const [labelDraft, setLabelDraft] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -139,6 +141,7 @@ export default function MapPage() {
     setActiveTool("select");
     setConnectingFromId(null);
     setSelectedElementId(null);
+    setSelectedConnectionId(null);
     setSaveError(null);
     setPlottingZoneId(null);
   };
@@ -155,6 +158,7 @@ export default function MapPage() {
       setActiveTool("select");
       setConnectingFromId(null);
       setSelectedElementId(null);
+      setSelectedConnectionId(null);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : t("map_failed_to_save"));
     } finally {
@@ -166,18 +170,44 @@ export default function MapPage() {
     setActiveTool(tool);
     setConnectingFromId(null);
     setSelectedElementId(null);
+    setSelectedConnectionId(null);
     setPlottingZoneId(null);
   };
 
   const deleteSelectedElement = () => {
     if (!diagram || !selectedElementId) return;
     setDiagram({
+      ...diagram,
       elements: diagram.elements.filter((e) => e.id !== selectedElementId),
       connections: diagram.connections.filter(
         (c) => c.from !== selectedElementId && c.to !== selectedElementId
       ),
     });
     setSelectedElementId(null);
+  };
+
+  const renameSelectedElement = (label: string) => {
+    if (!diagram || !selectedElementId) return;
+    setDiagram({
+      ...diagram,
+      elements: diagram.elements.map((e) =>
+        e.id === selectedElementId ? { ...e, label: label.trim() || undefined } : e
+      ),
+    });
+  };
+
+  const handleConnectionClick = (connectionId: string) => {
+    setSelectedConnectionId((prev) => (prev === connectionId ? null : connectionId));
+    setSelectedElementId(null);
+  };
+
+  const deleteSelectedConnection = () => {
+    if (!diagram || !selectedConnectionId) return;
+    setDiagram({
+      ...diagram,
+      connections: diagram.connections.filter((c) => c.id !== selectedConnectionId),
+    });
+    setSelectedConnectionId(null);
   };
 
   // ── farm boundary plotting ──────────────────────────────────────────────────
@@ -199,6 +229,14 @@ export default function MapPage() {
 
   const completeBoundary = () => {
     setActiveTool("select");
+  };
+
+  // Removes the farm's plotted boundary entirely (outside of active plotting
+  // mode) — persisted on the next Save, same as any other diagram edit.
+  const deleteFarmBoundaryShape = () => {
+    if (!diagram) return;
+    if (!confirm(t("map_boundary_delete_confirm"))) return;
+    setDiagram({ ...diagram, boundary: [] });
   };
 
   // ── irrigation zone plotting ─────────────────────────────────────────────
@@ -234,6 +272,18 @@ export default function MapPage() {
       setZoneSaving(false);
       setPlottingZoneId(null);
       setActiveTool("select");
+    }
+  };
+
+  // Removes a zone's plotted shape — saved immediately, same as Complete,
+  // since zone boundaries aren't batched with the diagram Save button.
+  const deleteZoneBoundaryShape = async (zone: Zone) => {
+    if (!confirm(t("map_boundary_delete_confirm"))) return;
+    setZones((prev) => prev.map((z) => z.id === zone.id ? { ...z, boundary: [] } : z));
+    try {
+      await httpClient.put<ApiResponse<Zone>>(`/zones/${zone.id}`, { boundary: [] });
+    } catch {
+      // best-effort, same as completeZonePlotting
     }
   };
 
@@ -301,7 +351,12 @@ export default function MapPage() {
         setActiveTool("select");
       }
     } else {
-      setSelectedElementId((prev) => (prev === elementId ? null : elementId));
+      setSelectedConnectionId(null);
+      setSelectedElementId((prev) => {
+        const next = prev === elementId ? null : elementId;
+        setLabelDraft(next ? diagram.elements.find((e) => e.id === next)?.label ?? "" : "");
+        return next;
+      });
     }
   };
 
@@ -314,7 +369,11 @@ export default function MapPage() {
   };
 
   const instruction = (() => {
-    if (activeTool === "select") return selectedElementId ? t("map_instr_select_with_selection") : t("map_instr_select_empty");
+    if (activeTool === "select") {
+      if (selectedElementId) return t("map_instr_select_with_selection");
+      if (selectedConnectionId) return t("map_instr_connection_selected");
+      return t("map_instr_select_empty");
+    }
     if (activeTool === "boundary") return t("map_instr_boundary");
     if (activeTool === "zone") return t("map_instr_zone");
     if (activeTool === "pipe" || activeTool === "wire") {
@@ -423,13 +482,24 @@ export default function MapPage() {
                       </button>
                     </div>
                   ) : (
-                    <button
-                      onClick={startBoundaryPlotting}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-                    >
-                      <Shapes className="w-4 h-4" />
-                      {(diagram?.boundary?.length ?? 0) >= 3 ? t("map_boundary_replot") : t("map_boundary_plot")}
-                    </button>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={startBoundaryPlotting}
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                      >
+                        <Shapes className="w-4 h-4" />
+                        {(diagram?.boundary?.length ?? 0) >= 3 ? t("map_boundary_replot") : t("map_boundary_plot")}
+                      </button>
+                      {(diagram?.boundary?.length ?? 0) >= 3 && (
+                        <button
+                          onClick={deleteFarmBoundaryShape}
+                          title={t("map_boundary_delete")}
+                          className="px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
 
@@ -451,12 +521,23 @@ export default function MapPage() {
                               />
                               <span className="text-xs font-medium text-slate-700 truncate flex-1">{zone.name}</span>
                               {!isPlotting && (
-                                <button
-                                  onClick={() => startZonePlotting(zone)}
-                                  className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 shrink-0"
-                                >
-                                  {hasShape ? t("map_boundary_replot") : t("map_boundary_plot")}
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => startZonePlotting(zone)}
+                                    className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 shrink-0"
+                                  >
+                                    {hasShape ? t("map_boundary_replot") : t("map_boundary_plot")}
+                                  </button>
+                                  {hasShape && (
+                                    <button
+                                      onClick={() => deleteZoneBoundaryShape(zone)}
+                                      title={t("map_boundary_delete")}
+                                      className="text-red-500 hover:text-red-700 shrink-0"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </>
                               )}
                             </div>
                             {isPlotting && (
@@ -550,12 +631,35 @@ export default function MapPage() {
                 </div>
 
                 {selectedElementId && (
-                  <button
-                    onClick={deleteSelectedElement}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" /> {t("map_delete_selected")}
-                  </button>
+                  <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-1">{t("map_edit_selected_element")}</p>
+                    <input
+                      value={labelDraft}
+                      onChange={(e) => setLabelDraft(e.target.value)}
+                      onBlur={() => renameSelectedElement(labelDraft)}
+                      onKeyDown={(e) => { if (e.key === "Enter") renameSelectedElement(labelDraft); }}
+                      placeholder={t("map_element_label_placeholder")}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <button
+                      onClick={deleteSelectedElement}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" /> {t("map_delete_selected")}
+                    </button>
+                  </div>
+                )}
+
+                {selectedConnectionId && (
+                  <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-1">{t("map_edit_selected_connection")}</p>
+                    <button
+                      onClick={deleteSelectedConnection}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" /> {t("map_delete_connection")}
+                    </button>
+                  </div>
                 )}
 
                 <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 leading-relaxed">
@@ -692,9 +796,11 @@ export default function MapPage() {
             activeTool={activeTool}
             connectingFromId={connectingFromId}
             selectedElementId={selectedElementId}
+            selectedConnectionId={selectedConnectionId}
             onMapClick={handleMapClick}
             onElementClick={handleElementClick}
             onElementMove={handleElementMove}
+            onConnectionClick={handleConnectionClick}
             zones={zones}
           />
         </div>

@@ -87,9 +87,11 @@ interface FarmsMapProps {
   activeTool?: DiagramTool;
   connectingFromId?: string | null;
   selectedElementId?: string | null;
+  selectedConnectionId?: string | null;
   onMapClick?: (lat: number, lng: number) => void;
   onElementClick?: (elementId: string) => void;
   onElementMove?: (elementId: string, lat: number, lng: number) => void;
+  onConnectionClick?: (connectionId: string) => void;
   // irrigation zones — each one's own plotted polygon, colored per zone
   zones?: Zone[];
 }
@@ -105,9 +107,11 @@ export default function FarmsMap({
   activeTool,
   connectingFromId,
   selectedElementId,
+  selectedConnectionId,
   onMapClick,
   onElementClick,
   onElementMove,
+  onConnectionClick,
   zones,
 }: FarmsMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -127,6 +131,8 @@ export default function FarmsMap({
   onElementClickRef.current = onElementClick;
   const onElementMoveRef = useRef(onElementMove);
   onElementMoveRef.current = onElementMove;
+  const onConnectionClickRef = useRef(onConnectionClick);
+  onConnectionClickRef.current = onConnectionClick;
   const activeToolRef = useRef(activeTool);
   activeToolRef.current = activeTool;
   const editModeRef = useRef(editMode);
@@ -166,8 +172,8 @@ export default function FarmsMap({
         source: CONN_SOURCE,
         filter: ["==", ["get", "connType"], "pipe"],
         paint: {
-          "line-color": "#0ea5e9",
-          "line-width": 3,
+          "line-color": ["case", ["get", "selected"], "#dc2626", "#0ea5e9"],
+          "line-width": ["case", ["get", "selected"], 5, 3],
           "line-dasharray": [5, 3],
         },
       });
@@ -177,8 +183,8 @@ export default function FarmsMap({
         source: CONN_SOURCE,
         filter: ["==", ["get", "connType"], "wire"],
         paint: {
-          "line-color": "#f59e0b",
-          "line-width": 2,
+          "line-color": ["case", ["get", "selected"], "#dc2626", "#f59e0b"],
+          "line-width": ["case", ["get", "selected"], 4, 2],
         },
       });
 
@@ -248,6 +254,18 @@ export default function FarmsMap({
       }
       if (!editModeRef.current) return;
       const tool = activeToolRef.current;
+
+      // Selecting a wire/pipe to edit/delete — only while in "select" mode,
+      // same as clicking an element marker.
+      if (tool === "select") {
+        const hits = map.queryRenderedFeatures(e.point, { layers: ["diagram-pipes", "diagram-wires"] });
+        const connId = hits[0]?.properties?.id;
+        if (connId) {
+          onConnectionClickRef.current?.(connId);
+          return;
+        }
+      }
+
       if (tool === "boundary" || tool === "zone" || (tool && ELEMENT_TOOLS.includes(tool as DiagramElementType))) {
         onMapClickRef.current?.(e.lngLat.lat, e.lngLat.lng);
       }
@@ -438,7 +456,7 @@ export default function FarmsMap({
         if (!from || !to) return null;
         return {
           type: "Feature" as const,
-          properties: { connType: conn.type, id: conn.id },
+          properties: { connType: conn.type, id: conn.id, selected: conn.id === selectedConnectionId },
           geometry: {
             type: "LineString" as const,
             coordinates: [
@@ -452,7 +470,7 @@ export default function FarmsMap({
 
     const source = map.getSource(CONN_SOURCE) as maplibregl.GeoJSONSource | undefined;
     source?.setData({ type: "FeatureCollection", features });
-  }, [diagram]);
+  }, [diagram, selectedConnectionId]);
 
   // ── Farm boundary ──────────────────────────────────────────────────────────
   function boundaryFeatures(): GeoJSON.Feature[] {
