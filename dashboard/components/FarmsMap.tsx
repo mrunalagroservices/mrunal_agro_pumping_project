@@ -71,7 +71,7 @@ const ZONES_SOURCE = "diagram-zones";
 const DEFAULT_ZONE_COLOR = "#16a34a";
 
 const ELEMENT_TOOLS: DiagramElementType[] = [
-  "well", "motor", "valve", "electricity_pole", "pipe_junction",
+  "well", "motor", "valve", "electricity_pole", "pipe_junction", "pipe_end",
 ];
 
 interface FarmsMapProps {

@@ -99,6 +99,7 @@ flutter:
     - assets/diagram_icons/valve.png
     - assets/diagram_icons/electricity_pole.png
     - assets/diagram_icons/pipe_junction.png
+    - assets/diagram_icons/pipe_end.png
     - assets/diagram_icons/fence.png
 
   fonts:

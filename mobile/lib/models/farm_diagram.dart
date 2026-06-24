@@ -1,4 +1,4 @@
-enum DiagramElementType { well, motor, valve, electricityPole, pipeJunction }
+enum DiagramElementType { well, motor, valve, electricityPole, pipeJunction, pipeEnd }
 
 enum DiagramConnectionType { pipe, wire }
 
@@ -12,6 +12,8 @@ DiagramElementType _elementTypeFromJson(String value) {
       return DiagramElementType.valve;
     case 'electricity_pole':
       return DiagramElementType.electricityPole;
+    case 'pipe_end':
+      return DiagramElementType.pipeEnd;
     case 'pipe_junction':
     default:
       return DiagramElementType.pipeJunction;

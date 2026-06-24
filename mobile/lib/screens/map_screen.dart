@@ -20,6 +20,7 @@ const Map<DiagramElementType, String> _diagramElementImages = {
   DiagramElementType.valve: 'assets/diagram_icons/valve.png',
   DiagramElementType.electricityPole: 'assets/diagram_icons/electricity_pole.png',
   DiagramElementType.pipeJunction: 'assets/diagram_icons/pipe_junction.png',
+  DiagramElementType.pipeEnd: 'assets/diagram_icons/pipe_end.png',
 };
 
 const Map<DiagramElementType, String> _diagramElementLabelKeys = {
@@ -28,6 +29,7 @@ const Map<DiagramElementType, String> _diagramElementLabelKeys = {
   DiagramElementType.valve: 'map_el_valve',
   DiagramElementType.electricityPole: 'map_el_electricity_pole',
   DiagramElementType.pipeJunction: 'map_el_pipe_junction',
+  DiagramElementType.pipeEnd: 'map_el_pipe_end',
 };
 
 const Color _pipeColor = Color(0xFF0EA5E9);

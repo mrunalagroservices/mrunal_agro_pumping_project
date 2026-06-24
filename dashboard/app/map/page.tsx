@@ -17,7 +17,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { TranslationKey } from "@/lib/translations";
 
 const ELEMENT_TOOL_TYPES: DiagramElementType[] = [
-  "well", "motor", "valve", "electricity_pole", "pipe_junction",
+  "well", "motor", "valve", "electricity_pole", "pipe_junction", "pipe_end",
 ];
 const CONN_TOOL_TYPES: DiagramConnectionType[] = ["pipe", "wire"];
 
@@ -27,6 +27,7 @@ const ELEMENT_LABEL_KEYS: Record<DiagramElementType, TranslationKey> = {
   valve: "map_el_valve",
   electricity_pole: "map_el_electricity_pole",
   pipe_junction: "map_el_pipe_junction",
+  pipe_end: "map_el_pipe_end",
 };
 const CONN_LABEL_KEYS: Record<DiagramConnectionType, TranslationKey> = {
   pipe: "map_conn_pipe",

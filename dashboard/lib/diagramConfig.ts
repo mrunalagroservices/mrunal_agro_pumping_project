@@ -11,6 +11,7 @@ export const ELEMENT_CFG: Record<DiagramElementType, ElementConfig> = {
   valve: { icon: "/diagram-icons/valve.png", label: "Valve" },
   electricity_pole: { icon: "/diagram-icons/electricity-pole.png", label: "Elec. Pole" },
   pipe_junction: { icon: "/diagram-icons/pipe-junction.png", label: "Junction" },
+  pipe_end: { icon: "/diagram-icons/pipe-end.png", label: "Pipe End" },
 };
 
 export interface ConnectionConfig {

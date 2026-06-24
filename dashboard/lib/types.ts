@@ -134,7 +134,7 @@ export interface ProductReview {
   created_at: string;
 }
 
-export type DiagramElementType = 'well' | 'motor' | 'valve' | 'electricity_pole' | 'pipe_junction';
+export type DiagramElementType = 'well' | 'motor' | 'valve' | 'electricity_pole' | 'pipe_junction' | 'pipe_end';
 export type DiagramConnectionType = 'pipe' | 'wire';
 export type DiagramTool = 'select' | 'boundary' | 'zone' | DiagramElementType | DiagramConnectionType;
 

@@ -927,6 +927,7 @@ export const translations = {
   map_el_valve: { en: "Valve", hi: "वाल्व", mr: "व्हॉल्व्ह" },
   map_el_electricity_pole: { en: "Elec. Pole", hi: "बिजली का खंभा", mr: "वीज पोल" },
   map_el_pipe_junction: { en: "Junction", hi: "जंक्शन", mr: "जंक्शन" },
+  map_el_pipe_end: { en: "Pipe End", hi: "पाइप का अंत", mr: "पाइपचा शेवट" },
   map_conn_pipe: { en: "Pipe", hi: "पाइप", mr: "पाइप" },
   map_conn_wire: { en: "Wire", hi: "वायर", mr: "वायर" },
   map_farm_boundary: { en: "Farm Boundary", hi: "फार्म की सीमा", mr: "फार्मची सीमा" },
