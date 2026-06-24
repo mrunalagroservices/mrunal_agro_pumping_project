@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import Modal from "@/components/Modal";
+import LocationPickerMap from "@/components/LocationPickerMap";
 import { httpClient } from "@/lib/api";
 import { socketClient } from "@/lib/socket";
 import { ApiResponse, Farm, Device, Actuator } from "@/lib/types";
@@ -141,6 +142,7 @@ export default function FarmsPage() {
   const [farmLng, setFarmLng] = useState("");
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [showLocateMap, setShowLocateMap] = useState(false);
 
   // device CRUD
   const [showDeviceModal, setShowDeviceModal] = useState(false);
@@ -223,7 +225,7 @@ export default function FarmsPage() {
   // ── farm helpers ────────────────────────────────────────────────────────────
   function resetFarmForm() {
     setFarmName(""); setFarmLocation(""); setFarmLat(""); setFarmLng("");
-    setLocationError(null);
+    setLocationError(null); setShowLocateMap(false);
   }
 
   function useCurrentLocation() {
@@ -894,17 +896,32 @@ export default function FarmsPage() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-sm font-medium text-slate-700">{t("farms_field_location_optional")}</label>
-                <button type="button" onClick={useCurrentLocation} disabled={locating}
-                  className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline disabled:opacity-60">
-                  {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
-                  {t("farms_use_current_location")}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={useCurrentLocation} disabled={locating}
+                    className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline disabled:opacity-60">
+                    {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
+                    {t("farms_use_current_location")}
+                  </button>
+                  <button type="button" onClick={() => setShowLocateMap((v) => !v)}
+                    className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {showLocateMap ? t("farms_locate_on_map_hide") : t("farms_locate_on_map")}
+                  </button>
+                </div>
               </div>
               <input type="text" value={farmLocation} onChange={(e) => setFarmLocation(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                 placeholder={t("farms_placeholder_village")} />
               {locationError && <p className="text-xs text-red-600 mt-1">{locationError}</p>}
             </div>
+            {showLocateMap && (
+              <LocationPickerMap
+                lat={farmLat ? Number(farmLat) : null}
+                lng={farmLng ? Number(farmLng) : null}
+                hint={t("farms_locate_on_map_hint")}
+                onChange={(lat, lng) => { setFarmLat(lat.toFixed(6)); setFarmLng(lng.toFixed(6)); }}
+              />
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_latitude_optional")}</label>
@@ -1008,6 +1025,7 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showLocateMap, setShowLocateMap] = useState(false);
   const toast = useToast();
   const { t } = useLocale();
 
@@ -1057,17 +1075,32 @@ function EditFarmModal({ farm, onClose, onSaved }: { farm: Farm; onClose: () => 
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="block text-sm font-medium text-slate-700">{t("farms_field_location_optional")}</label>
-            <button type="button" onClick={useCurrentLocation} disabled={locating}
-              className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline disabled:opacity-60">
-              {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
-              {t("farms_use_current_location")}
-            </button>
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={useCurrentLocation} disabled={locating}
+                className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline disabled:opacity-60">
+                {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
+                {t("farms_use_current_location")}
+              </button>
+              <button type="button" onClick={() => setShowLocateMap((v) => !v)}
+                className="flex items-center gap-1 text-xs font-medium text-accent-700 hover:underline">
+                <MapPin className="w-3.5 h-3.5" />
+                {showLocateMap ? t("farms_locate_on_map_hide") : t("farms_locate_on_map")}
+              </button>
+            </div>
           </div>
           <input type="text" value={location} onChange={(e) => setLocation(e.target.value)}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
             placeholder={t("farms_placeholder_village")} />
           {locationError && <p className="text-xs text-red-600 mt-1">{locationError}</p>}
         </div>
+        {showLocateMap && (
+          <LocationPickerMap
+            lat={latitude ? Number(latitude) : null}
+            lng={longitude ? Number(longitude) : null}
+            hint={t("farms_locate_on_map_hint")}
+            onChange={(lat, lng) => { setLatitude(lat.toFixed(6)); setLongitude(lng.toFixed(6)); }}
+          />
+        )}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{t("farms_field_latitude")}</label>
