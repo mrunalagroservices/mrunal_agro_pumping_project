@@ -591,11 +591,10 @@ export default function MapPage() {
                             isActive ? "border-transparent shadow-md scale-105" : "border-slate-200 text-slate-700 hover:border-slate-300"
                           }`}
                         >
-                          <span
-                            className="w-10 h-10 rounded-full flex items-center justify-center shadow-md"
-                            style={{ background: cfg.gradient }}
-                            dangerouslySetInnerHTML={{ __html: cfg.svg }}
-                          />
+                          <span className="w-10 h-10 rounded-full flex items-center justify-center shadow-md bg-white border border-slate-200">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={cfg.icon} alt={cfg.label} className="w-7 h-7 object-contain" />
+                          </span>
                           <span>{t(ELEMENT_LABEL_KEYS[type])}</span>
                         </button>
                       );

@@ -94,6 +94,12 @@ flutter:
     - assets/sounds/success.wav
     - assets/sounds/stop.wav
     - assets/sounds/alert.wav
+    - assets/diagram_icons/well.png
+    - assets/diagram_icons/motor.png
+    - assets/diagram_icons/valve.png
+    - assets/diagram_icons/electricity_pole.png
+    - assets/diagram_icons/pipe_junction.png
+    - assets/diagram_icons/fence.png
 
   fonts:
     - family: Inter

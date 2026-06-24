@@ -12,20 +12,14 @@ import '../widgets/language_switcher.dart';
 // Default map center: Pune, Maharashtra (used when no farm has GPS coordinates yet).
 const _defaultCenter = LatLng(18.5204, 73.8567);
 
-const Map<DiagramElementType, Color> _diagramElementColors = {
-  DiagramElementType.well: Color(0xFF0369A1),
-  DiagramElementType.motor: Color(0xFF15803D),
-  DiagramElementType.valve: Color(0xFF7C3AED),
-  DiagramElementType.electricityPole: Color(0xFFB45309),
-  DiagramElementType.pipeJunction: Color(0xFF57534E),
-};
-
-const Map<DiagramElementType, IconData> _diagramElementIcons = {
-  DiagramElementType.well: Icons.water_drop,
-  DiagramElementType.motor: Icons.settings,
-  DiagramElementType.valve: Icons.tune,
-  DiagramElementType.electricityPole: Icons.bolt,
-  DiagramElementType.pipeJunction: Icons.add,
+// User-supplied PNG icons (matching the ones used on the dashboard's Map
+// editor) instead of generic Material icons.
+const Map<DiagramElementType, String> _diagramElementImages = {
+  DiagramElementType.well: 'assets/diagram_icons/well.png',
+  DiagramElementType.motor: 'assets/diagram_icons/motor.png',
+  DiagramElementType.valve: 'assets/diagram_icons/valve.png',
+  DiagramElementType.electricityPole: 'assets/diagram_icons/electricity_pole.png',
+  DiagramElementType.pipeJunction: 'assets/diagram_icons/pipe_junction.png',
 };
 
 const Map<DiagramElementType, String> _diagramElementLabelKeys = {
@@ -485,8 +479,7 @@ class _DiagramElementMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _diagramElementColors[element.type] ?? AppColors.subtext;
-    final icon = _diagramElementIcons[element.type] ?? Icons.circle;
+    final image = _diagramElementImages[element.type];
     final labelKey = _diagramElementLabelKeys[element.type];
     final label = element.label ?? (labelKey != null ? context.tr(labelKey) : '');
 
@@ -495,17 +488,20 @@ class _DiagramElementMarker extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 30,
-          height: 30,
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
-            color: color,
+            color: Colors.white,
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white, width: 2.5),
             boxShadow: [
               BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 4),
             ],
           ),
-          child: Icon(icon, color: Colors.white, size: 16),
+          padding: const EdgeInsets.all(4),
+          child: image != null
+              ? Image.asset(image, fit: BoxFit.contain)
+              : const Icon(Icons.circle, color: AppColors.subtext, size: 16),
         ),
         const SizedBox(height: 2),
         Container(

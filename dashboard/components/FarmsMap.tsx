@@ -205,6 +205,8 @@ export default function FarmsMap({
         id: "boundary-line",
         type: "line",
         source: BOUNDARY_SOURCE,
+        // Fallback solid line in case the fence pattern image fails to load —
+        // replaced with a tiled "fence-pattern" below once it's ready.
         paint: { "line-color": "#16a34a", "line-width": 2.5, "line-dasharray": [2, 1] },
       });
       map.addLayer({
@@ -216,6 +218,15 @@ export default function FarmsMap({
       });
       boundarySourceReadyRef.current = true;
       connSourceReadyRef.current = true;
+
+      // Render the farm boundary line as a tiled fence image instead of a
+      // plain dashed line, once it's loaded.
+      map.loadImage("/diagram-icons/fence.png").then(({ data }) => {
+        if (!data || !map.getLayer("boundary-line")) return;
+        if (!map.hasImage("fence-pattern")) map.addImage("fence-pattern", data);
+        map.setPaintProperty("boundary-line", "line-pattern", "fence-pattern");
+        map.setPaintProperty("boundary-line", "line-width", 24);
+      }).catch(() => { /* keep the solid-color fallback line if this fails */ });
 
       // Irrigation zones — each its own colored fill+outline (or line/dots
       // while still being plotted), driven by a per-feature "color" property.
@@ -415,7 +426,7 @@ export default function FarmsMap({
         // Update draggable when edit mode changes.
         marker.setDraggable(!!editMode);
 
-        // Re-render inner HTML (SVGs are hardcoded — safe to inject directly).
+        // Re-render inner HTML.
         const el = marker.getElement();
         const classes = [
           "diagram-el",
@@ -427,8 +438,8 @@ export default function FarmsMap({
 
         el.innerHTML = `
           <div class="${classes}">
-            <div class="diagram-el-dot" style="background:${cfg.gradient}">
-              ${cfg.svg}
+            <div class="diagram-el-dot">
+              <img class="diagram-el-icon" src="${cfg.icon}" alt="${escapeHtml(cfg.label)}" />
             </div>
             <div class="diagram-el-label">${escapeHtml(element.label || cfg.label)}</div>
           </div>
