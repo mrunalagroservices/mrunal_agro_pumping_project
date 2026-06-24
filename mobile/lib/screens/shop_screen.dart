@@ -75,7 +75,7 @@ class _HeroBannerCarouselState extends State<_HeroBannerCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 130,
+          height: 144,
           child: PageView.builder(
             controller: _controller,
             onPageChanged: (i) => setState(() => _page = i),
@@ -131,20 +131,27 @@ class _BannerCard extends StatelessWidget {
             bottom: -10,
             child: Icon(banner.icon, size: 90, color: Colors.white.withValues(alpha: 0.18)),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                context.tr(banner.titleKey),
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                context.tr(banner.subtitleKey),
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12, fontWeight: FontWeight.w400),
-              ),
-            ],
+          Positioned.fill(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  context.tr(banner.titleKey),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  context.tr(banner.subtitleKey),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12, fontWeight: FontWeight.w400),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -162,7 +169,7 @@ class _PromoBannerStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-      child: SizedBox(height: 84, child: _BannerCard(banner: banner)),
+      child: SizedBox(height: 104, child: _BannerCard(banner: banner)),
     );
   }
 }
