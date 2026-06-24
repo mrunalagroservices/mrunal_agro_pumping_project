@@ -16,12 +16,19 @@ import { ELEMENT_CFG } from "@/lib/diagramConfig";
 // Satellite imagery + a transparent place-name/boundary overlay on top (a
 // "hybrid" view, like Google Maps' satellite mode) — Esri's World Imagery and
 // reference services are free and don't need an API key, unlike Mapbox/Google
-// satellite tiles. Esri's imagery mosaic doesn't have full coverage at very
-// low (zoomed-out) levels — it serves a literal "Map data not yet available"
-// placeholder tile there — so a plain street-map layer (also Esri, also free)
-// covers that zoomed-out range instead, handing off to satellite once zoomed
-// in enough that real imagery is reliably present.
+// satellite tiles.
+//
+// Esri's free imagery mosaic has two coverage gaps, both served as a literal
+// "Map data not yet available" placeholder tile instead of real imagery:
+//  1. Very zoomed-out (low zoom) levels globally — handled below by a plain
+//     street-map layer (also Esri, also free) for zoom < SATELLITE_MIN_ZOOM.
+//  2. Beyond each location's native resolution once zoomed in far enough —
+//     varies by region (rural areas run out sooner than cities). Setting
+//     `maxzoom` on the *source* (not just the layer) tells MapLibre to stop
+//     requesting tiles past that level and instead upscale the last real
+//     tile it has, rather than requesting a zoom level Esri has no data for.
 const SATELLITE_MIN_ZOOM = 5;
+const SATELLITE_MAX_ZOOM = 18;
 const MAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
@@ -39,6 +46,7 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       ],
       tileSize: 256,
+      maxzoom: SATELLITE_MAX_ZOOM,
       attribution: "Esri, Maxar, Earthstar Geographics",
     },
     "satellite-labels": {
@@ -47,6 +55,7 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
         "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
       ],
       tileSize: 256,
+      maxzoom: SATELLITE_MAX_ZOOM,
     },
   },
   layers: [
