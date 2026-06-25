@@ -40,31 +40,50 @@ class _MainShellState extends State<MainShell> {
     final state = context.watch<AppState>();
     final unresolvedAlerts = state.notifications.where((n) => n.isUnresolvedAlert).length;
 
-    final screens = [
-      DashboardScreen(
+    // Mandi-only accounts (no farm/device registered) skip the Dashboard tab
+    // entirely — Map/Schedules/Analytics are only reachable from there, so
+    // hiding it hides all farm features at once. Market becomes the home tab.
+    final hasFarmAccess = state.hasFarmAccess;
+    int ordersIndex = 0;
+    int alertsIndex = 0;
+
+    final items = <_NavItem>[];
+    final screens = <Widget>[];
+
+    if (hasFarmAccess) {
+      items.add(_NavItem(Icons.agriculture_outlined, Icons.agriculture, context.tr('nav_farm')));
+      screens.add(DashboardScreen(
         onViewMap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const MapScreen()),
         ),
-      ),
-      const ShopScreen(),
-      const OrdersScreen(),
-      AlertsScreen(title: context.tr('nav_notifications')),
-      ProfileScreen(
-        onViewOrders: () => _goTo(2),
-        onViewMessages: () => _goTo(3),
-      ),
-    ];
+      ));
+    }
+    items.add(_NavItem(Icons.storefront_outlined, Icons.storefront, context.tr('nav_market')));
+    screens.add(const ShopScreen());
+    ordersIndex = screens.length;
+    items.add(_NavItem(Icons.shopping_bag_outlined, Icons.shopping_bag, context.tr('nav_orders')));
+    screens.add(const OrdersScreen());
+    alertsIndex = screens.length;
+    items.add(_NavItem(Icons.notifications_outlined, Icons.notifications, context.tr('nav_notifications'), badge: unresolvedAlerts));
+    screens.add(AlertsScreen(title: context.tr('nav_notifications')));
+    items.add(_NavItem(Icons.person_outline, Icons.person, context.tr('nav_profile')));
+    screens.add(ProfileScreen(
+      onViewOrders: () => _goTo(ordersIndex),
+      onViewMessages: () => _goTo(alertsIndex),
+    ));
+
+    final selectedIndex = _selectedIndex.clamp(0, screens.length - 1);
 
     return Scaffold(
       body: IndexedStack(
-        index: _selectedIndex,
+        index: selectedIndex,
         children: screens,
       ),
       bottomNavigationBar: _BottomBar(
-        selectedIndex: _selectedIndex,
+        items: items,
+        selectedIndex: selectedIndex,
         onSelect: _goTo,
-        messagesBadge: unresolvedAlerts,
       ),
     );
   }
@@ -73,14 +92,14 @@ class _MainShellState extends State<MainShell> {
 /// Clean bottom nav: outline icons + label, no pill indicator, selected
 /// tab tinted. Matches the flat reference style.
 class _BottomBar extends StatelessWidget {
+  final List<_NavItem> items;
   final int selectedIndex;
   final ValueChanged<int> onSelect;
-  final int messagesBadge;
 
   const _BottomBar({
+    required this.items,
     required this.selectedIndex,
     required this.onSelect,
-    required this.messagesBadge,
   });
 
   static const _selected = AppColors.accent;
@@ -88,14 +107,6 @@ class _BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = <_NavItem>[
-      _NavItem(Icons.agriculture_outlined, Icons.agriculture, context.tr('nav_farm')),
-      _NavItem(Icons.storefront_outlined, Icons.storefront, context.tr('nav_market')),
-      _NavItem(Icons.shopping_bag_outlined, Icons.shopping_bag, context.tr('nav_orders')),
-      _NavItem(Icons.notifications_outlined, Icons.notifications, context.tr('nav_notifications'), badge: messagesBadge),
-      _NavItem(Icons.person_outline, Icons.person, context.tr('nav_profile')),
-    ];
-
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,

@@ -49,6 +49,18 @@ class AppState extends ChangeNotifier {
   bool isLoadingSupport = false;
 
   bool isLoadingDashboard = false;
+  // Set true the first time loadDashboard() finishes (success or failure),
+  // so `hasFarmAccess` can tell "we don't know yet" apart from "confirmed
+  // this account has zero farms/devices" and avoid flashing the Mandi-only
+  // nav before the real data has loaded.
+  bool hasLoadedDashboardOnce = false;
+
+  /// Whether this account should see farm/device features (Dashboard, Map,
+  /// Schedules, Analytics, Alerts) alongside Mandi, vs. a Mandi-only buyer
+  /// account with no pump hardware registered. Defaults to true (full nav)
+  /// until the first dashboard load completes, so the nav doesn't flicker.
+  bool get hasFarmAccess =>
+      !hasLoadedDashboardOnce || farms.isNotEmpty || devices.isNotEmpty;
   bool isLoadingSchedules = false;
   bool isLoadingAlerts = false;
   bool isLoadingOrders = false;
@@ -244,6 +256,7 @@ class AppState extends ChangeNotifier {
           'may be waking up — pull to refresh in a moment.';
     } finally {
       isLoadingDashboard = false;
+      hasLoadedDashboardOnce = true;
       notifyListeners();
     }
   }
