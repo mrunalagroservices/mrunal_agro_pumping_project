@@ -144,6 +144,9 @@ export interface DiagramElement {
   lat: number;
   lng: number;
   label?: string;
+  // Links a motor/valve icon to a real actuator so it can be toggled on/off
+  // directly from the map. Optional — undecorated icons stay display-only.
+  actuator_id?: number | null;
 }
 
 export interface DiagramConnection {

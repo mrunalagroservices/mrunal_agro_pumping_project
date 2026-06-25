@@ -8,6 +8,7 @@ import {
 import DashboardShell from "@/components/DashboardShell";
 import FarmsMap from "@/components/FarmsMap";
 import { httpClient } from "@/lib/api";
+import { socketClient } from "@/lib/socket";
 import {
   ApiResponse, Farm, Actuator, FarmDiagram, DiagramElement,
   DiagramElementType, DiagramConnectionType, DiagramTool, Zone,
@@ -97,6 +98,17 @@ export default function MapPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Keep on/off icon state on the map live if a toggle happens elsewhere
+  // (Dashboard home, Farms & Devices page, a schedule firing, etc).
+  useEffect(() => {
+    const onActuatorStatus = (...args: unknown[]) => {
+      const data = args[0] as Actuator;
+      setActuators((prev) => prev.map((a) => (a.id === data.id ? { ...a, ...data } : a)));
+    };
+    socketClient.on("actuator-status", onActuatorStatus);
+    return () => { socketClient.off("actuator-status", onActuatorStatus); };
+  }, []);
 
   const activeFarmIds = new Set(
     actuators.filter((a) => a.current_state === "on").map((a) => a.farm_id)
@@ -373,6 +385,38 @@ export default function MapPage() {
     }
   };
 
+  // ── actuator toggle (from the map marker's on/off button) ────────────────
+  const [togglingActuatorIds, setTogglingActuatorIds] = useState<Set<number>>(new Set());
+
+  const linkSelectedElementActuator = (actuatorId: number | null) => {
+    if (!diagram || !selectedElementId) return;
+    setDiagram({
+      ...diagram,
+      elements: diagram.elements.map((e) =>
+        e.id === selectedElementId ? { ...e, actuator_id: actuatorId } : e
+      ),
+    });
+  };
+
+  const handleElementToggle = async (elementId: string) => {
+    const currentDiagram = editMode ? diagram : viewDiagram;
+    const element = currentDiagram?.elements.find((e) => e.id === elementId);
+    if (!element?.actuator_id) return;
+    const actuator = actuators.find((a) => a.id === element.actuator_id);
+    if (!actuator || togglingActuatorIds.has(actuator.id)) return;
+    const nextState = actuator.current_state === "on" ? "off" : "on";
+    setTogglingActuatorIds((prev) => new Set(prev).add(actuator.id));
+    try {
+      const res = await httpClient.post<ApiResponse<Actuator>>(`/actuators/${actuator.id}/toggle`, { state: nextState });
+      setActuators((prev) => prev.map((a) => (a.id === actuator.id ? { ...a, ...res.data } : a)));
+    } catch {
+      // best-effort — socket "actuator-status" or the next poll will correct
+      // the displayed state if this silently failed server-side
+    } finally {
+      setTogglingActuatorIds((prev) => { const next = new Set(prev); next.delete(actuator.id); return next; });
+    }
+  };
+
   const handleElementMove = (elementId: string, lat: number, lng: number) => {
     if (!diagram) return;
     setDiagram({
@@ -642,25 +686,50 @@ export default function MapPage() {
                   </div>
                 </div>
 
-                {selectedElementId && (
-                  <div className="space-y-1.5 border-t border-slate-100 pt-3">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-1">{t("map_edit_selected_element")}</p>
-                    <input
-                      value={labelDraft}
-                      onChange={(e) => setLabelDraft(e.target.value)}
-                      onBlur={() => renameSelectedElement(labelDraft)}
-                      onKeyDown={(e) => { if (e.key === "Enter") renameSelectedElement(labelDraft); }}
-                      placeholder={t("map_element_label_placeholder")}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <button
-                      onClick={deleteSelectedElement}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" /> {t("map_delete_selected")}
-                    </button>
-                  </div>
-                )}
+                {selectedElementId && (() => {
+                  const selectedElement = diagram?.elements.find((e) => e.id === selectedElementId);
+                  const canLinkActuator = selectedElement?.type === "motor" || selectedElement?.type === "valve";
+                  const farmActuators = actuators.filter((a) => a.farm_id === editingFarmId);
+                  return (
+                    <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-1">{t("map_edit_selected_element")}</p>
+                      <input
+                        value={labelDraft}
+                        onChange={(e) => setLabelDraft(e.target.value)}
+                        onBlur={() => renameSelectedElement(labelDraft)}
+                        onKeyDown={(e) => { if (e.key === "Enter") renameSelectedElement(labelDraft); }}
+                        placeholder={t("map_element_label_placeholder")}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      {canLinkActuator && (
+                        <div>
+                          <label className="block text-[11px] font-medium text-slate-500 mb-1 px-0.5">
+                            {t("map_linked_actuator")}
+                          </label>
+                          <select
+                            value={selectedElement?.actuator_id ?? ""}
+                            onChange={(e) => linkSelectedElementActuator(e.target.value ? Number(e.target.value) : null)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          >
+                            <option value="">{t("map_no_actuator_linked")}</option>
+                            {farmActuators.map((a) => (
+                              <option key={a.id} value={a.id}>{a.name}</option>
+                            ))}
+                          </select>
+                          {farmActuators.length === 0 && (
+                            <p className="text-[11px] text-slate-400 mt-1 px-0.5">{t("map_no_actuators_for_farm")}</p>
+                          )}
+                        </div>
+                      )}
+                      <button
+                        onClick={deleteSelectedElement}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" /> {t("map_delete_selected")}
+                      </button>
+                    </div>
+                  );
+                })()}
 
                 {selectedConnectionId && (
                   <div className="space-y-1.5 border-t border-slate-100 pt-3">
@@ -813,9 +882,12 @@ export default function MapPage() {
             onElementClick={handleElementClick}
             onElementMove={handleElementMove}
             onElementDelete={deleteElementById}
+            onElementToggle={handleElementToggle}
             onConnectionClick={handleConnectionClick}
             onConnectionDelete={deleteConnectionById}
             zones={zones}
+            actuators={actuators}
+            togglingActuatorIds={togglingActuatorIds}
           />
         </div>
       </div>

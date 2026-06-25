@@ -30,6 +30,9 @@ class DiagramElement {
   final double lat;
   final double lng;
   final String? label;
+  // Links a motor/valve icon to a real actuator so it can be toggled on/off
+  // directly from the map (authored on the dashboard).
+  final int? actuatorId;
 
   DiagramElement({
     required this.id,
@@ -37,6 +40,7 @@ class DiagramElement {
     required this.lat,
     required this.lng,
     this.label,
+    this.actuatorId,
   });
 
   factory DiagramElement.fromJson(Map<String, dynamic> json) {
@@ -46,6 +50,7 @@ class DiagramElement {
       lat: (json['lat'] as num).toDouble(),
       lng: (json['lng'] as num).toDouble(),
       label: json['label'] as String?,
+      actuatorId: (json['actuator_id'] as num?)?.toInt(),
     );
   }
 }

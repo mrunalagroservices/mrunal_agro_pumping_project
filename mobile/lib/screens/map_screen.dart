@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../l10n/tr_extension.dart';
+import '../models/actuator.dart';
 import '../models/farm.dart';
 import '../models/farm_diagram.dart';
 import '../providers/app_state.dart';
@@ -58,6 +59,17 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   AnimationController? _flyController;
   int? _selectedFarmId;
+  final Set<int> _busyActuatorIds = {};
+
+  Future<void> _handleActuatorToggle(Actuator actuator) async {
+    setState(() => _busyActuatorIds.add(actuator.id));
+    final error = await context.read<AppState>().toggleActuator(actuator);
+    if (!mounted) return;
+    setState(() => _busyActuatorIds.remove(actuator.id));
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+    }
+  }
 
   @override
   void dispose() {
@@ -201,11 +213,23 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       ),
       MarkerLayer(
         markers: diagram.elements.map((el) {
+          Actuator? foundActuator;
+          if (el.actuatorId != null) {
+            for (final a in state.actuators) {
+              if (a.id == el.actuatorId) { foundActuator = a; break; }
+            }
+          }
+          final actuator = foundActuator;
           return Marker(
             point: LatLng(el.lat, el.lng),
             width: 70,
             height: 70,
-            child: _DiagramElementMarker(element: el),
+            child: _DiagramElementMarker(
+              element: el,
+              actuator: actuator,
+              busy: actuator != null && _busyActuatorIds.contains(actuator.id),
+              onToggle: actuator != null ? () => _handleActuatorToggle(actuator) : null,
+            ),
           );
         }).toList(),
       ),
@@ -523,14 +547,23 @@ class _PulsingDot extends StatelessWidget {
 /// diagram (authored on the dashboard) — read-only on mobile.
 class _DiagramElementMarker extends StatelessWidget {
   final DiagramElement element;
+  final Actuator? actuator;
+  final bool busy;
+  final VoidCallback? onToggle;
 
-  const _DiagramElementMarker({required this.element});
+  const _DiagramElementMarker({
+    required this.element,
+    this.actuator,
+    this.busy = false,
+    this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
     final image = _diagramElementImages[element.type];
     final labelKey = _diagramElementLabelKeys[element.type];
     final label = element.label ?? (labelKey != null ? context.tr(labelKey) : '');
+    final isOn = actuator?.isOn ?? false;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -540,9 +573,42 @@ class _DiagramElementMarker extends StatelessWidget {
         SizedBox(
           width: 40,
           height: 40,
-          child: image != null
-              ? Image.asset(image, fit: BoxFit.contain)
-              : const Icon(Icons.circle, color: AppColors.subtext, size: 16),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              image != null
+                  ? Image.asset(image, fit: BoxFit.contain)
+                  : const Icon(Icons.circle, color: AppColors.subtext, size: 16),
+              // On/off control for a motor/valve element linked to a real
+              // actuator — matches the dashboard's power badge.
+              if (actuator != null)
+                Positioned(
+                  bottom: -4,
+                  right: -4,
+                  child: GestureDetector(
+                    onTap: busy ? null : onToggle,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: isOn ? AppColors.success : AppColors.subtext,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 3),
+                        ],
+                      ),
+                      child: busy
+                          ? const Padding(
+                              padding: EdgeInsets.all(3),
+                              child: CircularProgressIndicator(strokeWidth: 1.5, color: Colors.white),
+                            )
+                          : const Icon(Icons.power_settings_new, color: Colors.white, size: 11),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: 2),
         Container(

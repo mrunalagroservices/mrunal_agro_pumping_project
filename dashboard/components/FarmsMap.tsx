@@ -10,6 +10,7 @@ import {
   DiagramElementType,
   DiagramTool,
   Zone,
+  Actuator,
 } from "@/lib/types";
 import { ELEMENT_CFG } from "@/lib/diagramConfig";
 
@@ -96,6 +97,10 @@ interface FarmsMapProps {
   onConnectionDelete?: (connectionId: string) => void;
   // irrigation zones — each one's own plotted polygon, colored per zone
   zones?: Zone[];
+  // motor/valve elements linked to a real actuator get an on/off button
+  actuators?: Actuator[];
+  togglingActuatorIds?: Set<number>;
+  onElementToggle?: (elementId: string) => void;
 }
 
 export default function FarmsMap({
@@ -117,6 +122,9 @@ export default function FarmsMap({
   onConnectionClick,
   onConnectionDelete,
   zones,
+  actuators,
+  togglingActuatorIds,
+  onElementToggle,
 }: FarmsMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -142,6 +150,8 @@ export default function FarmsMap({
   onConnectionClickRef.current = onConnectionClick;
   const onConnectionDeleteRef = useRef(onConnectionDelete);
   onConnectionDeleteRef.current = onConnectionDelete;
+  const onElementToggleRef = useRef(onElementToggle);
+  onElementToggleRef.current = onElementToggle;
   const activeToolRef = useRef(activeTool);
   activeToolRef.current = activeTool;
   const editModeRef = useRef(editMode);
@@ -409,6 +419,12 @@ export default function FarmsMap({
         const isConnectingFrom = connectingFromId === element.id;
         const isSelected = selectedElementId === element.id;
         const cfg = ELEMENT_CFG[element.type];
+        const linkedActuator =
+          element.actuator_id != null
+            ? actuators?.find((a) => a.id === element.actuator_id)
+            : undefined;
+        const isOn = linkedActuator?.current_state === "on";
+        const isToggling = !!linkedActuator && !!togglingActuatorIds?.has(linkedActuator.id);
 
         let marker = diagramMarkersRef.current.get(element.id);
 
@@ -452,6 +468,12 @@ export default function FarmsMap({
             <div class="diagram-el-dot">
               <img class="diagram-el-icon" src="${cfg.icon}" alt="${escapeHtml(cfg.label)}" />
               ${isSelected ? '<button type="button" class="diagram-el-delete" aria-label="Delete" title="Delete">×</button>' : ""}
+              ${linkedActuator ? `
+                <button type="button" class="diagram-el-power ${isOn ? "is-on" : "is-off"} ${isToggling ? "is-toggling" : ""}"
+                  aria-label="${isOn ? "Turn off" : "Turn on"}" title="${escapeHtml(linkedActuator.name)} — ${isOn ? "Turn off" : "Turn on"}">
+                  ${isToggling ? '<span class="diagram-el-power-spinner"></span>' : '<span class="diagram-el-power-icon">⏻</span>'}
+                </button>
+              ` : ""}
             </div>
             <div class="diagram-el-label">${escapeHtml(element.label || cfg.label)}</div>
           </div>
@@ -466,12 +488,19 @@ export default function FarmsMap({
             onElementDeleteRef.current?.(element.id);
           });
         }
+
+        if (linkedActuator) {
+          el.querySelector(".diagram-el-power")?.addEventListener("click", (evt) => {
+            evt.stopPropagation();
+            onElementToggleRef.current?.(element.id);
+          });
+        }
       }
     };
 
     if (map.isStyleLoaded()) sync();
     else map.once("load", sync);
-  }, [diagram, editMode, connectingFromId, selectedElementId]);
+  }, [diagram, editMode, connectingFromId, selectedElementId, actuators, togglingActuatorIds]);
 
   // ── Connection lines ──────────────────────────────────────────────────────
   useEffect(() => {
