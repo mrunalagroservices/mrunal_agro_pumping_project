@@ -30,6 +30,16 @@ export default function UsersPage() {
     u.org_name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const toggleFarmUser = async (user: AdminUser) => {
+    const nextValue = !user.farm_user;
+    setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, farm_user: nextValue } : u)));
+    try {
+      await httpClient.put<ApiResponse<AdminUser>>(`/admin/users/${user.id}`, { farm_user: nextValue });
+    } catch {
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, farm_user: user.farm_user } : u)));
+    }
+  };
+
   return (
     <AdminShell title="Users">
       <div className="mb-5 flex items-center justify-between gap-4">
@@ -57,6 +67,7 @@ export default function UsersPage() {
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">User</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Organisation</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Phone</th>
+                <th className="px-4 py-3 text-center font-semibold text-slate-600">Farm User</th>
                 <th className="px-4 py-3 text-center font-semibold text-slate-600">Orders</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Last Order</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Joined</th>
@@ -66,7 +77,7 @@ export default function UsersPage() {
             <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-16">
+                  <td colSpan={8} className="text-center py-16">
                     <UserCircle className="w-10 h-10 text-slate-200 mx-auto mb-2" />
                     <p className="text-slate-400 font-medium">No users found</p>
                   </td>
@@ -89,6 +100,15 @@ export default function UsersPage() {
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-600">{u.org_name}</td>
                     <td className="px-4 py-3 text-sm text-slate-500">{u.phone || "—"}</td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => toggleFarmUser(u)}
+                        title={u.farm_user ? "Sees Farm + Mandi — click to make Mandi-only" : "Mandi-only — click to grant Farm access"}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${u.farm_user ? "bg-emerald-500" : "bg-slate-300"}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${u.farm_user ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </button>
+                    </td>
                     <td className="px-4 py-3 text-center">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${Number(u.order_count) > 0 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400"}`}>
                         <ShoppingBag className="w-3 h-3" /> {u.order_count}

@@ -38,7 +38,7 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await client.query(
       `INSERT INTO users (organization_id, name, email, password_hash, phone, role)
-       VALUES ($1, $2, $3, $4, $5, 'owner') RETURNING id, organization_id, name, email, phone, role, created_at`,
+       VALUES ($1, $2, $3, $4, $5, 'owner') RETURNING id, organization_id, name, email, phone, role, farm_user, created_at`,
       [org.rows[0].id, name, email, passwordHash, phone || null]
     );
 
@@ -83,7 +83,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-const ME_COLUMNS = `id, organization_id, name, email, phone, role, is_admin,
+const ME_COLUMNS = `id, organization_id, name, email, phone, role, is_admin, farm_user,
   preferred_first_name, residential_address, postal_address, emergency_contact,
   analytics_opt_in, deletion_requested_at, notification_preferences,
   preferred_payment_method, created_at`;

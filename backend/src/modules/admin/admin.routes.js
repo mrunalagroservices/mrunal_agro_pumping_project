@@ -397,7 +397,7 @@ router.get('/users', async (req, res) => {
   try {
     const result = await db.query(`
       SELECT
-        u.id, u.name, u.email, u.phone, u.role, u.created_at,
+        u.id, u.name, u.email, u.phone, u.role, u.farm_user, u.created_at,
         o.name AS org_name,
         COUNT(DISTINCT ord.id) AS order_count,
         MAX(ord.created_at)    AS last_order_at
@@ -422,7 +422,7 @@ router.get('/users/:id', async (req, res) => {
 
     // User + org info
     const userRes = await db.query(`
-      SELECT u.id, u.name, u.email, u.phone, u.role, u.created_at,
+      SELECT u.id, u.name, u.email, u.phone, u.role, u.farm_user, u.created_at,
              o.name AS org_name, o.id AS org_id
       FROM users u
       JOIN organizations o ON o.id = u.organization_id
@@ -492,6 +492,24 @@ router.get('/users/:id', async (req, res) => {
   } catch (err) {
     console.error('[Admin/users/:id GET]', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch user profile' });
+  }
+});
+
+// PUT /api/v1/admin/users/:id — toggle whether this account sees farm/pump
+// features (farm_user=true) or is a Mandi-only marketplace buyer (false).
+router.put('/users/:id', async (req, res) => {
+  const { farm_user } = req.body;
+  try {
+    const result = await db.query(
+      `UPDATE users SET farm_user = COALESCE($1, farm_user) WHERE id = $2
+       RETURNING id, name, email, phone, role, farm_user, created_at`,
+      [typeof farm_user === 'boolean' ? farm_user : null, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Admin/users/:id PUT]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to update user' });
   }
 });
 

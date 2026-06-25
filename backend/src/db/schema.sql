@@ -23,6 +23,7 @@ CREATE TABLE users (
   phone                VARCHAR(20),
   role                 VARCHAR(20) NOT NULL DEFAULT 'owner', -- owner, operator, viewer
   is_admin             BOOLEAN NOT NULL DEFAULT false,       -- platform-wide admin flag
+  farm_user            BOOLEAN NOT NULL DEFAULT true,         -- true = sees pump-control features; false = Mandi-only buyer
   preferred_first_name VARCHAR(100),
   residential_address  JSONB, -- { line1, line2, city, state, pincode }
   postal_address       JSONB, -- { line1, line2, city, state, pincode }

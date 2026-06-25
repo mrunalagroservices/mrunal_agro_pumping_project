@@ -74,6 +74,7 @@ export interface AdminUser {
   email: string;
   phone?: string | null;
   role: string;
+  farm_user: boolean;
   org_name: string;
   order_count: number;
   last_order_at?: string | null;

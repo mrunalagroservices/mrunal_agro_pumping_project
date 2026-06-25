@@ -111,6 +111,9 @@ class AppUser {
   final String email;
   final String? phone;
   final String role;
+  // Explicit server-set flag: true = sees Farm/pump-control features
+  // alongside Mandi; false = a Mandi-only marketplace buyer account.
+  final bool farmUser;
   final DateTime? createdAt;
   final String? preferredFirstName;
   final PostalLikeAddress? residentialAddress;
@@ -128,6 +131,7 @@ class AppUser {
     required this.email,
     this.phone,
     required this.role,
+    this.farmUser = true,
     this.createdAt,
     this.preferredFirstName,
     this.residentialAddress,
@@ -149,6 +153,7 @@ class AppUser {
       email: json['email'] as String,
       phone: json['phone'] as String?,
       role: json['role'] as String? ?? 'user',
+      farmUser: json['farm_user'] as bool? ?? true,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,

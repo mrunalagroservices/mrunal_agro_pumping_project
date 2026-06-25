@@ -48,6 +48,7 @@ export interface User {
   phone?: string | null;
   role: string;
   is_admin?: boolean;
+  farm_user?: boolean;
   preferred_first_name?: string | null;
   residential_address?: Address | null;
   postal_address?: Address | null;
