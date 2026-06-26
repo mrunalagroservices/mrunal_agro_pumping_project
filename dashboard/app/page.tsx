@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Warehouse,
   Cpu,
@@ -13,6 +14,7 @@ import {
   MapPin,
   ClipboardList,
   Package,
+  Loader2,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
 import StatCard from "@/components/StatCard";
@@ -41,8 +43,18 @@ const STATUS_KEYS: Record<string, TranslationKey> = {
 };
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { t } = useLocale();
+  const router = useRouter();
+
+  // Anonymous visitors land on the public Mandi homepage instead of being
+  // forced to /login — login is only required once they try to do something
+  // that needs an account (add to cart, checkout, view farm data, etc).
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.replace("/shop");
+    }
+  }, [authLoading, isAuthenticated, router]);
   const [farms, setFarms] = useState<Farm[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
   const [actuators, setActuators] = useState<Actuator[]>([]);
@@ -117,6 +129,17 @@ export default function HomePage() {
   const activeFarmIds = new Set(
     actuators.filter((a) => a.current_state === "on").map((a) => a.farm_id)
   );
+
+  // Render nothing but a spinner until we know the auth state — mounting
+  // DashboardShell here too would race its own redirect-to-/login against
+  // the redirect-to-/shop above.
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-600" />
+      </div>
+    );
+  }
 
   return (
     <DashboardShell breadcrumb={[]}>

@@ -6,10 +6,11 @@ import {
   ArrowLeft, Star, Truck, ShoppingCart, Minus, Plus, Package, Heart, Share2,
   Store, Banknote, Headset, CheckCircle2,
 } from "lucide-react";
-import DashboardShell from "@/components/DashboardShell";
+import MarketShell from "@/components/MarketShell";
 import { httpClient } from "@/lib/api";
 import type { Product, ProductReview, ApiResponse } from "@/lib/types";
 import { cartFromStorage, cartToStorage } from "@/lib/products";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLocale } from "@/contexts/LocaleContext";
 
 function PImg({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
@@ -93,6 +94,13 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params.id);
+  const { isAuthenticated } = useAuth();
+
+  function requireLogin(): boolean {
+    if (isAuthenticated) return true;
+    router.push(`/login?redirect=${encodeURIComponent(`/shop/${id}`)}`);
+    return false;
+  }
 
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -124,7 +132,7 @@ export default function ProductDetailPage() {
   }, [id]);
 
   function addToCart() {
-    if (!product) return;
+    if (!product || !requireLogin()) return;
     const cart = cartFromStorage();
     const idx = cart.findIndex((i) => i.product.id === product.id);
     const next = idx === -1
@@ -146,7 +154,7 @@ export default function ProductDetailPage() {
   }
 
   function buyNow() {
-    if (!product) return;
+    if (!product || !requireLogin()) return;
     const cart = cartFromStorage();
     if (!cart.some((i) => i.product.id === product.id)) {
       cartToStorage([...cart, { product, qty: 1 }]);
@@ -155,6 +163,7 @@ export default function ProductDetailPage() {
   }
 
   function toggleWishlist() {
+    if (!requireLogin()) return;
     const w = getWishlist();
     if (w.has(id)) w.delete(id); else w.add(id);
     saveWishlist(w);
@@ -173,23 +182,23 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <DashboardShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: t("pd_product_fallback") }]}>
+      <MarketShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: t("pd_product_fallback") }]}>
         <div className="flex items-center justify-center h-64">
           <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
         </div>
-      </DashboardShell>
+      </MarketShell>
     );
   }
 
   if (!product) {
     return (
-      <DashboardShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: t("pd_product_fallback") }]}>
+      <MarketShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: t("pd_product_fallback") }]}>
         <div className="text-center py-24 text-slate-400">
           <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="font-semibold mb-2">{t("pd_product_not_found")}</p>
           <button onClick={() => router.push("/shop")} className="text-sm text-emerald-600 hover:underline">{t("pd_back_to_market_arrow")}</button>
         </div>
-      </DashboardShell>
+      </MarketShell>
     );
   }
 
@@ -197,7 +206,7 @@ export default function ProductDetailPage() {
   const similar = allProducts.filter((p) => p.category === product.category && p.id !== product.id);
 
   return (
-    <DashboardShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: product.name }]}>
+    <MarketShell breadcrumb={[{ label: t("shop_market_title"), href: "/shop" }, { label: product.name }]}>
       <div className="flex items-center justify-between mb-4 max-w-4xl">
         <button onClick={() => router.push("/shop")} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700">
           <ArrowLeft className="w-4 h-4" /> {t("pd_back_to_market")}
@@ -293,7 +302,7 @@ export default function ProductDetailPage() {
       <div className="border-t border-slate-100 mt-8 pt-6 max-w-4xl">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-slate-800">{t("pd_ratings_reviews")}</p>
-          <button onClick={() => setShowReviewModal(true)} className="text-sm font-semibold text-emerald-600 hover:underline">{t("pd_write_a_review")}</button>
+          <button onClick={() => { if (requireLogin()) setShowReviewModal(true); }} className="text-sm font-semibold text-emerald-600 hover:underline">{t("pd_write_a_review")}</button>
         </div>
         {product.review_count > 0 && (
           <div className="inline-flex items-center gap-1.5 bg-emerald-700 text-white rounded-lg px-2.5 py-1.5 mb-4">
@@ -346,6 +355,6 @@ export default function ProductDetailPage() {
       {showReviewModal && (
         <WriteReviewModal productId={product.id} onClose={() => setShowReviewModal(false)} onSubmitted={loadReviews} />
       )}
-    </DashboardShell>
+    </MarketShell>
   );
 }

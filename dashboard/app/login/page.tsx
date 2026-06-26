@@ -1,17 +1,27 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { Suspense, useState, FormEvent, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, XCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocale } from "@/contexts/LocaleContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const { login, register, isAuthenticated, isLoading } = useAuth();
   const { t } = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
   const [mode, setMode] = useState<"login" | "register">("login");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,9 +34,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace("/");
+      router.replace(redirectTo);
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, router, redirectTo]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();

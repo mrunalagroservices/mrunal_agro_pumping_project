@@ -55,8 +55,10 @@ router.get('/wishlist/mine', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/v1/products — active products visible to authenticated users
-router.get('/', requireAuth, async (req, res) => {
+// GET /api/v1/products — public, browsable without an account (the Mandi
+// homepage is open to anonymous visitors; login is only required to add to
+// cart/wishlist, write a review, or check out)
+router.get('/', async (req, res) => {
   try {
     const result = await db.query(
       `${PRODUCT_SELECT} WHERE p.is_active = true ORDER BY p.is_best_seller DESC, p.created_at DESC`
@@ -68,8 +70,8 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/v1/products/:id
-router.get('/:id', requireAuth, async (req, res) => {
+// GET /api/v1/products/:id — public, same as the list above
+router.get('/:id', async (req, res) => {
   try {
     const result = await db.query(`${PRODUCT_SELECT} WHERE p.id = $1 AND p.is_active = true`, [req.params.id]);
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'Product not found' });
@@ -80,8 +82,8 @@ router.get('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/v1/products/:id/reviews
-router.get('/:id/reviews', requireAuth, async (req, res) => {
+// GET /api/v1/products/:id/reviews — public, same as the product itself
+router.get('/:id/reviews', async (req, res) => {
   try {
     const result = await db.query(
       `SELECT pr.id, pr.rating, pr.comment, pr.created_at, u.name AS user_name

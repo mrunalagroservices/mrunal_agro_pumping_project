@@ -6,11 +6,12 @@ import {
   ShoppingCart, Search, Star, X, Plus, Minus,
   Heart, ChevronDown, ChevronUp, SlidersHorizontal, Package, Trash2, ClipboardList,
 } from "lucide-react";
-import DashboardShell from "@/components/DashboardShell";
+import MarketShell from "@/components/MarketShell";
 import BannerCarousel from "@/components/BannerCarousel";
 import type { Product, ShopSettings, ApiResponse, Banner } from "@/lib/types";
 import { CartItem, cartFromStorage, cartToStorage } from "@/lib/products";
 import { httpClient } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLocale } from "@/contexts/LocaleContext";
 
 const DEFAULT_SETTINGS: ShopSettings = {
@@ -179,6 +180,15 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
 export default function ShopPage() {
   const router = useRouter();
   const { t } = useLocale();
+  const { isAuthenticated } = useAuth();
+
+  // Browsing is open to anyone; adding to cart/wishlist or checking out
+  // requires an account — redirect there and back instead of silently failing.
+  function requireLogin(): boolean {
+    if (isAuthenticated) return true;
+    router.push(`/login?redirect=${encodeURIComponent("/shop")}`);
+    return false;
+  }
 
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<ShopSettings>(DEFAULT_SETTINGS);
@@ -264,6 +274,7 @@ export default function ShopPage() {
   }, [search, filtered.length, logSearch]);
 
   function addToCart(product: Product) {
+    if (!requireLogin()) return;
     setCart((prev) => {
       const idx = prev.findIndex((i) => i.product.id === product.id);
       if (idx === -1) return [...prev, { product, qty: 1 }];
@@ -277,6 +288,7 @@ export default function ShopPage() {
     }));
   }
   function toggleWishlist(id: number) {
+    if (!requireLogin()) return;
     setWishlist((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
   function cartQty(id: number) { return cart.find((i) => i.product.id === id)?.qty ?? 0; }
@@ -289,7 +301,7 @@ export default function ShopPage() {
   function toggleCat(c: string) { setSelectedCats((p) => p.includes(c) ? p.filter((x) => x !== c) : [...p, c]); }
 
   return (
-    <DashboardShell breadcrumb={[{ label: t("shop_market_title") }]}>
+    <MarketShell breadcrumb={[{ label: t("shop_market_title") }]}>
       {/* Hero Banner — admin-managed sliding carousel (Admin → Banners), falls
           back to a static hero if no banners are configured yet */}
       {banners.length > 0 ? (
@@ -329,11 +341,11 @@ export default function ShopPage() {
         <button onClick={() => setMobileFilterOpen(true)} className="lg:hidden flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-full text-sm font-medium bg-white text-slate-600 shadow-sm">
           <SlidersHorizontal className="w-4 h-4" /> {t("shop_filter")}
         </button>
-        <button onClick={() => router.push("/orders")}
+        <button onClick={() => { if (requireLogin()) router.push("/orders"); }}
           className="flex items-center gap-2 px-4 py-2.5 border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-semibold rounded-full hover:bg-emerald-100 transition-colors">
           <ClipboardList className="w-4 h-4" /> {t("shop_my_orders")}
         </button>
-        <button onClick={() => router.push("/shop/checkout")}
+        <button onClick={() => { if (requireLogin()) router.push("/shop/checkout"); }}
           className="relative flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-full transition-colors shadow-sm">
           <ShoppingCart className="w-4 h-4" /> {t("shop_cart")}
           {cartCount > 0 && <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{cartCount}</span>}
@@ -428,7 +440,7 @@ export default function ShopPage() {
                     <p className="text-xs text-emerald-600">{t("shop_deliver_by", { date: deliveryDate() })}</p>
                   </div>
                 </div>
-                <button onClick={() => router.push("/shop/checkout")}
+                <button onClick={() => { if (requireLogin()) router.push("/shop/checkout"); }}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-full transition-colors">
                   {t("shop_checkout_arrow")}
                 </button>
@@ -462,6 +474,6 @@ export default function ShopPage() {
           </div>
         </div>
       )}
-    </DashboardShell>
+    </MarketShell>
   );
 }
