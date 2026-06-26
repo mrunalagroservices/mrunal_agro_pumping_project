@@ -172,6 +172,77 @@ router.delete('/products/:id', async (req, res) => {
   }
 });
 
+// ── Mandi homepage banners CRUD ─────────────────────────────────────────────────
+
+// GET /api/v1/admin/banners — all banners (active and inactive)
+router.get('/banners', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM shop_banners ORDER BY sort_order ASC, id ASC');
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch banners' });
+  }
+});
+
+// POST /api/v1/admin/banners
+router.post('/banners', async (req, res) => {
+  const { title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, sort_order, is_active } = req.body;
+  if (!title) {
+    return res.status(400).json({ success: false, message: 'title is required' });
+  }
+  try {
+    const result = await db.query(
+      `INSERT INTO shop_banners (title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, sort_order, is_active)
+       VALUES ($1,$2,$3, COALESCE($4,'#7c3aed'), COALESCE($5,'#4f46e5'), $6,$7, COALESCE($8,0), COALESCE($9,true))
+       RETURNING *`,
+      [title, subtitle || null, image_url || null, gradient_from || null, gradient_to || null,
+       icon || null, link_url || null, sort_order ?? null, is_active ?? null]
+    );
+    res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Admin/banners POST]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to create banner' });
+  }
+});
+
+// PUT /api/v1/admin/banners/:id
+router.put('/banners/:id', async (req, res) => {
+  const { title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, sort_order, is_active } = req.body;
+  try {
+    const result = await db.query(
+      `UPDATE shop_banners SET
+         title         = COALESCE($1, title),
+         subtitle      = COALESCE($2, subtitle),
+         image_url     = COALESCE($3, image_url),
+         gradient_from = COALESCE($4, gradient_from),
+         gradient_to   = COALESCE($5, gradient_to),
+         icon          = COALESCE($6, icon),
+         link_url      = COALESCE($7, link_url),
+         sort_order    = COALESCE($8, sort_order),
+         is_active     = COALESCE($9, is_active),
+         updated_at    = NOW()
+       WHERE id = $10 RETURNING *`,
+      [title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, sort_order, is_active, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Banner not found' });
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Admin/banners PUT]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to update banner' });
+  }
+});
+
+// DELETE /api/v1/admin/banners/:id
+router.delete('/banners/:id', async (req, res) => {
+  try {
+    const result = await db.query('DELETE FROM shop_banners WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Banner not found' });
+    res.json({ success: true, data: { id: result.rows[0].id } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete banner' });
+  }
+});
+
 // ── Farms CRUD ─────────────────────────────────────────────────────────────────
 
 // GET /api/v1/admin/farms — all farms across all orgs

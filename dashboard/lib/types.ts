@@ -59,6 +59,18 @@ export interface User {
   notification_preferences?: NotificationPreferences;
 }
 
+export interface Banner {
+  id: number;
+  title: string;
+  subtitle?: string | null;
+  image_url?: string | null;
+  gradient_from: string;
+  gradient_to: string;
+  icon?: string | null;
+  link_url?: string | null;
+  sort_order: number;
+}
+
 export interface LegalSection {
   heading: string;
   body: string;

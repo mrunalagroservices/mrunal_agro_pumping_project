@@ -299,6 +299,23 @@ CREATE TABLE products (
 CREATE INDEX idx_products_category ON products(category);
 CREATE INDEX idx_products_active ON products(is_active);
 
+-- ─── Mandi homepage promo banners (admin-managed, sliding carousel) ───────────
+CREATE TABLE shop_banners (
+  id            SERIAL PRIMARY KEY,
+  title         VARCHAR(150) NOT NULL,
+  subtitle      VARCHAR(255),
+  image_url     TEXT,                                  -- optional photo; falls back to gradient+icon card if unset
+  gradient_from VARCHAR(7) NOT NULL DEFAULT '#7c3aed',
+  gradient_to   VARCHAR(7) NOT NULL DEFAULT '#4f46e5',
+  icon          VARCHAR(50),                            -- lucide icon name, e.g. "Truck", "Tag"
+  link_url      TEXT,                                   -- optional, e.g. /shop?category=Seeds
+  sort_order    INTEGER NOT NULL DEFAULT 0,
+  is_active     BOOLEAN NOT NULL DEFAULT true,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_shop_banners_active ON shop_banners(is_active, sort_order);
+
 -- ─── Product reviews ────────────────────────────────────────────────────────────
 CREATE TABLE product_reviews (
   id         SERIAL PRIMARY KEY,

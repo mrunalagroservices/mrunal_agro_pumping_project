@@ -176,3 +176,18 @@ export interface Product {
   created_at: string;
   updated_at: string;
 }
+
+export interface Banner {
+  id: number;
+  title: string;
+  subtitle?: string | null;
+  image_url?: string | null;
+  gradient_from: string;
+  gradient_to: string;
+  icon?: string | null;
+  link_url?: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

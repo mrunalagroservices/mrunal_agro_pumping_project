@@ -7,7 +7,8 @@ import {
   Heart, ChevronDown, ChevronUp, SlidersHorizontal, Package, Trash2, ClipboardList,
 } from "lucide-react";
 import DashboardShell from "@/components/DashboardShell";
-import type { Product, ShopSettings, ApiResponse } from "@/lib/types";
+import BannerCarousel from "@/components/BannerCarousel";
+import type { Product, ShopSettings, ApiResponse, Banner } from "@/lib/types";
 import { CartItem, cartFromStorage, cartToStorage } from "@/lib/products";
 import { httpClient } from "@/lib/api";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -181,6 +182,7 @@ export default function ShopPage() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<ShopSettings>(DEFAULT_SETTINGS);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [cart, setCart] = useState<CartItem[]>(() => cartFromStorage());
@@ -216,6 +218,11 @@ export default function ShopPage() {
     }).catch(() => {
       // Silently fall back to empty products and default settings
     }).finally(() => setLoading(false));
+
+    // Best-effort: a banner-fetch failure shouldn't take down the products grid.
+    httpClient.get<ApiResponse<Banner[]>>("/banners")
+      .then((res) => setBanners(res.data))
+      .catch(() => {});
   }, []);
 
   useEffect(() => { cartToStorage(cart); }, [cart]);
@@ -246,6 +253,10 @@ export default function ShopPage() {
     else if (sortBy === "discount") list = [...list].sort((a, b) => (b.original_price - b.price) - (a.original_price - a.price));
     return list;
   }, [products, selectedCats, minPrice, maxPrice, minRating, sortBy, search]);
+
+  // Curated row at the top of the homepage — admin marks products as "Best
+  // Seller" from the Products admin page (no separate curation step needed).
+  const bestSellers = useMemo(() => products.filter((p) => p.is_best_seller).slice(0, 10), [products]);
 
   // Log search whenever filtered changes due to search term
   useEffect(() => {
@@ -279,28 +290,33 @@ export default function ShopPage() {
 
   return (
     <DashboardShell breadcrumb={[{ label: t("shop_market_title") }]}>
-      {/* Hero Banner */}
-      <div className="relative -mx-4 lg:-mx-6 -mt-4 lg:-mt-6 mb-8 overflow-hidden rounded-b-2xl" style={{ height: 240 }}>
-        <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=1400&h=400&q=80"
-          alt="Farm" className="w-full h-full object-cover"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/50 to-transparent flex items-center">
-          <div className="px-8 lg:px-12 max-w-lg">
-            <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">{t("shop_hero_tag")}</p>
-            <h1 className="text-white text-3xl lg:text-4xl font-black leading-tight mb-3">{t("shop_hero_title")}</h1>
-            <p className="text-slate-300 text-sm mb-5">{settings.categories.join(" · ")}</p>
-            <button onClick={() => document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth" })}
-              className="bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-5 py-2.5 rounded-full text-sm transition-colors">
-              {t("shop_shop_now")}
-            </button>
+      {/* Hero Banner — admin-managed sliding carousel (Admin → Banners), falls
+          back to a static hero if no banners are configured yet */}
+      {banners.length > 0 ? (
+        <BannerCarousel banners={banners} />
+      ) : (
+        <div className="relative -mx-4 lg:-mx-6 -mt-4 lg:-mt-6 mb-8 overflow-hidden rounded-b-2xl" style={{ height: 240 }}>
+          <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=1400&h=400&q=80"
+            alt="Farm" className="w-full h-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/50 to-transparent flex items-center">
+            <div className="px-8 lg:px-12 max-w-lg">
+              <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">{t("shop_hero_tag")}</p>
+              <h1 className="text-white text-3xl lg:text-4xl font-black leading-tight mb-3">{t("shop_hero_title")}</h1>
+              <p className="text-slate-300 text-sm mb-5">{settings.categories.join(" · ")}</p>
+              <button onClick={() => document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth" })}
+                className="bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-5 py-2.5 rounded-full text-sm transition-colors">
+                {t("shop_shop_now")}
+              </button>
+            </div>
+          </div>
+          <div className="absolute bottom-3 right-4 hidden lg:flex items-center gap-4 text-white/70 text-xs font-medium">
+            <span>{t("shop_trusted_shipping")}</span>
+            <span>{t("shop_easy_returns")}</span>
+            <span>{t("shop_secure_shopping")}</span>
           </div>
         </div>
-        <div className="absolute bottom-3 right-4 hidden lg:flex items-center gap-4 text-white/70 text-xs font-medium">
-          <span>{t("shop_trusted_shipping")}</span>
-          <span>{t("shop_easy_returns")}</span>
-          <span>{t("shop_secure_shopping")}</span>
-        </div>
-      </div>
+      )}
 
       {/* Search + Cart bar */}
       <div className="flex items-center gap-3 mb-6 flex-wrap" id="products-section">
@@ -323,6 +339,25 @@ export default function ShopPage() {
           {cartCount > 0 && <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{cartCount}</span>}
         </button>
       </div>
+
+      {/* Best Sellers — curated horizontal row, Amazon/Myntra homepage style */}
+      {bestSellers.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-bold text-slate-800 mb-3">{t("shop_best_seller")}</h2>
+          <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin">
+            {bestSellers.map((p) => (
+              <div key={p.id} className="w-44 shrink-0 snap-start">
+                <ProductCard product={p} inCart={cartQty(p.id)} wishlisted={wishlist.has(p.id)}
+                  onOpen={() => router.push(`/shop/${p.id}`)}
+                  onAdd={(e) => { e.stopPropagation(); addToCart(p); }}
+                  onRemove={(e) => { e.stopPropagation(); removeFromCart(p.id); }}
+                  onWishlist={(e) => { e.stopPropagation(); toggleWishlist(p.id); }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Mobile filter drawer */}
       {mobileFilterOpen && (
