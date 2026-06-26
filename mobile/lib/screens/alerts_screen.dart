@@ -28,6 +28,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
   @override
   void initState() {
     super.initState();
+    // Mandi-only accounts have no farm notifications to show at all, so
+    // default straight to Market instead of an always-empty Farm tab.
+    if (!context.read<AppState>().hasFarmAccess) _filter = 'market';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().loadNotifications();
     });
@@ -98,6 +101,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
   Widget build(BuildContext context) {
     context.watchLocale();
     final state = context.watch<AppState>();
+    final hasFarmAccess = state.hasFarmAccess;
     final filtered = _filtered(state.notifications);
 
     return Scaffold(
@@ -198,37 +202,42 @@ class _AlertsScreenState extends State<AlertsScreen> {
               ),
 
             // ── Farm / Market segmented toggle ───────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.chip,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _Segment(
-                        label: context.tr('nav_farm'),
-                        value: 'farm',
-                        current: _filter,
-                        onTap: (v) => setState(() => _filter = v),
+            // Mandi-only accounts have nothing to switch between, so the
+            // toggle is skipped entirely (matches the hidden Farm tab
+            // elsewhere in the app for these accounts).
+            if (hasFarmAccess) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.chip,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _Segment(
+                          label: context.tr('nav_farm'),
+                          value: 'farm',
+                          current: _filter,
+                          onTap: (v) => setState(() => _filter = v),
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: _Segment(
-                        label: context.tr('nav_market'),
-                        value: 'market',
-                        current: _filter,
-                        onTap: (v) => setState(() => _filter = v),
+                      Expanded(
+                        child: _Segment(
+                          label: context.tr('nav_market'),
+                          value: 'market',
+                          current: _filter,
+                          onTap: (v) => setState(() => _filter = v),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
+              const SizedBox(height: 8),
+            ],
             const Divider(height: 1, thickness: 1, color: AppColors.divider),
 
             Expanded(
