@@ -8,6 +8,7 @@ import '../providers/app_state.dart';
 import '../services/api_client.dart';
 import 'payment_screen.dart';
 import '../config/theme.dart';
+import '../widgets/network_image_placeholder.dart';
 
 class CartScreen extends StatefulWidget {
   final Map<int, int> cart;
@@ -572,6 +573,7 @@ class _CartItemRow extends StatelessWidget {
                       width: 64,
                       height: 64,
                       fit: BoxFit.cover,
+                      placeholder: networkImagePlaceholder,
                       errorWidget: (_, __, ___) => Icon(product.icon, color: product.iconColor, size: 28),
                     )
                   : Icon(product.icon, color: product.iconColor, size: 28),

@@ -9,6 +9,7 @@ import '../l10n/tr_extension.dart';
 import '../models/product.dart';
 import '../providers/app_state.dart';
 import '../widgets/language_switcher.dart';
+import '../widgets/network_image_placeholder.dart';
 import 'cart_screen.dart';
 import 'product_detail_screen.dart';
 import 'wishlist_screen.dart';
@@ -986,6 +987,7 @@ class _ProductCard extends StatelessWidget {
                         ? CachedNetworkImage(
                             imageUrl: p.imageUrl!,
                             fit: BoxFit.cover,
+                            placeholder: networkImagePlaceholder,
                             errorWidget: (_, __, ___) => Center(
                               child: Icon(p.icon, size: 48, color: p.iconColor),
                             ),

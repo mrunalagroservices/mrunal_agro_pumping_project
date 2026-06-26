@@ -8,6 +8,7 @@ import '../providers/app_state.dart';
 import 'cart_screen.dart';
 import 'write_review_sheet.dart';
 import '../config/theme.dart';
+import '../widgets/network_image_placeholder.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final int productId;
@@ -163,6 +164,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     ? CachedNetworkImage(
                                         imageUrl: p.imageUrl!,
                                         fit: BoxFit.cover,
+                                        placeholder: networkImagePlaceholder,
                                         errorWidget: (_, __, ___) => Center(
                                           child: Icon(
                                             p.icon,
@@ -739,6 +741,7 @@ class _SimilarProducts extends StatelessWidget {
                               ? CachedNetworkImage(
                                   imageUrl: p.imageUrl!,
                                   fit: BoxFit.cover,
+                                  placeholder: networkImagePlaceholder,
                                   errorWidget: (_, __, ___) => Center(
                                     child: Icon(p.icon, size: 40, color: p.iconColor),
                                   ),

@@ -5,6 +5,7 @@ import '../l10n/tr_extension.dart';
 import '../models/order.dart';
 import '../providers/app_state.dart';
 import '../widgets/language_switcher.dart';
+import '../widgets/network_image_placeholder.dart';
 import 'order_detail_screen.dart';
 import 'write_review_sheet.dart';
 import '../config/theme.dart';
@@ -378,6 +379,7 @@ class _ItemRowState extends State<_ItemRow> {
                         ? CachedNetworkImage(
                             imageUrl: item.productImage!,
                             fit: BoxFit.cover,
+                            placeholder: networkImagePlaceholder,
                             errorWidget: (_, __, ___) => const Center(
                               child: Text('🌿', style: TextStyle(fontSize: 22)),
                             ),

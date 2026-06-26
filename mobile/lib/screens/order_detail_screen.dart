@@ -5,6 +5,7 @@ import '../l10n/tr_extension.dart';
 import '../models/order.dart';
 import '../providers/app_state.dart';
 import '../widgets/order_timeline.dart';
+import '../widgets/network_image_placeholder.dart';
 import 'product_detail_screen.dart';
 import 'write_review_sheet.dart';
 import '../config/theme.dart';
@@ -143,6 +144,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 imageUrl: images[i],
                                 fit: BoxFit.cover,
                                 width: double.infinity,
+                                placeholder: networkImagePlaceholder,
                                 errorWidget: (_, __, ___) => Container(
                                   color: AppColors.chip,
                                   child: const Center(
@@ -478,6 +480,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 ? CachedNetworkImage(
                                     imageUrl: item.productImage!,
                                     fit: BoxFit.cover,
+                                    placeholder: networkImagePlaceholder,
                                     errorWidget: (_, __, ___) => const Center(
                                       child: Text(
                                         '🌿',
@@ -825,6 +828,7 @@ class _YouMayAlsoLike extends StatelessWidget {
                                 ? CachedNetworkImage(
                                     imageUrl: p.imageUrl!,
                                     fit: BoxFit.cover,
+                                    placeholder: networkImagePlaceholder,
                                     errorWidget: (_, __, ___) => Center(
                                       child: Icon(p.icon, size: 40, color: p.iconColor),
                                     ),

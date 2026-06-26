@@ -6,6 +6,7 @@ import '../models/product.dart';
 import '../providers/app_state.dart';
 import 'product_detail_screen.dart';
 import '../config/theme.dart';
+import '../widgets/network_image_placeholder.dart';
 
 class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key});
@@ -160,6 +161,7 @@ class _WishlistRow extends StatelessWidget {
                     ? CachedNetworkImage(
                         imageUrl: p.imageUrl!,
                         fit: BoxFit.cover,
+                        placeholder: networkImagePlaceholder,
                         errorWidget: (_, __, ___) => Center(
                           child: Icon(p.icon, size: 32, color: p.iconColor),
                         ),
