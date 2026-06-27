@@ -1,9 +1,38 @@
 const express = require('express');
+const path = require('path');
+const crypto = require('crypto');
+const multer = require('multer');
 const router = express.Router();
 const db = require('../../config/database');
 const { requireAuth, requireAdmin } = require('../../middleware/auth');
 
 router.use(requireAuth, requireAdmin);
+
+// ── Product image upload ────────────────────────────────────────────────────
+// Note: Render's free-tier filesystem is ephemeral — files written here are
+// wiped on every deploy/restart. Fine for now; move to S3/Cloudinary (or a
+// Render persistent disk) before relying on this for real production use.
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: path.join(__dirname, '..', '..', '..', 'public', 'products'),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+      cb(null, `${crypto.randomUUID()}${ext}`);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) return cb(new Error('Only image files are allowed'));
+    cb(null, true);
+  },
+});
+
+// POST /api/v1/admin/upload — multipart form field "image", returns the public URL
+router.post('/upload', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: 'No image file provided' });
+  const url = `${req.protocol}://${req.get('host')}/static/products/${req.file.filename}`;
+  res.status(201).json({ success: true, data: { url } });
+});
 
 // GET /api/v1/admin/stats — platform-wide counters
 router.get('/stats', async (req, res) => {

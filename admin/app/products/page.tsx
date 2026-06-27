@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, X, Star, Package } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { Plus, Pencil, Trash2, X, Star, Package, MoreVertical, ImageUp, Upload, Loader2 } from "lucide-react";
 import AdminShell from "@/components/AdminShell";
 import { httpClient } from "@/lib/api";
 import { Product, ApiResponse } from "@/lib/types";
@@ -16,15 +16,37 @@ const EMPTY: Partial<Product> = {
 const inputCls = "w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition";
 const labelCls = "block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide";
 
+// Newly added in the last 7 days — drives the "New" badge on the card,
+// matching the storefront reference's top-left ribbon.
+function isNew(createdAt?: string) {
+  if (!createdAt) return false;
+  return Date.now() - new Date(createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
+}
+
 function ProductModal({ product, onClose, onSave }: {
   product: Partial<Product>; onClose: () => void; onSave: (data: Partial<Product>) => Promise<void>;
 }) {
   const [form, setForm] = useState<Partial<Product>>(product);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function set(key: keyof Product, value: unknown) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  async function handleFile(file: File) {
+    setErr("");
+    setUploading(true);
+    try {
+      const res = await httpClient.uploadFile<ApiResponse<{ url: string }>>("/admin/upload", file);
+      set("image_url", res.data.url);
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Image upload failed");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function submit(e: React.FormEvent) {
@@ -51,6 +73,35 @@ function ProductModal({ product, onClose, onSave }: {
 
         <form onSubmit={submit} className="p-6 space-y-4">
           {err && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">{err}</div>}
+
+          {/* Image preview + upload */}
+          <div className="flex gap-4 items-start">
+            <div className="w-28 h-28 rounded-xl border border-slate-200 overflow-hidden shrink-0 bg-slate-50 flex items-center justify-center">
+              {uploading ? (
+                <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+              ) : form.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={form.image_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <Package className="w-8 h-8 text-slate-300" />
+              )}
+            </div>
+            <div className="flex-1 space-y-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
+              />
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                className="flex items-center gap-2 px-4 py-2 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-xl transition disabled:opacity-60">
+                <Upload className="w-4 h-4" /> {form.image_url ? "Replace Image" : "Upload Image"}
+              </button>
+              <p className="text-xs text-slate-400">Or paste an image URL below</p>
+              <input className={inputCls} value={form.image_url || ""} onChange={(e) => set("image_url", e.target.value)} placeholder="https://…" />
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
@@ -87,8 +138,8 @@ function ProductModal({ product, onClose, onSave }: {
               <input type="number" min="0" className={inputCls} value={form.stock_quantity ?? 0} onChange={(e) => set("stock_quantity", parseInt(e.target.value))} />
             </div>
             <div>
-              <label className={labelCls}>Image URL</label>
-              <input className={inputCls} value={form.image_url || ""} onChange={(e) => set("image_url", e.target.value)} placeholder="https://…" />
+              <label className={labelCls}>Rating</label>
+              <input type="number" min="0" max="5" step="0.1" className={inputCls} value={form.rating ?? 0} onChange={(e) => set("rating", parseFloat(e.target.value))} />
             </div>
             <div className="col-span-2">
               <label className={labelCls}>Description</label>
@@ -114,12 +165,50 @@ function ProductModal({ product, onClose, onSave }: {
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl transition">
+            <button type="submit" disabled={saving || uploading} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl transition">
               {saving ? "Saving…" : "Save Product"}
             </button>
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+// 3-dot card menu: Edit Details / Replace Image / Delete — matches the
+// storefront reference's per-card kebab menu.
+function CardMenu({ onEdit, onReplaceImage, onDelete }: { onEdit: () => void; onReplaceImage: () => void; onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+        className="w-7 h-7 rounded-full bg-white/90 hover:bg-white shadow flex items-center justify-center transition"
+      >
+        <MoreVertical className="w-4 h-4 text-slate-600" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-8 z-20 w-44 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden">
+          <button onClick={() => { setOpen(false); onEdit(); }} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition">
+            <Pencil className="w-3.5 h-3.5" /> Edit Details
+          </button>
+          <button onClick={() => { setOpen(false); onReplaceImage(); }} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition">
+            <ImageUp className="w-3.5 h-3.5" /> Replace Image
+          </button>
+          <button onClick={() => { setOpen(false); onDelete(); }} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
+            <Trash2 className="w-3.5 h-3.5" /> Delete
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -131,6 +220,9 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<Partial<Product> | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [uploadingId, setUploadingId] = useState<number | null>(null);
+  const replaceFileInputRef = useRef<HTMLInputElement>(null);
+  const replaceTargetId = useRef<number | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -158,6 +250,25 @@ export default function ProductsPage() {
     setDeleteId(null);
   }
 
+  function triggerReplaceImage(productId: number) {
+    replaceTargetId.current = productId;
+    replaceFileInputRef.current?.click();
+  }
+
+  async function handleReplaceFile(file: File) {
+    const productId = replaceTargetId.current;
+    if (!productId) return;
+    setUploadingId(productId);
+    try {
+      const uploadRes = await httpClient.uploadFile<ApiResponse<{ url: string }>>("/admin/upload", file);
+      await save({ id: productId, image_url: uploadRes.data.url });
+    } catch {
+      // best-effort — card just keeps its previous image on failure
+    } finally {
+      setUploadingId(null);
+    }
+  }
+
   const filtered = products.filter((p) => {
     const matchCat = catFilter === "All" || p.category === catFilter;
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
@@ -166,6 +277,14 @@ export default function ProductsPage() {
 
   return (
     <AdminShell title="Products">
+      <input
+        ref={replaceFileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleReplaceFile(f); e.target.value = ""; }}
+      />
+
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <input
@@ -207,15 +326,33 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map((p) => {
             const disc = p.original_price > p.price ? Math.round((1 - p.price / p.original_price) * 100) : 0;
+            const inStock = p.stock_quantity > 0;
             return (
               <div key={p.id} className={`bg-white rounded-2xl border ${p.is_active ? "border-slate-200" : "border-slate-200 opacity-60"} overflow-hidden hover:shadow-md transition-shadow`}>
-                {p.image_url ? (
-                  <img src={p.image_url} alt={p.name} className="w-full h-36 object-cover" />
-                ) : (
-                  <div className="h-36 bg-gradient-to-br from-emerald-50 to-slate-100 flex items-center justify-center">
-                    <Package className="w-12 h-12 text-emerald-200" />
+                <div className="relative h-36">
+                  {uploadingId === p.id ? (
+                    <div className="w-full h-full bg-slate-50 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+                    </div>
+                  ) : p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-emerald-50 to-slate-100 flex items-center justify-center">
+                      <Package className="w-12 h-12 text-emerald-200" />
+                    </div>
+                  )}
+                  <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
+                    {disc > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{disc}% OFF</span>}
+                    {disc === 0 && isNew(p.created_at) && <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">New</span>}
                   </div>
-                )}
+                  <div className="absolute top-2 right-2">
+                    <CardMenu
+                      onEdit={() => setModal(p)}
+                      onReplaceImage={() => triggerReplaceImage(p.id)}
+                      onDelete={() => setDeleteId(p.id)}
+                    />
+                  </div>
+                </div>
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <span className="text-xs text-slate-400 font-medium">{p.category}</span>
@@ -225,27 +362,29 @@ export default function ProductsPage() {
                     </div>
                   </div>
                   <p className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2 mb-1">{p.name}</p>
+                  <div className="flex items-center gap-0.5 mb-1">
+                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-semibold text-slate-700">{p.rating ?? 0}</span>
+                    <span className="text-[10px] text-slate-400">({p.review_count ?? 0})</span>
+                  </div>
                   <p className="text-xs text-slate-400">{p.unit}</p>
-                  <p className="text-[11px] text-slate-400 mb-2">{p.retailer_name ? `By ${p.retailer_name}` : " "}</p>
-                  <div className="flex items-center gap-2 mb-1">
+                  <p className="text-[11px] text-slate-400 mb-2">{p.retailer_name ? `By ${p.retailer_name}` : " "}</p>
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-bold text-slate-900">₹{p.price}</span>
                     {disc > 0 && <>
                       <span className="text-xs text-slate-400 line-through">₹{p.original_price}</span>
                       <span className="text-xs font-bold text-emerald-600">{disc}% off</span>
                     </>}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-400 mb-4">
-                    <span className="flex items-center gap-0.5"><Star className="w-3 h-3 fill-amber-400 text-amber-400" /> {p.rating ?? "—"}</span>
-                    <span>Stock: {p.stock_quantity}</span>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${inStock ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+                      {inStock ? "In Stock" : "Out of Stock"}
+                    </span>
+                    {inStock && <span className="text-[10px] text-slate-400">{p.stock_quantity} left</span>}
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setModal(p)} className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl hover:bg-slate-50 transition">
-                      <Pencil className="w-3.5 h-3.5" /> Edit
-                    </button>
-                    <button onClick={() => setDeleteId(p.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-red-200 text-red-600 text-xs font-semibold rounded-xl hover:bg-red-50 transition">
-                      <Trash2 className="w-3.5 h-3.5" /> Delete
-                    </button>
-                  </div>
+                  <button onClick={() => setModal(p)} className="w-full flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl hover:bg-slate-50 transition">
+                    <Pencil className="w-3.5 h-3.5" /> Edit
+                  </button>
                 </div>
               </div>
             );

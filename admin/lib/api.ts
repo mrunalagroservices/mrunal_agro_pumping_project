@@ -41,6 +41,29 @@ class HttpClient {
     return data as T;
   }
 
+  // Multipart upload — must NOT set Content-Type: application/json or send a
+  // JSON-stringified body; the browser sets its own multipart boundary header
+  // when the body is a real FormData instance.
+  async uploadFile<T>(path: string, file: File, fieldName = "image"): Promise<T> {
+    const token = this.getToken();
+    const formData = new FormData();
+    formData.append(fieldName, file);
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${this.baseURL}${path}`, { method: "POST", headers, body: formData });
+
+    if (res.status === 401) {
+      this.clearToken();
+      if (typeof window !== "undefined") window.location.href = "/login";
+      throw new Error("Unauthorized");
+    }
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || `Request failed with ${res.status}`);
+    return data as T;
+  }
+
   get<T>(path: string): Promise<T> { return this.request<T>(path, { method: "GET" }); }
   post<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>(path, { method: "POST", body: body !== undefined ? JSON.stringify(body) : undefined });
