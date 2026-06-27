@@ -7,7 +7,7 @@ const db = require('../../config/database');
 router.get('/', async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT id, title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, sort_order
+      `SELECT id, title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, placement, sort_order
        FROM shop_banners
        WHERE is_active = true
        ORDER BY sort_order ASC, id ASC`

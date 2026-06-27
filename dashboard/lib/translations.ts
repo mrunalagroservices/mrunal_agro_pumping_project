@@ -631,6 +631,7 @@ export const translations = {
   shop_min_rating: { en: "Min Rating", hi: "मिनिमम रेटिंग", mr: "मिनिमम रेटिंग" },
   shop_all: { en: "All", hi: "सभी", mr: "सर्व" },
   shop_best_seller: { en: "Best Seller", hi: "बेस्ट सेलर", mr: "बेस्ट सेलर" },
+  shop_by_retailer: { en: "By {name}", hi: "{name} द्वारा", mr: "{name} द्वारे" },
   shop_new_arrival: { en: "New Arrival", hi: "नया आइटम", mr: "नवीन आयटम" },
   shop_only_left: { en: "Only {n} left!", hi: "सिर्फ {n} बचे हैं!", mr: "फक्त {n} शिल्लक!" },
   shop_out_of_stock: { en: "Out of stock", hi: "स्टॉक में नहीं", mr: "स्टॉकमध्ये नाही" },
@@ -680,6 +681,7 @@ export const translations = {
   pd_out_of_stock: { en: "Out of stock", hi: "स्टॉक में नहीं", mr: "स्टॉकमध्ये नाही" },
   pd_on_orders_above: { en: "On orders above ₹499", hi: "₹499 से ज्यादा के ऑर्डर पर", mr: "₹499 पेक्षा जास्त ऑर्डरवर" },
   pd_sold_by: { en: "Sold by Mrunal Agro", hi: "मृणाल एग्रो द्वारा बेचा गया", mr: "मृणाल अॅग्रोद्वारे विकले" },
+  pd_distributed_by: { en: "Distributed by {name}", hi: "{name} द्वारा वितरित", mr: "{name} द्वारे वितरित" },
   pd_cod_available: { en: "Cash on Delivery available (+₹100 handling)", hi: "कैश ऑन डिलीवरी उपलब्ध (+₹100 हैंडलिंग)", mr: "कॅश ऑन डिलिव्हरी उपलब्ध (+₹100 हँडलिंग)" },
   pd_contact_support: {
     en: "Contact support for replacement of damaged or incorrect items",

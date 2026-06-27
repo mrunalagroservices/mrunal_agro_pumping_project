@@ -260,7 +260,10 @@ export default function ProductDetailPage() {
               </div>
             </div>
             <div className="space-y-2 text-sm text-slate-700">
-              <p className="flex items-center gap-2.5"><Store className="w-4 h-4 text-slate-500" /> {t("pd_sold_by")}</p>
+              <p className="flex items-center gap-2.5"><Store className="w-4 h-4 text-slate-500" /> {product.retailer_name ? t("shop_by_retailer", { name: product.retailer_name }) : t("pd_sold_by")}</p>
+              {product.distributor_name && (
+                <p className="text-xs text-slate-400 pl-7">{t("pd_distributed_by", { name: product.distributor_name })}</p>
+              )}
               <p className="flex items-center gap-2.5"><Banknote className="w-4 h-4 text-slate-500" /> {t("pd_cod_available")}</p>
               <p className="flex items-center gap-2.5"><Headset className="w-4 h-4 text-slate-500" /> {t("pd_contact_support")}</p>
             </div>

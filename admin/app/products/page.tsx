@@ -10,7 +10,7 @@ const CATEGORIES = ["Seeds", "Fertilizers", "Irrigation", "Tools", "Pesticides",
 const EMPTY: Partial<Product> = {
   name: "", category: "Seeds", price: 0, original_price: 0,
   unit: "", image_url: "", description: "", is_best_seller: false,
-  is_active: true, stock_quantity: 0,
+  is_active: true, stock_quantity: 0, retailer_name: "", distributor_name: "",
 };
 
 const inputCls = "w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition";
@@ -93,6 +93,14 @@ function ProductModal({ product, onClose, onSave }: {
             <div className="col-span-2">
               <label className={labelCls}>Description</label>
               <textarea rows={3} className={`${inputCls} resize-none`} value={form.description || ""} onChange={(e) => set("description", e.target.value)} placeholder="Product description…" />
+            </div>
+            <div>
+              <label className={labelCls}>Retailer Name (shown as &quot;By …&quot; on the product card)</label>
+              <input className={inputCls} value={form.retailer_name || ""} onChange={(e) => set("retailer_name", e.target.value)} placeholder="e.g. Country Crock" />
+            </div>
+            <div>
+              <label className={labelCls}>Distributor Name (shown on product detail)</label>
+              <input className={inputCls} value={form.distributor_name || ""} onChange={(e) => set("distributor_name", e.target.value)} placeholder="e.g. Maharashtra Agro Distributors" />
             </div>
             <div className="flex items-center gap-3">
               <input type="checkbox" id="bestseller" checked={!!form.is_best_seller} onChange={(e) => set("is_best_seller", e.target.checked)} className="w-4 h-4 rounded accent-emerald-600" />
@@ -217,7 +225,8 @@ export default function ProductsPage() {
                     </div>
                   </div>
                   <p className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2 mb-1">{p.name}</p>
-                  <p className="text-xs text-slate-400 mb-2">{p.unit}</p>
+                  <p className="text-xs text-slate-400">{p.unit}</p>
+                  <p className="text-[11px] text-slate-400 mb-2">{p.retailer_name ? `By ${p.retailer_name}` : " "}</p>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-bold text-slate-900">₹{p.price}</span>
                     {disc > 0 && <>

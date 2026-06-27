@@ -8,6 +8,9 @@ import {
 } from "lucide-react";
 import MarketShell from "@/components/MarketShell";
 import BannerCarousel from "@/components/BannerCarousel";
+import PromoStrip from "@/components/PromoStrip";
+import FeaturedCategories from "@/components/FeaturedCategories";
+import TrustBadges from "@/components/TrustBadges";
 import type { Product, ShopSettings, ApiResponse, Banner } from "@/lib/types";
 import { CartItem, cartFromStorage, cartToStorage } from "@/lib/products";
 import { httpClient } from "@/lib/api";
@@ -142,7 +145,9 @@ function ProductCard({ product: p, inCart, wishlisted, onOpen, onAdd, onRemove, 
       <div className="p-3 flex flex-col flex-1">
         <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">{p.category}</p>
         <p className="text-sm font-semibold text-slate-800 line-clamp-2 leading-snug mb-1 flex-1">{p.name}</p>
-        <p className="text-[11px] text-slate-400 mb-2">{p.unit}</p>
+        <p className="text-[11px] text-slate-400">{p.unit}</p>
+        {p.retailer_name && <p className="text-[11px] text-slate-400 mb-2">{t("shop_by_retailer", { name: p.retailer_name })}</p>}
+        {!p.retailer_name && <div className="mb-2" />}
         <div className="flex items-center gap-1 mb-2">
           <span className="flex items-center gap-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
             <Star className="w-2.5 h-2.5 fill-emerald-600" /> {p.rating}
@@ -268,6 +273,9 @@ export default function ShopPage() {
   // Seller" from the Products admin page (no separate curation step needed).
   const bestSellers = useMemo(() => products.filter((p) => p.is_best_seller).slice(0, 10), [products]);
 
+  const heroBanners = useMemo(() => banners.filter((b) => b.placement === "hero"), [banners]);
+  const promoBanners = useMemo(() => banners.filter((b) => b.placement === "promo"), [banners]);
+
   // Log search whenever filtered changes due to search term
   useEffect(() => {
     if (search) logSearch(search, filtered.length);
@@ -304,8 +312,8 @@ export default function ShopPage() {
     <MarketShell breadcrumb={[{ label: t("shop_market_title") }]}>
       {/* Hero Banner — admin-managed sliding carousel (Admin → Banners), falls
           back to a static hero if no banners are configured yet */}
-      {banners.length > 0 ? (
-        <BannerCarousel banners={banners} />
+      {heroBanners.length > 0 ? (
+        <BannerCarousel banners={heroBanners} />
       ) : (
         <div className="relative -mx-4 lg:-mx-6 -mt-4 lg:-mt-6 mb-8 overflow-hidden rounded-b-2xl" style={{ height: 240 }}>
           <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=1400&h=400&q=80"
@@ -329,6 +337,20 @@ export default function ShopPage() {
           </div>
         </div>
       )}
+
+      <TrustBadges />
+
+      <FeaturedCategories
+        categories={settings.categories}
+        products={products}
+        selected={selectedCats.length === 1 ? selectedCats[0] : null}
+        onSelect={(cat) => {
+          setSelectedCats(cat ? [cat] : []);
+          document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth" });
+        }}
+      />
+
+      <PromoStrip banners={promoBanners} />
 
       {/* Search + Cart bar */}
       <div className="flex items-center gap-3 mb-6 flex-wrap" id="products-section">

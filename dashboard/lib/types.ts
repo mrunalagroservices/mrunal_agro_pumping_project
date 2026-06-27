@@ -59,6 +59,8 @@ export interface User {
   notification_preferences?: NotificationPreferences;
 }
 
+export type BannerPlacement = "hero" | "promo";
+
 export interface Banner {
   id: number;
   title: string;
@@ -68,6 +70,7 @@ export interface Banner {
   gradient_to: string;
   icon?: string | null;
   link_url?: string | null;
+  placement: BannerPlacement;
   sort_order: number;
 }
 
@@ -135,6 +138,8 @@ export interface Product {
   stock_quantity: number;
   rating: number;
   review_count: number;
+  retailer_name?: string | null;
+  distributor_name?: string | null;
   created_at: string;
   updated_at: string;
 }

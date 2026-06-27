@@ -293,6 +293,8 @@ CREATE TABLE products (
   stock_quantity INTEGER NOT NULL DEFAULT 100,
   rating         NUMERIC(3,2) NOT NULL DEFAULT 0,
   review_count   INTEGER NOT NULL DEFAULT 0,
+  retailer_name    VARCHAR(150), -- "Sold by" label shown on the product card, admin-editable
+  distributor_name VARCHAR(150), -- shown on the product detail page
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -309,12 +311,13 @@ CREATE TABLE shop_banners (
   gradient_to   VARCHAR(7) NOT NULL DEFAULT '#4f46e5',
   icon          VARCHAR(50),                            -- lucide icon name, e.g. "Truck", "Tag"
   link_url      TEXT,                                   -- optional, e.g. /shop?category=Seeds
+  placement     VARCHAR(20) NOT NULL DEFAULT 'hero',     -- 'hero' (top sliding carousel) | 'promo' (3-card mid-page strip)
   sort_order    INTEGER NOT NULL DEFAULT 0,
   is_active     BOOLEAN NOT NULL DEFAULT true,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_shop_banners_active ON shop_banners(is_active, sort_order);
+CREATE INDEX idx_shop_banners_active ON shop_banners(is_active, placement, sort_order);
 
 -- ─── Product reviews ────────────────────────────────────────────────────────────
 CREATE TABLE product_reviews (

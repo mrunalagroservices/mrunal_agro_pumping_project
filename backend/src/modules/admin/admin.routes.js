@@ -115,16 +115,16 @@ router.get('/products', async (req, res) => {
 
 // POST /api/v1/admin/products
 router.post('/products', async (req, res) => {
-  const { name, description, category, price, original_price, unit, image_url, is_best_seller, is_active, stock_quantity } = req.body;
+  const { name, description, category, price, original_price, unit, image_url, is_best_seller, is_active, stock_quantity, retailer_name, distributor_name } = req.body;
   if (!name || !price || !original_price || !category) {
     return res.status(400).json({ success: false, message: 'name, category, price and original_price are required' });
   }
   try {
     const result = await db.query(
-      `INSERT INTO products (name, description, category, price, original_price, unit, image_url, is_best_seller, is_active, stock_quantity)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      `INSERT INTO products (name, description, category, price, original_price, unit, image_url, is_best_seller, is_active, stock_quantity, retailer_name, distributor_name)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
       [name, description || null, category, price, original_price, unit || null, image_url || null,
-       is_best_seller ?? false, is_active ?? true, stock_quantity ?? 100]
+       is_best_seller ?? false, is_active ?? true, stock_quantity ?? 100, retailer_name || null, distributor_name || null]
     );
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
@@ -135,7 +135,7 @@ router.post('/products', async (req, res) => {
 
 // PUT /api/v1/admin/products/:id
 router.put('/products/:id', async (req, res) => {
-  const { name, description, category, price, original_price, unit, image_url, is_best_seller, is_active, stock_quantity } = req.body;
+  const { name, description, category, price, original_price, unit, image_url, is_best_seller, is_active, stock_quantity, retailer_name, distributor_name } = req.body;
   try {
     const result = await db.query(
       `UPDATE products SET
@@ -149,9 +149,11 @@ router.put('/products/:id', async (req, res) => {
          is_best_seller = COALESCE($8, is_best_seller),
          is_active = COALESCE($9, is_active),
          stock_quantity = COALESCE($10, stock_quantity),
+         retailer_name = COALESCE($11, retailer_name),
+         distributor_name = COALESCE($12, distributor_name),
          updated_at = NOW()
-       WHERE id = $11 RETURNING *`,
-      [name, description, category, price, original_price, unit, image_url, is_best_seller, is_active, stock_quantity, req.params.id]
+       WHERE id = $13 RETURNING *`,
+      [name, description, category, price, original_price, unit, image_url, is_best_seller, is_active, stock_quantity, retailer_name, distributor_name, req.params.id]
     );
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'Product not found' });
     res.json({ success: true, data: result.rows[0] });
@@ -186,17 +188,17 @@ router.get('/banners', async (req, res) => {
 
 // POST /api/v1/admin/banners
 router.post('/banners', async (req, res) => {
-  const { title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, sort_order, is_active } = req.body;
+  const { title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, placement, sort_order, is_active } = req.body;
   if (!title) {
     return res.status(400).json({ success: false, message: 'title is required' });
   }
   try {
     const result = await db.query(
-      `INSERT INTO shop_banners (title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, sort_order, is_active)
-       VALUES ($1,$2,$3, COALESCE($4,'#7c3aed'), COALESCE($5,'#4f46e5'), $6,$7, COALESCE($8,0), COALESCE($9,true))
+      `INSERT INTO shop_banners (title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, placement, sort_order, is_active)
+       VALUES ($1,$2,$3, COALESCE($4,'#7c3aed'), COALESCE($5,'#4f46e5'), $6,$7, COALESCE($8,'hero'), COALESCE($9,0), COALESCE($10,true))
        RETURNING *`,
       [title, subtitle || null, image_url || null, gradient_from || null, gradient_to || null,
-       icon || null, link_url || null, sort_order ?? null, is_active ?? null]
+       icon || null, link_url || null, placement || null, sort_order ?? null, is_active ?? null]
     );
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
@@ -207,7 +209,7 @@ router.post('/banners', async (req, res) => {
 
 // PUT /api/v1/admin/banners/:id
 router.put('/banners/:id', async (req, res) => {
-  const { title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, sort_order, is_active } = req.body;
+  const { title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, placement, sort_order, is_active } = req.body;
   try {
     const result = await db.query(
       `UPDATE shop_banners SET
@@ -218,11 +220,12 @@ router.put('/banners/:id', async (req, res) => {
          gradient_to   = COALESCE($5, gradient_to),
          icon          = COALESCE($6, icon),
          link_url      = COALESCE($7, link_url),
-         sort_order    = COALESCE($8, sort_order),
-         is_active     = COALESCE($9, is_active),
+         placement     = COALESCE($8, placement),
+         sort_order    = COALESCE($9, sort_order),
+         is_active     = COALESCE($10, is_active),
          updated_at    = NOW()
-       WHERE id = $10 RETURNING *`,
-      [title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, sort_order, is_active, req.params.id]
+       WHERE id = $11 RETURNING *`,
+      [title, subtitle, image_url, gradient_from, gradient_to, icon, link_url, placement, sort_order, is_active, req.params.id]
     );
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'Banner not found' });
     res.json({ success: true, data: result.rows[0] });
