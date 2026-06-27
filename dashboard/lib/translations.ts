@@ -632,6 +632,7 @@ export const translations = {
   shop_all: { en: "All", hi: "सभी", mr: "सर्व" },
   shop_best_seller: { en: "Best Seller", hi: "बेस्ट सेलर", mr: "बेस्ट सेलर" },
   shop_by_retailer: { en: "By {name}", hi: "{name} द्वारा", mr: "{name} द्वारे" },
+  shop_all_products: { en: "All Products", hi: "सभी प्रोडक्ट्स", mr: "सर्व प्रोडक्ट्स" },
   shop_new_arrival: { en: "New Arrival", hi: "नया आइटम", mr: "नवीन आयटम" },
   shop_only_left: { en: "Only {n} left!", hi: "सिर्फ {n} बचे हैं!", mr: "फक्त {n} शिल्लक!" },
   shop_out_of_stock: { en: "Out of stock", hi: "स्टॉक में नहीं", mr: "स्टॉकमध्ये नाही" },

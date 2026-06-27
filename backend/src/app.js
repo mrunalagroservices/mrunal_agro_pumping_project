@@ -21,6 +21,7 @@ const shopSettingsRoutes = require('./modules/shop-settings/shop-settings.routes
 const searchRoutes = require('./modules/search/search.routes');
 const productsRoutes = require('./modules/products/products.routes');
 const bannersRoutes = require('./modules/banners/banners.routes');
+const homeRoutes = require('./modules/home/home.routes');
 const cartRoutes = require('./modules/cart/cart.routes');
 const zonesRoutes = require('./modules/zones/zones.routes');
 const irrigationRoutes = require('./modules/irrigation/irrigation.routes');
@@ -84,6 +85,7 @@ app.use('/api/v1/shop-settings', shopSettingsRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/products', productsRoutes);
 app.use('/api/v1/banners', bannersRoutes);
+app.use('/api/v1/home-sections', homeRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/zones', zonesRoutes);
 app.use('/api/v1/irrigation', irrigationRoutes);

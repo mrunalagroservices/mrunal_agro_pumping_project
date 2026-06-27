@@ -275,6 +275,74 @@ router.delete('/banners/:id', async (req, res) => {
   }
 });
 
+// ── Mandi homepage product rows CRUD ────────────────────────────────────────────
+
+// GET /api/v1/admin/home-sections — all rows (active and inactive)
+router.get('/home-sections', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM home_product_sections ORDER BY sort_order ASC, id ASC');
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch home sections' });
+  }
+});
+
+// POST /api/v1/admin/home-sections
+router.post('/home-sections', async (req, res) => {
+  const { title, subtitle, source, category, layout, max_items, sort_order, is_active } = req.body;
+  if (!title) return res.status(400).json({ success: false, message: 'title is required' });
+  try {
+    const result = await db.query(
+      `INSERT INTO home_product_sections (title, subtitle, source, category, layout, max_items, sort_order, is_active)
+       VALUES ($1,$2, COALESCE($3,'best_seller'), $4, COALESCE($5,'row'), COALESCE($6,10), COALESCE($7,0), COALESCE($8,true))
+       RETURNING *`,
+      [title, subtitle || null, source || null, category || null, layout || null,
+       max_items ?? null, sort_order ?? null, is_active ?? null]
+    );
+    res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Admin/home-sections POST]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to create section' });
+  }
+});
+
+// PUT /api/v1/admin/home-sections/:id
+router.put('/home-sections/:id', async (req, res) => {
+  const { title, subtitle, source, category, layout, max_items, sort_order, is_active } = req.body;
+  try {
+    const result = await db.query(
+      `UPDATE home_product_sections SET
+         title      = COALESCE($1, title),
+         subtitle   = COALESCE($2, subtitle),
+         source     = COALESCE($3, source),
+         category   = COALESCE($4, category),
+         layout     = COALESCE($5, layout),
+         max_items  = COALESCE($6, max_items),
+         sort_order = COALESCE($7, sort_order),
+         is_active  = COALESCE($8, is_active),
+         updated_at = NOW()
+       WHERE id = $9 RETURNING *`,
+      [title, subtitle, source, category, layout, max_items, sort_order, is_active, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Section not found' });
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('[Admin/home-sections PUT]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to update section' });
+  }
+});
+
+// DELETE /api/v1/admin/home-sections/:id
+router.delete('/home-sections/:id', async (req, res) => {
+  try {
+    const result = await db.query('DELETE FROM home_product_sections WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!result.rows.length) return res.status(404).json({ success: false, message: 'Section not found' });
+    res.json({ success: true, data: { id: result.rows[0].id } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete section' });
+  }
+});
+
 // ── Farms CRUD ─────────────────────────────────────────────────────────────────
 
 // GET /api/v1/admin/farms — all farms across all orgs

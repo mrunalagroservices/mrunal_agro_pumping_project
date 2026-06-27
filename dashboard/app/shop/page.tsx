@@ -11,7 +11,7 @@ import BannerCarousel from "@/components/BannerCarousel";
 import PromoStrip from "@/components/PromoStrip";
 import FeaturedCategories from "@/components/FeaturedCategories";
 import TrustBadges from "@/components/TrustBadges";
-import type { Product, ShopSettings, ApiResponse, Banner } from "@/lib/types";
+import type { Product, ShopSettings, ApiResponse, Banner, HomeSection } from "@/lib/types";
 import { CartItem, cartFromStorage, cartToStorage } from "@/lib/products";
 import { httpClient } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -198,6 +198,7 @@ export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<ShopSettings>(DEFAULT_SETTINGS);
   const [banners, setBanners] = useState<Banner[]>([]);
+  const [homeSections, setHomeSections] = useState<HomeSection[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [cart, setCart] = useState<CartItem[]>(() => cartFromStorage());
@@ -234,9 +235,12 @@ export default function ShopPage() {
       // Silently fall back to empty products and default settings
     }).finally(() => setLoading(false));
 
-    // Best-effort: a banner-fetch failure shouldn't take down the products grid.
+    // Best-effort: a banner/section-fetch failure shouldn't take down the grid.
     httpClient.get<ApiResponse<Banner[]>>("/banners")
       .then((res) => setBanners(res.data))
+      .catch(() => {});
+    httpClient.get<ApiResponse<HomeSection[]>>("/home-sections")
+      .then((res) => setHomeSections(res.data))
       .catch(() => {});
   }, []);
 
@@ -269,12 +273,36 @@ export default function ShopPage() {
     return list;
   }, [products, selectedCats, minPrice, maxPrice, minRating, sortBy, search]);
 
-  // Curated row at the top of the homepage — admin marks products as "Best
-  // Seller" from the Products admin page (no separate curation step needed).
-  const bestSellers = useMemo(() => products.filter((p) => p.is_best_seller).slice(0, 10), [products]);
-
   const heroBanners = useMemo(() => banners.filter((b) => b.placement === "hero"), [banners]);
   const promoBanners = useMemo(() => banners.filter((b) => b.placement === "promo"), [banners]);
+
+  // Resolve the product list for an admin-configured homepage section from the
+  // already-loaded products (no extra fetch per section).
+  const resolveSection = useCallback((section: HomeSection): Product[] => {
+    let list = products.filter((p) => p.is_active !== false);
+    switch (section.source) {
+      case "best_seller":
+        list = list.filter((p) => p.is_best_seller);
+        break;
+      case "deals":
+        list = list
+          .filter((p) => p.original_price > p.price)
+          .sort((a, b) => (1 - b.price / b.original_price) - (1 - a.price / a.original_price));
+        break;
+      case "newest":
+        list = [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case "category":
+        list = list.filter((p) => p.category === section.category);
+        break;
+    }
+    return list.slice(0, section.max_items ?? 10);
+  }, [products]);
+
+  const visibleSections = useMemo(
+    () => homeSections.map((s) => ({ section: s, items: resolveSection(s) })).filter((x) => x.items.length > 0),
+    [homeSections, resolveSection]
+  );
 
   // Log search whenever filtered changes due to search term
   useEffect(() => {
@@ -374,23 +402,48 @@ export default function ShopPage() {
         </button>
       </div>
 
-      {/* Best Sellers — curated horizontal row, Amazon/Myntra homepage style */}
-      {bestSellers.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-bold text-slate-800 mb-3">{t("shop_best_seller")}</h2>
-          <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin">
-            {bestSellers.map((p) => (
-              <div key={p.id} className="w-44 shrink-0 snap-start">
-                <ProductCard product={p} inCart={cartQty(p.id)} wishlisted={wishlist.has(p.id)}
+      {/* Admin-curated homepage product rows (Admin → Home Page → Product Sections):
+          "Popular Products", "Deals Of The Day", per-category rows, etc. */}
+      {!search && selectedCats.length === 0 && visibleSections.map(({ section, items }) => (
+        <div key={section.id} className="mb-8">
+          <div className="flex items-baseline justify-between mb-3">
+            <div>
+              <h2 className="text-lg font-bold text-slate-800">{section.title}</h2>
+              {section.subtitle && <p className="text-xs text-slate-400">{section.subtitle}</p>}
+            </div>
+          </div>
+          {section.layout === "grid" ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+              {items.map((p) => (
+                <ProductCard key={p.id} product={p} inCart={cartQty(p.id)} wishlisted={wishlist.has(p.id)}
                   onOpen={() => router.push(`/shop/${p.id}`)}
                   onAdd={(e) => { e.stopPropagation(); addToCart(p); }}
                   onRemove={(e) => { e.stopPropagation(); removeFromCart(p.id); }}
                   onWishlist={(e) => { e.stopPropagation(); toggleWishlist(p.id); }}
                 />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin">
+              {items.map((p) => (
+                <div key={p.id} className="w-44 shrink-0 snap-start">
+                  <ProductCard product={p} inCart={cartQty(p.id)} wishlisted={wishlist.has(p.id)}
+                    onOpen={() => router.push(`/shop/${p.id}`)}
+                    onAdd={(e) => { e.stopPropagation(); addToCart(p); }}
+                    onRemove={(e) => { e.stopPropagation(); removeFromCart(p.id); }}
+                    onWishlist={(e) => { e.stopPropagation(); toggleWishlist(p.id); }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+      ))}
+
+      {/* "All products" heading separates the curated rows above from the full
+          filterable grid below */}
+      {!search && selectedCats.length === 0 && visibleSections.length > 0 && (
+        <h2 className="text-lg font-bold text-slate-800 mb-3">{t("shop_all_products")}</h2>
       )}
 
       {/* Mobile filter drawer */}

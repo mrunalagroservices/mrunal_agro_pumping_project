@@ -319,6 +319,23 @@ CREATE TABLE shop_banners (
 );
 CREATE INDEX idx_shop_banners_active ON shop_banners(is_active, placement, sort_order);
 
+-- ─── Mandi homepage product rows (admin-curated "Popular Products", "Deals of
+--     the Day", per-category rows, etc.) ────────────────────────────────────────
+CREATE TABLE home_product_sections (
+  id          SERIAL PRIMARY KEY,
+  title       VARCHAR(150) NOT NULL,
+  subtitle    VARCHAR(255),
+  source      VARCHAR(30) NOT NULL DEFAULT 'best_seller', -- 'best_seller' | 'deals' | 'newest' | 'category'
+  category    VARCHAR(100),                                -- used when source = 'category'
+  layout      VARCHAR(20) NOT NULL DEFAULT 'row',          -- 'row' (horizontal scroll) | 'grid'
+  max_items   INTEGER NOT NULL DEFAULT 10,
+  sort_order  INTEGER NOT NULL DEFAULT 0,
+  is_active   BOOLEAN NOT NULL DEFAULT true,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_home_product_sections_active ON home_product_sections(is_active, sort_order);
+
 -- ─── Product reviews ────────────────────────────────────────────────────────────
 CREATE TABLE product_reviews (
   id         SERIAL PRIMARY KEY,

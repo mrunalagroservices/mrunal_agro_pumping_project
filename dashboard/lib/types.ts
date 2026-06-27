@@ -59,6 +59,20 @@ export interface User {
   notification_preferences?: NotificationPreferences;
 }
 
+export type HomeSectionSource = "best_seller" | "deals" | "newest" | "category";
+export type HomeSectionLayout = "row" | "grid";
+
+export interface HomeSection {
+  id: number;
+  title: string;
+  subtitle?: string | null;
+  source: HomeSectionSource;
+  category?: string | null;
+  layout: HomeSectionLayout;
+  max_items: number;
+  sort_order: number;
+}
+
 export type BannerPlacement = "hero" | "promo";
 
 export interface Banner {
